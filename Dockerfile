@@ -8,7 +8,13 @@ RUN bun install --frozen-lockfile
 FROM dependencies AS builder
 WORKDIR /app
 COPY . .
-RUN bun run build
+# Next.js discovers server routes during the image build. These non-secret,
+# unreachable placeholders let that discovery validate configuration while the
+# real server-only values remain runtime variables supplied by Coolify.
+RUN DATABASE_URL=postgres://build:build@127.0.0.1:5432/unbroken_build \
+  BETTER_AUTH_SECRET=build-only-not-a-runtime-secret-000000000000 \
+  BETTER_AUTH_URL=http://127.0.0.1:3000 \
+  bun run build
 RUN bun build src/worker/index.ts --target=bun --outfile=dist/worker.js
 
 FROM oven/bun:1.3.14-alpine AS runtime

@@ -1,11 +1,14 @@
-import { sql } from "@/server/db/client";
+import { connection } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  await connection();
+
   const startedAt = performance.now();
 
   try {
+    const { sql } = await import("@/server/db/client");
     await sql`select 1 as ready`;
     const latencyMs = Math.round(performance.now() - startedAt);
 

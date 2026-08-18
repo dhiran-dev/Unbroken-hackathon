@@ -11,6 +11,17 @@ This deployment is performed by the owner through the Coolify interface. No Cool
 5. Add the PostgreSQL, Bright Data, and Fireworks variables from `.env.example`.
 6. Do not add `OWNER_PASSWORD` or `JUDGE_ADMIN_PASSWORD` to the long-lived web or worker environment after bootstrap.
 
+### Build-time versus runtime variables
+
+- Enable **Build Variable** only for `NEXT_PUBLIC_APP_URL`; Next.js intentionally
+  embeds this public origin into browser assets.
+- Keep `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Bright Data,
+  Fireworks, and bootstrap credentials runtime-only. The Dockerfile uses
+  unreachable, non-secret placeholders solely while Next.js discovers routes;
+  they are not copied into the runtime image environment.
+- Never paste a database URL, API token, or password into a Docker build
+  argument or deployment log.
+
 ## Web service
 
 - Repository: `https://github.com/dhiran-dev/Unbroken-hackathon.git`
