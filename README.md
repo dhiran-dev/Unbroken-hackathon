@@ -53,6 +53,22 @@ Supported pairs:
 
 Passwords must contain at least 14 characters. Public sign-up is disabled. Remove the plaintext bootstrap password variables after the accounts are created.
 
+## Trusted collection
+
+Run one production-collector cycle synchronously:
+
+```bash
+bun run collect:run
+```
+
+Run the five-minute scheduler, retry queue, retention job, and worker heartbeat:
+
+```bash
+bun run worker
+```
+
+The private Operations and History pages expose trusted timing, decisions, and evidence to authenticated owners/admins. Collection details and safety behavior are documented in [docs/architecture/trusted-collection.md](docs/architecture/trusted-collection.md).
+
 ## Verification
 
 ```bash

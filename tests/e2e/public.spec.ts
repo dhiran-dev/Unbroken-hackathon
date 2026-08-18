@@ -48,8 +48,40 @@ test("an operator can sign in and end the session", async ({ page }) => {
     page.getByRole("heading", { level: 1, name: "Overview" }),
   ).toBeVisible();
 
+  await page.goto("/admin/operations");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Operations" }),
+  ).toBeVisible();
+  await page.goto("/admin/history");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "History" }),
+  ).toBeVisible();
+
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/login$/);
+});
+
+test("an owner can queue an audited collection", async ({ page }) => {
+  const email = process.env.E2E_AUTH_EMAIL;
+  const password = process.env.E2E_AUTH_PASSWORD;
+  test.skip(
+    !email || !password || process.env.E2E_RUN_NOW !== "1",
+    "Credentialed run-now mutation was not enabled.",
+  );
+
+  await page.goto("/login");
+  await page.getByLabel("Email address").fill(email!);
+  await page.getByLabel("Password").fill(password!);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/operations");
+  await page.getByRole("button", { name: "Run now" }).click();
+  await expect(
+    page.getByText(
+      "Collection queued. The worker will validate it before publication.",
+    ),
+  ).toBeVisible();
 });
 
 test("liveness reports the web process", async ({ request }) => {

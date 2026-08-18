@@ -22,6 +22,7 @@
     "db:check": "drizzle-kit check",
     "db:studio": "drizzle-kit studio",
     "auth:bootstrap": "bun scripts/bootstrap-accounts.ts",
+    "collect:run": "bun scripts/run-collection.ts",
     "worker": "bun src/worker/index.ts"
   },
   "dependencies": {
