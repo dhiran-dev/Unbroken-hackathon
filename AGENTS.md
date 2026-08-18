@@ -2,7 +2,7 @@
 
 ## Bright Data collector
 
-- Production collector ID: `c_unbroken_sfmta_demo` (legacy stable identifier; do not rename)
+- Production collector ID: `c_msyjsllt1r9ej5tdub` (Bright Data-assigned stable identifier; do not rename)
 - Target source: `https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod`
 - Keep the Collector ID stable across `run`, `heal`, `approve`, and verification.
 - Never use `--auto-approve` in the judged workflow.
