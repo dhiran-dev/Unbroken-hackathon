@@ -4,6 +4,9 @@ out
 .env*
 !.env.example
 coverage
+dist
+playwright-report
+test-results
 *.log
 *.tsbuildinfo
 /docs/plans/
