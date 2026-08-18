@@ -22,7 +22,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
-RUN addgroup -S unbroken && adduser -S unbroken -G unbroken
+RUN apk add --no-cache curl \
+  && addgroup -S unbroken \
+  && adduser -S unbroken -G unbroken
 COPY --from=builder --chown=unbroken:unbroken /app/.next/standalone ./
 COPY --from=builder --chown=unbroken:unbroken /app/.next/static ./.next/static
 COPY --from=builder --chown=unbroken:unbroken /app/dist ./dist

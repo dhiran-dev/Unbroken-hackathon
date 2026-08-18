@@ -28,7 +28,9 @@ This deployment is performed by the owner through the Coolify interface. No Cool
 - Branch: `main`
 - Build pack: Dockerfile
 - Port: `3000`
+- Health host: `127.0.0.1`
 - Health path: `/api/health/ready`
+- Health start period: `20` seconds
 - Start command: image default (`bun server.js`)
 
 ## Worker service
