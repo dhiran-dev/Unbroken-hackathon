@@ -7,6 +7,8 @@ import {
   expireRawPayloadBodies,
   runCollection,
 } from "@/server/services/collection";
+import { expireIncidentArtifacts } from "@/server/services/incident-artifacts";
+import { isIncidentJob, processIncidentJob } from "./incident-jobs";
 
 const COLLECTION_JOB = "collect_sfmta_elevators";
 const RETENTION_JOB = "expire_raw_payloads";
@@ -204,7 +206,12 @@ export async function processJob(job: ClaimedJob) {
             : "scheduled";
       await runCollection(trigger);
     } else if (job.type === RETENTION_JOB) {
-      await expireRawPayloadBodies();
+      await Promise.all([
+        expireRawPayloadBodies(),
+        expireIncidentArtifacts(),
+      ]);
+    } else if (isIncidentJob(job.type)) {
+      await processIncidentJob(job);
     } else {
       throw new Error(`Unsupported job type: ${job.type}`);
     }

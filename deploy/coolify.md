@@ -27,6 +27,9 @@ Use the same repository, branch, Dockerfile, image, and environment variables.
 - Start command override: `bun dist/worker.js`
 - Do not expose a public port.
 - The first heartbeat should appear within 30 seconds.
+- Attach a persistent volume at `/data/incidents` and set
+  `INCIDENT_ARTIFACTS_DIR=/data/incidents`. Healing previews and approval
+  envelopes are private evidence and must survive worker restarts.
 
 ## First release order
 

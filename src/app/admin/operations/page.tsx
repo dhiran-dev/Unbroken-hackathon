@@ -1,5 +1,5 @@
-import { desc, inArray, sql } from "drizzle-orm";
-import { Activity, CircleCheck, Clock3, Database, RadioTower, Server, TriangleAlert } from "lucide-react";
+import { desc, eq, inArray, sql } from "drizzle-orm";
+import { Activity, Bot, CircleCheck, Clock3, Database, RadioTower, Server, TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 
 import { RunNowButton } from "@/components/run-now-button";
@@ -7,17 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPacific } from "@/lib/format";
 import { db } from "@/server/db/client";
-import { collectionRuns, jobs, trustedSnapshots, workerHeartbeats } from "@/server/db/schema";
+import { collectionRuns, componentChecks, incidents, jobs, trustedSnapshots, workerHeartbeats } from "@/server/db/schema";
 
 export const metadata: Metadata = { title: "Operations" };
 export const dynamic = "force-dynamic";
 
 export default async function OperationsPage() {
-  const [[latestRun], [latestTrusted], [heartbeat], activeJobs] = await Promise.all([
+  const [[latestRun], [latestTrusted], [heartbeat], activeJobs, [incidentCount], [fireworksCheck]] = await Promise.all([
     db.select().from(collectionRuns).orderBy(desc(collectionRuns.createdAt)).limit(1),
     db.select().from(trustedSnapshots).orderBy(desc(trustedSnapshots.acceptedAt)).limit(1),
     db.select({ workerId: workerHeartbeats.workerId, lastSeenAt: workerHeartbeats.lastSeenAt, current: sql<boolean>`${workerHeartbeats.lastSeenAt} >= now() - interval '90 seconds'` }).from(workerHeartbeats).orderBy(desc(workerHeartbeats.lastSeenAt)).limit(1),
     db.select({ id: jobs.id }).from(jobs).where(inArray(jobs.status, ["queued", "running"])),
+    db.select({ count: sql<number>`count(*)::int` }).from(incidents).where(inArray(incidents.state, ["detected", "acknowledged", "heal_requested", "preview_received", "preview_rejected", "awaiting_review", "awaiting_approval", "approved", "verification_failed"])),
+    db.select().from(componentChecks).where(eq(componentChecks.component, "fireworks")).orderBy(desc(componentChecks.checkedAt)).limit(1),
   ]);
   const workerCurrent = heartbeat?.current ?? false;
   const components = [
@@ -25,15 +27,17 @@ export default async function OperationsPage() {
     { name: "PostgreSQL", detail: "Queries operational", healthy: true, icon: Database },
     { name: "Bright Data collector", detail: latestRun ? `${latestRun.status} · ${formatPacific(latestRun.finishedAt)}` : "No collection recorded", healthy: latestRun?.status === "accepted", icon: RadioTower },
     { name: "Worker", detail: workerCurrent ? `Heartbeat ${formatPacific(heartbeat!.lastSeenAt)}` : "No current heartbeat", healthy: workerCurrent, icon: Activity },
+    { name: "Fireworks advisory", detail: fireworksCheck?.message ?? "Configured; runs only after deterministic checks", healthy: !fireworksCheck || fireworksCheck.status === "operational", icon: Bot },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-sm font-medium text-primary">System health</p><h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Operations</h1><p className="mt-2 text-sm text-muted-foreground">Live checks, collection health, and response timing.</p></div><RunNowButton /></div>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardContent className="pt-5 sm:pt-6"><p className="text-xs text-muted-foreground">Last trusted source update</p><p className="mt-2 text-sm font-semibold">{formatPacific(latestTrusted?.sourceValidAt ?? null)}</p></CardContent></Card>
         <Card><CardContent className="pt-5 sm:pt-6"><p className="text-xs text-muted-foreground">Latest decision</p><p className="mt-2 text-sm font-semibold capitalize">{latestRun?.classification?.replaceAll("_", " ") ?? "No run"}</p></CardContent></Card>
         <Card><CardContent className="pt-5 sm:pt-6"><p className="text-xs text-muted-foreground">Queue depth</p><p className="mt-2 text-sm font-semibold">{activeJobs.length} active job{activeJobs.length === 1 ? "" : "s"}</p></CardContent></Card>
+        <Card><CardContent className="pt-5 sm:pt-6"><p className="text-xs text-muted-foreground">Active incidents</p><p className="mt-2 text-sm font-semibold">{incidentCount?.count ?? 0} frozen safely</p></CardContent></Card>
       </div>
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <Card>

@@ -1,4 +1,4 @@
-import { Activity, Clock3, ExternalLink, History, LayoutDashboard } from "lucide-react";
+import { Activity, Clock3, ExternalLink, History, LayoutDashboard, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 import { Brand } from "@/components/brand";
@@ -10,6 +10,7 @@ const navigation = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/operations", label: "Operations", icon: Activity },
   { href: "/admin/history", label: "History", icon: History },
+  { href: "/admin/incidents", label: "Incidents", icon: ShieldAlert },
 ];
 
 export default async function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {

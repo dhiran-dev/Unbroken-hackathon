@@ -28,6 +28,7 @@ import {
   downloadBrightDataDataset,
   triggerBrightDataCollection,
 } from "./bright-data";
+import { detectIncidentWithoutAffectingRun } from "./incident-detection";
 
 const COLLECTION_LOCK_KEY = 7_431_926_118;
 const RAW_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
@@ -447,6 +448,7 @@ export async function runCollection(trigger: CollectionTrigger) {
         collectedAt,
         result,
       });
+      await detectIncidentWithoutAffectingRun(runId);
       return {
         runId,
         collectionId,
@@ -489,6 +491,7 @@ export async function runCollection(trigger: CollectionTrigger) {
         metadata: { runId, errorCode: safe.code, retryable: safe.retryable },
         checkedAt: failedAt,
       });
+      await detectIncidentWithoutAffectingRun(runId);
     }
     throw error;
   } finally {

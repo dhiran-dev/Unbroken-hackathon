@@ -56,6 +56,10 @@ test("an operator can sign in and end the session", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "History" }),
   ).toBeVisible();
+  await page.goto("/admin/incidents");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Incidents" }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/login$/);
@@ -82,6 +86,17 @@ test("an owner can queue an audited collection", async ({ page }) => {
       "Collection queued. The worker will validate it before publication.",
     ),
   ).toBeVisible();
+});
+
+test("incident actions reject anonymous callers", async ({ request }) => {
+  const response = await request.post(
+    "/api/admin/incidents/11111111-1111-4111-8111-111111111111/acknowledge",
+    {
+      headers: { "Idempotency-Key": crypto.randomUUID() },
+      data: {},
+    },
+  );
+  expect(response.status()).toBe(401);
 });
 
 test("liveness reports the web process", async ({ request }) => {

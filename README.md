@@ -69,6 +69,8 @@ bun run worker
 
 The private Operations and History pages expose trusted timing, decisions, and evidence to authenticated owners/admins. Collection details and safety behavior are documented in [docs/architecture/trusted-collection.md](docs/architecture/trusted-collection.md).
 
+Incident detection, safe Bright Data healing, Fireworks advisory review, explicit human approval, and post-approval verification are documented in [docs/architecture/healing-safety.md](docs/architecture/healing-safety.md).
+
 ## Verification
 
 ```bash

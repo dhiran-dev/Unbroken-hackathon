@@ -117,6 +117,19 @@ export async function triggerBrightDataCollection(config: BrightDataConfig) {
   return parsed.data.collection_id;
 }
 
+export function normalizeCollectorPayload(payload: unknown) {
+  if (Array.isArray(payload)) return payload;
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "elevators" in payload &&
+    Array.isArray(payload.elevators)
+  ) {
+    return [payload];
+  }
+  return null;
+}
+
 export async function downloadBrightDataDataset(
   config: BrightDataConfig,
   collectionId: string,
@@ -135,16 +148,8 @@ export async function downloadBrightDataDataset(
       }),
     );
     const payload = await responsePayload(response);
-    if (Array.isArray(payload)) return payload;
-    if (
-      payload &&
-      typeof payload === "object" &&
-      "elevators" in payload &&
-      Array.isArray(payload.elevators)
-    ) {
-      return [payload];
-    }
-
+    const normalized = normalizeCollectorPayload(payload);
+    if (normalized) return normalized;
     await delay(POLL_INTERVAL_MS);
   }
 

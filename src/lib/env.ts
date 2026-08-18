@@ -21,6 +21,7 @@ const serverEnvSchema = z.object({
     .literal("accounts/fireworks/models/deepseek-v4-flash-0731")
     .default("accounts/fireworks/models/deepseek-v4-flash-0731"),
   FIREWORKS_REASONING_EFFORT: z.literal("high").default("high"),
+  INCIDENT_ARTIFACTS_DIR: z.string().min(1).default("artifacts/incidents"),
 });
 
 const appEnvSchema = serverEnvSchema.pick({
