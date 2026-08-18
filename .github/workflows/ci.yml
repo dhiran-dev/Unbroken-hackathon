@@ -30,7 +30,7 @@ jobs:
       FIREWORKS_REASONING_EFFORT: high
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
