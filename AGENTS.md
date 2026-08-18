@@ -23,3 +23,11 @@
 - Do not create pull requests unless the owner explicitly changes this instruction.
 - Never commit or push secrets, local plans, raw production payloads, or unsanitized incident artifacts.
 - Do not force-push or rewrite published history unless the owner explicitly requests it.
+
+## LLM review
+
+- Provider: Fireworks AI.
+- Model: `accounts/fireworks/models/deepseek-v4-flash-0731`.
+- Use high reasoning effort and a strict structured-output contract.
+- Do not silently fall back to another provider or model.
+- The model is advisory only; deterministic gates and explicit human approval remain mandatory.
