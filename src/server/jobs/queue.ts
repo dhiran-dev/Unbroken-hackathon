@@ -93,11 +93,15 @@ export async function enqueueScheduledJobs(now = new Date()) {
     .onConflictDoNothing({ target: jobs.idempotencyKey });
 }
 
-export async function hasActiveCollection() {
+export async function hasActiveCollection(now = new Date()) {
+  await recoverAbandonedWork(now);
+
   const [activeJob] = await db
     .select({ id: jobs.id })
     .from(jobs)
-    .where(and(eq(jobs.type, COLLECTION_JOB), eq(jobs.status, "running")))
+    .where(
+      and(eq(jobs.type, COLLECTION_JOB), inArray(jobs.status, ["queued", "running"])),
+    )
     .limit(1);
   if (activeJob) return true;
 
