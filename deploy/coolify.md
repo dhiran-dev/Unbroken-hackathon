@@ -39,10 +39,10 @@ Use the same repository, branch, Dockerfile, image, and environment variables.
 
 - Docker build stage target: `worker`
 - Keep the start command and custom Docker options empty. The worker target
-  already starts `bun dist/worker.js` and explicitly disables the web-only
-  HTTP healthcheck.
-- Disable the Coolify UI healthcheck for this service. Worker health is
-  measured by its database heartbeat in the private Operations page.
+  already starts `bun dist/worker.js`.
+- Leave the Coolify UI healthcheck disabled. The worker image defines a
+  lightweight process healthcheck for deployment readiness; ongoing worker
+  health is measured by its database heartbeat in the private Operations page.
 - Do not expose a public port.
 - Do not attach a domain.
 - The first heartbeat should appear within 30 seconds.

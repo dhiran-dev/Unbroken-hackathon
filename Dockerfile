@@ -33,7 +33,8 @@ COPY --from=builder --chown=unbroken:unbroken /app/dist ./dist
 USER unbroken
 
 FROM runtime-base AS worker
-HEALTHCHECK NONE
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD bun -e "try{process.kill(1,0);process.exit(0)}catch{process.exit(1)}"
 CMD ["bun", "dist/worker.js"]
 
 FROM runtime-base AS runtime
