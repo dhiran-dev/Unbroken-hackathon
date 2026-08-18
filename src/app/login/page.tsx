@@ -18,7 +18,7 @@ export default async function LoginPage() {
 
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden px-4 py-10">
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,oklch(0.7_0.13_153/0.18),transparent_42%)]" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,oklch(0.65_0.18_264/0.14),transparent_42%)]" />
       <div className="absolute left-4 top-4 sm:left-6 sm:top-6"><Brand /></div>
       <div className="absolute right-4 top-3.5 sm:right-6 sm:top-5"><ThemeToggle /></div>
       <div className="w-full max-w-md">

@@ -22,7 +22,11 @@ UNBROKEN uses the visual design language of T3 Code as an implementation referen
 
 ## Adaptation rules
 
-- Use original UNBROKEN colors, copy, icons, routes, layouts, and product workflows.
+- Use the pinned T3 Code neutral canvas and blue interaction palette: near-black
+  or off-white backgrounds, subtly layered neutral surfaces, restrained borders,
+  and blue for primary actions and focus. Green is reserved for genuine healthy
+  or accepted states; it is not a brand tint or page background.
+- Keep UNBROKEN's own copy, icons, routes, layouts, and product workflows.
 - Preserve the compact base-mira geometry, semantic OKLCH approach, restrained glass, system typography, and short transitions.
 - Never use the T3 name, logo, screenshots, marketing assets, or coding-agent information architecture.
 - Prefer fresh implementations using shadcn/Base UI primitives. If source is copied or substantially adapted later, update `THIRD_PARTY_NOTICES.md` and retain the required MIT notice.

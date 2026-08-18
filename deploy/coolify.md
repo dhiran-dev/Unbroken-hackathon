@@ -37,8 +37,14 @@ This deployment is performed by the owner through the Coolify interface. No Cool
 
 Use the same repository, branch, Dockerfile, image, and environment variables.
 
-- Start command override: `bun dist/worker.js`
+- Docker build stage target: `worker`
+- Keep the start command and custom Docker options empty. The worker target
+  already starts `bun dist/worker.js` and explicitly disables the web-only
+  HTTP healthcheck.
+- Disable the Coolify UI healthcheck for this service. Worker health is
+  measured by its database heartbeat in the private Operations page.
 - Do not expose a public port.
+- Do not attach a domain.
 - The first heartbeat should appear within 30 seconds.
 - Attach a persistent volume at `/data/incidents` and set
   `INCIDENT_ARTIFACTS_DIR=/data/incidents`. Healing previews and approval

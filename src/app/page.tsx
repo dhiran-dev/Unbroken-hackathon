@@ -15,7 +15,7 @@ export default function HomePage() {
       <PublicHeader />
       <main>
         <section className="relative overflow-hidden border-b">
-          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_-10%,oklch(0.75_0.12_153/0.18),transparent_42%)]" />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_-10%,oklch(0.65_0.18_264/0.14),transparent_42%)]" />
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.03fr_0.97fr] lg:items-center lg:py-28">
             <div className="max-w-2xl">
               <Badge><CircleCheck className="size-3.5" /> Elevator-aware Muni trips</Badge>

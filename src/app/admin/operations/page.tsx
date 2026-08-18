@@ -17,11 +17,15 @@ export default async function OperationsPage() {
     db.select().from(collectionRuns).orderBy(desc(collectionRuns.createdAt)).limit(1),
     db.select().from(trustedSnapshots).orderBy(desc(trustedSnapshots.acceptedAt)).limit(1),
     db.select({ workerId: workerHeartbeats.workerId, lastSeenAt: workerHeartbeats.lastSeenAt, current: sql<boolean>`${workerHeartbeats.lastSeenAt} >= now() - interval '90 seconds'` }).from(workerHeartbeats).orderBy(desc(workerHeartbeats.lastSeenAt)).limit(1),
-    db.select({ id: jobs.id }).from(jobs).where(inArray(jobs.status, ["queued", "running"])),
+    db.select({ id: jobs.id, type: jobs.type }).from(jobs).where(inArray(jobs.status, ["queued", "running"])),
     db.select({ count: sql<number>`count(*)::int` }).from(incidents).where(inArray(incidents.state, ["detected", "acknowledged", "heal_requested", "preview_received", "preview_rejected", "awaiting_review", "awaiting_approval", "approved", "verification_failed"])),
     db.select().from(componentChecks).where(eq(componentChecks.component, "fireworks")).orderBy(desc(componentChecks.checkedAt)).limit(1),
   ]);
   const workerCurrent = heartbeat?.current ?? false;
+  const collectionActive =
+    activeJobs.some((job) => job.type === "collect_sfmta_elevators") ||
+    latestRun?.status === "collecting" ||
+    latestRun?.status === "validating";
   const components = [
     { name: "Web application", detail: "Serving this protected console", healthy: true, icon: Server },
     { name: "PostgreSQL", detail: "Queries operational", healthy: true, icon: Database },
@@ -32,7 +36,7 @@ export default async function OperationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-sm font-medium text-primary">System health</p><h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Operations</h1><p className="mt-2 text-sm text-muted-foreground">Live checks, collection health, and response timing.</p></div><RunNowButton /></div>
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-sm font-medium text-primary">System health</p><h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Operations</h1><p className="mt-2 text-sm text-muted-foreground">Live checks, collection health, and response timing.</p></div><RunNowButton active={collectionActive} /></div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardContent className="pt-5 sm:pt-6"><p className="text-xs text-muted-foreground">Last trusted source update</p><p className="mt-2 text-sm font-semibold">{formatPacific(latestTrusted?.sourceValidAt ?? null)}</p></CardContent></Card>
         <Card><CardContent className="pt-5 sm:pt-6"><p className="text-xs text-muted-foreground">Latest decision</p><p className="mt-2 text-sm font-semibold capitalize">{latestRun?.classification?.replaceAll("_", " ") ?? "No run"}</p></CardContent></Card>

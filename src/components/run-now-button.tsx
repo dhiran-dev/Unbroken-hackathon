@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 
 type State = "idle" | "pending" | "queued" | "error";
 
-export function RunNowButton() {
+type RunNowButtonProps = {
+  active: boolean;
+};
+
+export function RunNowButton({ active }: RunNowButtonProps) {
   const [state, setState] = useState<State>("idle");
   const [message, setMessage] = useState<string | null>(null);
 
@@ -28,18 +32,33 @@ export function RunNowButton() {
     setMessage("Collection queued. The worker will validate it before publication.");
   }
 
+  const busy = active || state === "pending" || state === "queued";
+  const statusMessage = active
+    ? "A queued or running collection is already active."
+    : message;
+
   return (
     <div className="flex flex-col items-start gap-2 sm:items-end">
-      <Button disabled={state === "pending" || state === "queued"} onClick={runNow}>
-        {state === "pending" ? <LoaderCircle className="animate-spin" /> : <Play />}
-        {state === "pending" ? "Queuing…" : state === "queued" ? "Queued" : "Run now"}
+      <Button disabled={busy} onClick={runNow}>
+        {active || state === "pending" ? (
+          <LoaderCircle className="animate-spin" />
+        ) : (
+          <Play />
+        )}
+        {active
+          ? "Collection in progress"
+          : state === "pending"
+            ? "Queuing…"
+            : state === "queued"
+              ? "Queued"
+              : "Run now"}
       </Button>
-      {message && (
+      {statusMessage && (
         <p
           aria-live="polite"
           className={state === "error" ? "text-xs text-destructive" : "text-xs text-muted-foreground"}
         >
-          {message}
+          {statusMessage}
         </p>
       )}
     </div>
