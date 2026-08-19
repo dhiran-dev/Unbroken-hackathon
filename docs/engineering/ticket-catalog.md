@@ -118,7 +118,7 @@ All tickets inherit these rules:
 ### SF-PLACE-01 — Search every selectable stop and approved place
 
 - **Owner**: Transit data
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Search all active stops/stations and approved landmarks by name, code, route, parent, and alias.
 - **Non-goals**: Arbitrary addresses or accepting unselected text.
 - **Blocked by**: SF-DATA-01 and SF-DATA-04.
@@ -130,6 +130,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Return no speculative choices; compatibility station list remains.
 - **Public copy**: Nearby stops, Stations, Places, and “Choose a place from the list.”
 - **Security/accessibility**: Bound and normalize queries; list semantics and stable option labels.
+- **Verification**: The configured database seed was idempotent at 24/24 active reviewed landmarks. The public `TransitCatalog` seam exhaustively resolved all 3,238 active stops/stations and all 24 approved landmarks, with zero missing choices, while retaining the trusted active coverage of 68 routes, 50,690 trips, 1,901,119 stop times, 6 services, and 45,308 shape points. Route associations are scanned once per active GTFS snapshot; reviewed-place changes use a deterministic content revision and reuse the cached transit scan. Three focused files / 22 tests passed, including bounded search, route/parent/alias matching, inactive-stop exclusion, landmark invalidation, defensive result copies, and a 12,000-stop warm-search performance fixture. `BETTER_AUTH_URL=https://unbroken.local NEXT_PUBLIC_APP_URL=https://unbroken.local bun run check` passed lint, types, 163 unit tests, production build, and release scan. `CITYWIDE_PLANNER_ENABLED=true bun run test:e2e` passed 20 desktop/mobile tests with 4 credentialed tests skipped. The T3 preview could not navigate to this environment, so Playwright is the browser evidence. Remote configured-database warm samples were 307–510 ms; the ticket's in-process p95 gate passes, while production-topology p95 remains an explicit Phase 4 deployment verification item.
+- **Completion commit**: `e0f360d`.
 
 ## Phase 3 — Realtime accessibility-aware journey engine
 
