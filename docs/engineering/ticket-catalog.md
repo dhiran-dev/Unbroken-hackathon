@@ -46,7 +46,7 @@ All tickets inherit these rules:
 ### SF-DATA-02 — Publish trusted accessibility advisories
 
 - **Owner**: Transit data
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete — verified and pushed
 - **Goal and visible outcome**: Collect every filtered accessibility advisory, validate it, and expose normalized current service changes with provenance.
 - **Non-goals**: Journey selection and UI layout.
 - **Blocked by**: SF-DATA-01.
@@ -58,6 +58,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Retain previous advisory snapshot; emit no service event; flag unavailable/older.
 - **Public copy**: Short service-change wording plus both timestamps and official link.
 - **Security/accessibility**: Sanitize source text/URLs; warnings use text and icon, not color alone.
+- **Verification**: bun run transit:verify — isolated migration/store checks promoted 11 advisories, refreshed an unchanged snapshot, retained trusted rows after rejection/stale attempts, and recorded safe failure evidence; live fixed-source refresh promoted 11 advisories and public readback returned current with no invented SFMTA timestamp; bun run check — lint, types, 93 unit tests, production build, and release check passed; bun run test:e2e — 20 desktop/mobile tests passed and 4 credentialed mutation tests skipped.
+- **Completion commit**: 0e28ed17a614e5df9e58f84d1b9cb573ffa35d39.
 
 ### SF-DATA-03 — Preserve every trusted moved-stop row
 
