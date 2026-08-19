@@ -11,6 +11,7 @@ import {
 } from "@/server/services/collection";
 import { expireIncidentArtifacts } from "@/server/services/incident-artifacts";
 import { runConfiguredAccessibilityAdvisoryRefresh } from "@/server/transit/run-accessibility-advisory-refresh";
+import { runConfiguredStopRelocationRefresh } from "@/server/transit/run-stop-relocation-refresh";
 import {
   isIncidentJob,
   MUTATING_INCIDENT_JOB_TYPES,
@@ -20,6 +21,7 @@ import {
 
 const COLLECTION_JOB = "collect_sfmta_elevators";
 const ACCESSIBILITY_ADVISORY_JOB = "refresh_accessibility_advisories";
+const STOP_RELOCATION_JOB = "refresh_stop_relocations";
 const RETENTION_JOB = "expire_raw_payloads";
 export const JOB_LEASE_TIMEOUT_MS = 15 * 60 * 1_000;
 export const JOB_LEASE_RENEWAL_INTERVAL_MS = 30 * 1_000;
@@ -48,6 +50,13 @@ export type ClaimedJob = {
 function accessibilityAdvisoryBucket(now: Date) {
   const bucket = new Date(now);
   bucket.setUTCMinutes(0, 0, 0);
+  return bucket;
+}
+
+function stopRelocationBucket(now: Date) {
+  const bucket = new Date(now);
+  bucket.setUTCSeconds(0, 0);
+  bucket.setUTCMinutes(Math.floor(bucket.getUTCMinutes() / 30) * 30);
   return bucket;
 }
 
@@ -112,6 +121,7 @@ export async function enqueueScheduledJobs(now = new Date()) {
   await recoverAbandonedWork(now);
   const bucket = collectionBucket(now);
   const advisoryBucket = accessibilityAdvisoryBucket(now);
+  const relocationBucket = stopRelocationBucket(now);
   const citywideEnabled = getServerEnv().CITYWIDE_DATA_ENABLED;
   const day = now.toISOString().slice(0, 10);
 
@@ -133,6 +143,13 @@ export async function enqueueScheduledJobs(now = new Date()) {
                 payload: { bucket: advisoryBucket.toISOString() },
                 idempotencyKey: `advisories:scheduled:${advisoryBucket.toISOString()}`,
                 scheduledFor: advisoryBucket,
+                maxAttempts: 3,
+              },
+              {
+                type: STOP_RELOCATION_JOB,
+                payload: { bucket: relocationBucket.toISOString() },
+                idempotencyKey: `relocations:scheduled:${relocationBucket.toISOString()}`,
+                scheduledFor: relocationBucket,
                 maxAttempts: 3,
               },
             ]
@@ -310,6 +327,11 @@ export async function processJob(job: ClaimedJob) {
       const result = await runConfiguredAccessibilityAdvisoryRefresh();
       if (result.status === "rejected" || result.status === "unavailable") {
         throw new Error("Accessibility advisory refresh was not accepted.");
+      }
+    } else if (job.type === STOP_RELOCATION_JOB) {
+      const result = await runConfiguredStopRelocationRefresh();
+      if (result.status === "rejected" || result.status === "unavailable") {
+        throw new Error("Stop relocation refresh was not accepted.");
       }
     } else if (job.type === RETENTION_JOB) {
       await Promise.all([expireRawPayloadBodies(), expireIncidentArtifacts()]);

@@ -57,6 +57,45 @@ describe("Bright Data dataset downloads", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("accepts a complete JSON array delivered with a JSONL media type", async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response('[\n  {"title":"First"},\n  {"title":"Second"}\n]', {
+          headers: { "content-type": "application/jsonl" },
+        }),
+    ) as unknown as typeof fetch;
+
+    await expect(
+      downloadBrightDataDataset(config, "j_Synthetic123"),
+    ).resolves.toEqual([{ title: "First" }, { title: "Second" }]);
+  });
+
+  it("accepts one pretty JSON object delivered with a JSONL media type", async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(`{\n  "metadata": {"lastCompiled":"safe"}\n}`, {
+          headers: { "content-type": "application/jsonl" },
+        }),
+    ) as unknown as typeof fetch;
+
+    await expect(
+      downloadBrightDataDataset(config, "j_Synthetic123"),
+    ).resolves.toEqual([{ metadata: { lastCompiled: "safe" } }]);
+  });
+
+  it("returns an empty completed dataset for contract-level rejection", async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response("", {
+          headers: { "content-type": "application/jsonl" },
+        }),
+    ) as unknown as typeof fetch;
+
+    await expect(
+      downloadBrightDataDataset(config, "j_Synthetic123"),
+    ).resolves.toEqual([]);
+  });
+
   it("rejects malformed JSONL without echoing source content", async () => {
     globalThis.fetch = vi.fn(
       async () =>

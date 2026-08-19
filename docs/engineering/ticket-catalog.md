@@ -72,10 +72,10 @@ All tickets inherit these rules:
 - **Owned paths**: Transit relocation adapter, contract, fixtures, source tests.
 - **Shared files not edited**: Integration-owner list.
 - **Migration**: Uses SF-DATA-01 schema.
-- **Fixtures/tests**: Six-row baseline, null applicant, duplicate stop/different destination, missing coordinates, invalid dates, intercepted JSON drift.
+- **Fixtures/tests**: Six-row baseline, null or absent applicant, duplicate stop/different destination, missing coordinates retained as unknown, invalid dates, intercepted JSON drift.
 - **Failure/rollback**: Keep prior trusted moves and mark source unavailable/older.
 - **Public copy**: “Board at …” and clear effective dates; no applicant shown to riders.
-- **Security/accessibility**: Bound/sanitize intercepted content; moved location is present in text and map.
+- **Security/accessibility**: Bound/sanitize intercepted content; moved location is always present in text, while map consumers must not invent a moved point when the source omits coordinates.
 
 ### SF-DATA-04 — Publish reviewed accessible-stop guidance
 

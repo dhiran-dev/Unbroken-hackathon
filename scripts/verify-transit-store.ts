@@ -6,6 +6,7 @@ import postgres from "postgres";
 import * as schema from "@/server/db/schema";
 import type { AccessibilityRefreshAttempt } from "@/server/transit/accessibility-advisories";
 import type { GtfsSnapshotAttempt } from "@/server/transit/gtfs-refresh";
+import type { StopRelocationRefreshAttempt } from "@/server/transit/stop-relocations";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required.");
@@ -213,6 +214,46 @@ function advisoryAttempt(
   };
 }
 
+function relocationAttempt(
+  variant: "a" | "b" | "c",
+  basedOnSnapshotId: string | null,
+  checkedAt: Date,
+): StopRelocationRefreshAttempt {
+  const relocations = Array.from({ length: 6 }, (_, index) => ({
+    rowId: `relocation-${variant}-${String(index + 1).padStart(2, "0")}`,
+    stopId: index < 2 ? "15623" : `16${String(index).padStart(3, "0")}`,
+    stopName: index < 2 ? "Mission Street stop" : `Market stop ${index + 1}`,
+    applicant: index === 0 ? null : `Project ${index + 1}`,
+    routeNames: index % 2 === 0 ? ["Inbound 12"] : ["Outbound 14"],
+    temporaryStop: `temporary stop ${variant.toUpperCase()}-${index + 1}`,
+    scheduleText:
+      "SFMTA says this stop is currently closed. This move applies Jul 13 through Aug 28, on Mon, Tue, Wed, Thu, and Fri, from 7:30 am to 6:00 pm.",
+    startsAt: new Date("2026-07-13T07:00:00.000Z"),
+    endsAt: new Date("2026-08-29T06:59:59.999Z"),
+    latitude: null,
+    longitude: null,
+    publicUrl:
+      "https://www.sfmta.com/travel-updates/temporary-stop-relocations" as const,
+    boardingInstruction: `Board at temporary stop ${variant.toUpperCase()}-${index + 1}. SFMTA says this stop is currently closed. This move applies Jul 13 through Aug 28, on Mon, Tue, Wed, Thu, and Fri, from 7:30 am to 6:00 pm.`,
+  }));
+  return {
+    status: "validated",
+    basedOnSnapshotId,
+    checkedAt,
+    sourceUpdatedAt: new Date(checkedAt.valueOf() - 30 * 60 * 1_000),
+    sourceUrl:
+      "https://www.sfmta.com/travel-updates/temporary-stop-relocations",
+    payloadHash: variant.repeat(64),
+    structuralFingerprint: "7".repeat(64),
+    relocations,
+    validationReport: {
+      accepted: true,
+      rowCount: relocations.length,
+      structuralFingerprint: "7".repeat(64),
+    },
+  };
+}
+
 try {
   const [publicState] = await connection<
     Array<{ shapeTable: string | null; migrationApplied: boolean }>
@@ -356,6 +397,110 @@ try {
     "A stale advisory baseline replaced trusted facts.",
   );
 
+  const { PostgresStopRelocationStore } =
+    await import("@/server/transit/stop-relocation-store");
+  const { readStopRelocations } =
+    await import("@/server/transit/stop-relocations");
+  const relocationStore = new PostgresStopRelocationStore(database as never);
+  const relocationPromoted = await relocationStore.applyRefreshAttempt(
+    relocationAttempt("a", null, new Date("2026-08-19T12:00:00.000Z")),
+  );
+  ensure(
+    relocationPromoted.status === "promoted" &&
+      relocationPromoted.activeSnapshot.relocations.length === 6,
+    "The verified relocation snapshot was not promoted atomically.",
+  );
+  const firstRelocationSnapshotId =
+    relocationPromoted.activeSnapshot.snapshotId;
+  const relocationRepeated = await relocationStore.applyRefreshAttempt(
+    relocationAttempt(
+      "a",
+      firstRelocationSnapshotId,
+      new Date("2026-08-19T12:30:00.000Z"),
+    ),
+  );
+  ensure(
+    relocationRepeated.status === "unchanged" &&
+      relocationRepeated.activeSnapshot.sourceUpdatedAt.toISOString() ===
+        "2026-08-19T12:00:00.000Z",
+    "The same relocation payload did not refresh both source times.",
+  );
+  const relocationRejected = await relocationStore.applyRefreshAttempt({
+    status: "rejected",
+    basedOnSnapshotId: firstRelocationSnapshotId,
+    checkedAt: new Date("2026-08-19T12:40:00.000Z"),
+    sourceUpdatedAt: null,
+    sourceUrl:
+      "https://www.sfmta.com/travel-updates/temporary-stop-relocations",
+    payloadHash: "8".repeat(64),
+    structuralFingerprint: null,
+    validationReport: {
+      accepted: false,
+      rowCount: 0,
+      reasons: [
+        {
+          code: "ROW_COUNT_TOO_LOW",
+          message:
+            "The relocation collection is smaller than the safe baseline.",
+        },
+      ],
+    },
+  });
+  ensure(
+    relocationRejected.status === "rejected" &&
+      relocationRejected.activeSnapshot?.snapshotId ===
+        firstRelocationSnapshotId,
+    "A rejected relocation refresh replaced trusted facts.",
+  );
+  const relocationChanged = await relocationStore.applyRefreshAttempt(
+    relocationAttempt(
+      "b",
+      firstRelocationSnapshotId,
+      new Date("2026-08-19T12:50:00.000Z"),
+    ),
+  );
+  ensure(
+    relocationChanged.status === "promoted",
+    "A changed verified relocation snapshot was not promoted.",
+  );
+  const relocationReturned = await relocationStore.applyRefreshAttempt(
+    relocationAttempt(
+      "a",
+      relocationChanged.activeSnapshot.snapshotId,
+      new Date("2026-08-19T13:00:00.000Z"),
+    ),
+  );
+  ensure(
+    relocationReturned.status === "promoted" &&
+      relocationReturned.activeSnapshot.snapshotId ===
+        firstRelocationSnapshotId &&
+      relocationReturned.activeSnapshot.relocations[0]?.temporaryStop.includes(
+        "A-",
+      ),
+    "A verified historical relocation state did not become current again.",
+  );
+  const relocationView = await readStopRelocations(
+    { at: new Date("2026-08-19T13:01:00.000Z") },
+    { store: relocationStore },
+  );
+  ensure(
+    relocationView.state === "current" &&
+      relocationView.relocations.length === 6 &&
+      !JSON.stringify(relocationView).includes("applicant") &&
+      relocationView.relocations.every((row) =>
+        row.boardingInstruction.startsWith("Board at "),
+      ),
+    "The database-backed relocation view did not return safe current rows.",
+  );
+  const relocationStale = await relocationStore.applyRefreshAttempt(
+    relocationAttempt("c", null, new Date("2026-08-19T13:10:00.000Z")),
+  );
+  ensure(
+    relocationStale.status === "rejected" &&
+      relocationStale.activeSnapshot?.snapshotId === firstRelocationSnapshotId,
+    "A stale relocation baseline replaced trusted facts.",
+  );
+
   const [stored] = await connection<
     Array<{
       active: number;
@@ -368,6 +513,9 @@ try {
       advisorySnapshots: number;
       advisories: number;
       advisoryFailures: number;
+      relocationSnapshots: number;
+      relocations: number;
+      relocationFailures: number;
     }>
   >`
     select
@@ -380,7 +528,10 @@ try {
       (select count(*)::int from transit_shapes) as "shapePoints",
       (select count(*)::int from source_snapshots where kind = 'accessibility_advisories' and status = 'current') as "advisorySnapshots",
       (select count(*)::int from accessibility_advisories) as advisories,
-      (select count(*)::int from source_snapshots where kind = 'accessibility_advisories' and status in ('rejected', 'unavailable')) as "advisoryFailures"
+      (select count(*)::int from source_snapshots where kind = 'accessibility_advisories' and status in ('rejected', 'unavailable')) as "advisoryFailures",
+      (select count(*)::int from source_snapshots where kind = 'stop_relocations' and status = 'current') as "relocationSnapshots",
+      (select count(*)::int from stop_relocations) as relocations,
+      (select count(*)::int from source_snapshots where kind = 'stop_relocations' and status in ('rejected', 'unavailable')) as "relocationFailures"
   `;
   ensure(
     stored?.active === 1 &&
@@ -392,7 +543,10 @@ try {
       stored.shapePoints === 2 &&
       stored.advisorySnapshots === 1 &&
       stored.advisories === 11 &&
-      stored.advisoryFailures === 1,
+      stored.advisoryFailures === 1 &&
+      stored.relocationSnapshots === 2 &&
+      stored.relocations === 12 &&
+      stored.relocationFailures === 1,
     "Stored snapshot counts failed readback verification.",
   );
 
@@ -407,6 +561,12 @@ try {
       advisoryRepeated: advisoryRepeated.status,
       advisoryRejected: advisoryRejected.status,
       advisoryStale: advisoryStale.status,
+      relocationPromoted: relocationPromoted.status,
+      relocationRepeated: relocationRepeated.status,
+      relocationRejected: relocationRejected.status,
+      relocationChanged: relocationChanged.status,
+      relocationReturned: relocationReturned.status,
+      relocationStale: relocationStale.status,
       counts: stored,
     })}\n`,
   );

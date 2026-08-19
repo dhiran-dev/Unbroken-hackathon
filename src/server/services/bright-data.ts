@@ -81,9 +81,16 @@ async function responsePayload(response: Response) {
       const lines = text
         .split(/\r?\n/)
         .filter((line) => line.trim().length > 0);
-      if (lines.length === 0) throw new Error("Empty JSONL response");
+      if (lines.length === 0) return [];
       return lines.map((line) => JSON.parse(line) as unknown);
     } catch {
+      try {
+        const parsed = JSON.parse(text) as unknown;
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed !== null && typeof parsed === "object") return [parsed];
+      } catch {
+        // The safe error below deliberately omits source content.
+      }
       throw new BrightDataError(
         "BRIGHT_DATA_NON_JSON_RESPONSE",
         `Bright Data returned a non-JSON response with HTTP ${response.status}.`,
