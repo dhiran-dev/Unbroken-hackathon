@@ -41,7 +41,7 @@ All tickets inherit these rules:
 - **Public copy**: Coverage counts and distinct checked/source times only.
 - **Security/accessibility**: Token server-only; coverage table has accessible headings and status text.
 - **Verification**: `bun run transit:verify` — current migration present, fresh isolated schema created 16 citywide tables, promotion/repeat/stale paths returned promoted/unchanged/rejected, and database readback matched 2 stops, 1 route, 1 trip, 2 stop times, 1 service, and 2 shape points; official SF feed validation recorded 3,238 stops, 68 routes, 50,690 trips, 1,901,119 stop times, 6 service IDs, and 45,308 shape points; `BETTER_AUTH_URL=https://unbroken.fifthavatar.com NEXT_PUBLIC_APP_URL=https://unbroken.fifthavatar.com bun run check` — lint, types, 78 unit tests, production build, and release check passed; `bun run test:e2e` — 20 desktop/mobile tests passed and 4 credentialed mutation tests skipped.
-- **Completion commit**: the commit containing this SF-DATA-01 checkpoint.
+- **Completion commit**: `864280b5e6d969f4b3986e754b4ae02f71d91c56`.
 
 ### SF-DATA-02 — Publish trusted accessibility advisories
 
