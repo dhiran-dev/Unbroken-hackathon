@@ -32,6 +32,20 @@
 - Do not silently fall back to another provider or model.
 - The model is advisory only; deterministic gates and explicit human approval remain mandatory.
 
+## Agent skills
+
+### Issue tracker
+
+Citywide specs and implementation tickets are tracked in committed local documentation. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+UNBROKEN uses one shared domain glossary and a single system-wide decision record. See `docs/agents/domain.md`.
+
+### Citywide engineering
+
+Read `docs/engineering/README.md` before changing citywide transit, journey, map, rider, quota, or notification behavior.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
