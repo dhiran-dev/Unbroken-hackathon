@@ -64,7 +64,7 @@ All tickets inherit these rules:
 ### SF-DATA-03 — Preserve every trusted moved-stop row
 
 - **Owner**: Transit data
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete — verified and pushed
 - **Goal and visible outcome**: Collect and validate all relocation rows, including nullable applicants and same-stop records with different destinations.
 - **Non-goals**: Rewriting journey instructions.
 - **Blocked by**: SF-DATA-02.
@@ -76,6 +76,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Keep prior trusted moves and mark source unavailable/older.
 - **Public copy**: “Board at …” and clear effective dates; no applicant shown to riders.
 - **Security/accessibility**: Bound/sanitize intercepted content; moved location is always present in text, while map consumers must not invent a moved point when the source omits coordinates.
+- **Verification**: The official SFMTA envelope passed the production contract with 6 rows and `sourceUpdatedAt=2026-08-19T12:05:34.000Z`; the fixed live collector returned an empty completed dataset and was rejected with no active snapshot; `bun run transit:verify` passed promotion, unchanged provenance, rejection retention, changed-state promotion, verified A→B→A restoration, and stale-baseline rejection in an isolated schema with 12 historical relocation rows and 1 safe failure record; `bun run check` passed lint, types, 109 unit tests, production build, and release scan; `bun run test:e2e` passed 20 desktop/mobile browser tests with 4 credentialed mutations skipped; `bun run db:generate` reported no schema changes.
+- **Completion commit**: `5360ad1`.
 
 ### SF-DATA-04 — Publish reviewed accessible-stop guidance
 
