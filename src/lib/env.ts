@@ -3,6 +3,11 @@ import { z } from "zod";
 export const PRODUCTION_COLLECTOR_ID = "c_msyjsllt1r9ej5tdub";
 export const PRODUCTION_SOURCE_URL =
   "https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod";
+export const TRANSIT_511_GTFS_URL = "https://api.511.org/transit/datafeeds";
+const booleanFlag = z
+  .enum(["true", "false"])
+  .default("false")
+  .transform((value) => value === "true");
 export const FIREWORKS_API_BASE_URL = "https://api.fireworks.ai/inference/v1";
 const SECURE_DATABASE_MODES = new Set(["require", "verify-ca", "verify-full"]);
 const OWNER_AUTHORIZED_LEGACY_DATABASE = {
@@ -11,7 +16,7 @@ const OWNER_AUTHORIZED_LEGACY_DATABASE = {
   pathname: "/unbroken_staging",
 } as const;
 
-const serverEnvSchema = z.object({
+const serverEnvBaseSchema = z.object({
   DATABASE_URL: z.string().url().startsWith("postgres"),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().url(),
@@ -29,9 +34,27 @@ const serverEnvSchema = z.object({
     .default("accounts/fireworks/models/deepseek-v4-flash-0731"),
   FIREWORKS_REASONING_EFFORT: z.literal("high").default("high"),
   INCIDENT_ARTIFACTS_DIR: z.string().min(1).default("artifacts/incidents"),
+  CITYWIDE_DATA_ENABLED: booleanFlag,
+  TRANSIT_511_API_TOKEN: z.string().min(1).optional(),
+  TRANSIT_511_OPERATOR_ID: z.literal("SF").default("SF"),
+  TRANSIT_511_GTFS_URL: z
+    .literal(TRANSIT_511_GTFS_URL)
+    .default(TRANSIT_511_GTFS_URL),
+  TRANSIT_DATA_DIR: z.string().min(1).default("/data/transit"),
 });
 
-const appEnvSchema = serverEnvSchema.pick({
+const serverEnvSchema = serverEnvBaseSchema.superRefine((env, context) => {
+  if (env.CITYWIDE_DATA_ENABLED && !env.TRANSIT_511_API_TOKEN) {
+    context.addIssue({
+      code: "custom",
+      path: ["TRANSIT_511_API_TOKEN"],
+      message:
+        "TRANSIT_511_API_TOKEN is required when citywide data is enabled.",
+    });
+  }
+});
+
+const appEnvSchema = serverEnvBaseSchema.pick({
   DATABASE_URL: true,
   BETTER_AUTH_SECRET: true,
   BETTER_AUTH_URL: true,

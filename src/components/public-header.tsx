@@ -16,6 +16,9 @@ export function PublicHeader() {
           <Link className="touch-target hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground sm:block" href="/">
             Plan a trip
           </Link>
+          <Link className="touch-target hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground lg:block" href="/coverage">
+            Citywide data
+          </Link>
           <Link className="touch-target whitespace-nowrap rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground sm:px-3" href="/status">
             Elevator status
           </Link>

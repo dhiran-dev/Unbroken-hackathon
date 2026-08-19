@@ -28,7 +28,7 @@ All tickets inherit these rules:
 ### SF-DATA-01 — Promote a validated Muni schedule snapshot
 
 - **Owner**: Transit data
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Download official operator `SF` GTFS, stage and validate it, atomically promote it, and show database-derived coverage counts.
 - **Non-goals**: Realtime, candidate routing, public journey UI.
 - **Blocked by**: Phase 1.
@@ -40,6 +40,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Reject before promotion and retain previous active snapshot; disable `CITYWIDE_DATA_ENABLED`.
 - **Public copy**: Coverage counts and distinct checked/source times only.
 - **Security/accessibility**: Token server-only; coverage table has accessible headings and status text.
+- **Verification**: `bun run transit:verify` — current migration present, fresh isolated schema created 16 citywide tables, promotion/repeat/stale paths returned promoted/unchanged/rejected, and database readback matched 2 stops, 1 route, 1 trip, 2 stop times, 1 service, and 2 shape points; official SF feed validation recorded 3,238 stops, 68 routes, 50,690 trips, 1,901,119 stop times, 6 service IDs, and 45,308 shape points; `BETTER_AUTH_URL=https://unbroken.fifthavatar.com NEXT_PUBLIC_APP_URL=https://unbroken.fifthavatar.com bun run check` — lint, types, 78 unit tests, production build, and release check passed; `bun run test:e2e` — 20 desktop/mobile tests passed and 4 credentialed mutation tests skipped.
+- **Completion commit**: the commit containing this SF-DATA-01 checkpoint.
 
 ### SF-DATA-02 — Publish trusted accessibility advisories
 

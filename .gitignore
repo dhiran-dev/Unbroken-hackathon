@@ -3,7 +3,7 @@ node_modules
 out
 .env*
 !.env.example
-coverage
+/coverage
 dist
 playwright-report
 test-results

@@ -75,7 +75,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                       <p className="font-medium text-warning-foreground">
                         Route planning is paused until a fresh update arrives.
                       </p>
-                      <p className="mt-1 leading-6 text-muted-foreground">
+                      <p className="mt-1 leading-6 text-warning-foreground">
                         The last verified update was {formatPacific(accessibility.trust.sourceValidAt)}. Check SFMTA before travelling.
                       </p>
                     </div>

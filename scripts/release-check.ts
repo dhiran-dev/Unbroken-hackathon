@@ -67,7 +67,7 @@ if (trackedIncidentFiles.length > 0) {
 
 const envExample = await text(".env.example");
 for (const line of envExample.split("\n")) {
-  const match = /^(DATABASE_URL|BETTER_AUTH_SECRET|BRIGHTDATA_API_TOKEN|FIREWORKS_API_KEY|OWNER_PASSWORD|JUDGE_ADMIN_PASSWORD)\s*=(.*)$/.exec(line);
+  const match = /^(DATABASE_URL|BETTER_AUTH_SECRET|BRIGHTDATA_API_TOKEN|TRANSIT_511_API_TOKEN|FIREWORKS_API_KEY|OWNER_PASSWORD|JUDGE_ADMIN_PASSWORD)\s*=(.*)$/.exec(line);
   if (match?.[2]?.trim()) {
     problems.push(`${match[1]} must be blank in .env.example.`);
   }
@@ -77,6 +77,12 @@ if (!envExample.includes(`BRIGHTDATA_COLLECTOR_ID=${productionCollectorId}`)) {
 }
 if (!envExample.includes(`SFMTA_SOURCE_URL=${publicSourceUrl}`)) {
   problems.push(".env.example does not pin the public SFMTA source URL.");
+}
+if (!envExample.includes("TRANSIT_511_OPERATOR_ID=SF")) {
+  problems.push(".env.example does not pin the 511 Muni operator ID.");
+}
+if (!envExample.includes("TRANSIT_511_GTFS_URL=https://api.511.org/transit/datafeeds")) {
+  problems.push(".env.example does not pin the official 511 GTFS endpoint.");
 }
 
 const implementationFiles = workspaceFiles.filter(

@@ -128,7 +128,7 @@ export default async function StatusPage({ searchParams }: StatusPageProps) {
                 <CircleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-warning-foreground" />
                 <div>
                   <p className="font-medium">The latest update could not be confirmed.</p>
-                  <p className="mt-1 leading-6 text-muted-foreground">
+                  <p className="mt-1 leading-6 text-warning-foreground">
                     Based on the last verified update, which is{" "}
                     {formatAge(accessibility.trust.ageSeconds)}. It was verified at{" "}
                     {formatPacific(accessibility.trust.sourceValidAt)}. Check SFMTA

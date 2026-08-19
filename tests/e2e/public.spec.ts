@@ -267,3 +267,44 @@ test("public route API gives rider-friendly validation errors", async ({ request
     message: "Choose two different stations.",
   });
 });
+
+test("citywide coverage uses database counts and separates source times", async ({
+  page,
+}) => {
+  await page.goto("/coverage");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Data coverage" }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("heading", { name: "Checked by UNBROKEN at" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "SFMTA updated at" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: /Current checked schedule|Using the last checked schedule/,
+    }),
+  ).toBeVisible();
+  const countRows = page
+    .getByRole("table")
+    .getByRole("row")
+    .filter({
+      has: page.getByRole("rowheader"),
+    });
+  await expect(countRows).toHaveCount(6);
+  for (const cell of await countRows.getByRole("cell").all()) {
+    const value = (await cell.textContent())?.replaceAll(",", "").trim() ?? "";
+    expect(Number(value)).toBeGreaterThan(0);
+  }
+  await expect(
+    page.getByRole("link", { name: /Open official transit data/ }),
+  ).toHaveAttribute("href", "https://511.org/open-data/transit");
+
+  const pageWidth = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(pageWidth.content).toBeLessThanOrEqual(pageWidth.viewport);
+});
