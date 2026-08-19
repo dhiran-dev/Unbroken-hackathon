@@ -1,0 +1,6 @@
+state/
+*.osm.pbf
+*.zip
+graph.obj
+manifest.json
+*.partial

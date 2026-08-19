@@ -1,0 +1,17 @@
+{
+  "data": {
+    "planConnection": {
+      "edges": [],
+      "routingErrors": [
+        {
+          "code": "NO_STOPS_IN_RANGE",
+          "inputField": "FROM"
+        },
+        {
+          "code": "NO_STOPS_IN_RANGE",
+          "inputField": "TO"
+        }
+      ]
+    }
+  }
+}

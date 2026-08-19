@@ -1,0 +1,44 @@
+{
+  "name": "unbroken-otp",
+  "services": {
+    "otp": {
+      "image": "docker.io/opentripplanner/opentripplanner@sha256:a7eac7da397faa9ec9dee407d4204895d24df4981500662fa6793aae0e71fd8f",
+      "command": ["--load", "--serve"],
+      "environment": {
+        "JAVA_TOOL_OPTIONS": "-Xms512m -Xmx3g -XX:+ExitOnOutOfMemoryError"
+      },
+      "volumes": [
+        "${OTP_STATE_DIR:?OTP_STATE_DIR is required}/current:/var/opentripplanner:ro"
+      ],
+      "read_only": true,
+      "tmpfs": ["/tmp:rw,noexec,nosuid,size=268435456"],
+      "mem_limit": "4g",
+      "expose": ["8080"],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "/bin/bash -ec \"exec 3<>/dev/tcp/127.0.0.1/8080; printf 'GET /otp/actuators/health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; IFS= read -r status <&3; [[ \"$status\" == *\" 200 \"* ]]\""
+        ],
+        "interval": "30s",
+        "timeout": "5s",
+        "retries": 10,
+        "start_period": "90s"
+      },
+      "networks": ["otp_private"],
+      "restart": "unless-stopped",
+      "security_opt": ["no-new-privileges:true"],
+      "cap_drop": ["ALL"],
+      "labels": {
+        "org.unbroken.otp.version": "2.9.0",
+        "org.unbroken.otp.config-version": "unbroken-sf-otp-v1",
+        "org.unbroken.otp.health-path": "/otp/actuators/health",
+        "org.unbroken.otp.graphql-path": "/otp/gtfs/v1"
+      }
+    }
+  },
+  "networks": {
+    "otp_private": {
+      "internal": true
+    }
+  }
+}

@@ -50,13 +50,25 @@ Use the same repository, branch, Dockerfile, image, and environment variables.
   `INCIDENT_ARTIFACTS_DIR=/data/incidents`. Healing previews and approval
   envelopes are private evidence and must survive worker restarts.
 
+## Private OTP service
+
+Use `deploy/otp/compose.json` as a manual Docker Compose service and follow `deploy/otp/README.md` for the pinned build and verification workflow.
+
+- Attach one durable private volume through `OTP_STATE_DIR` for sources, candidate graphs, and the atomic `current` link.
+- Give the private build task server-only `DATABASE_URL` access to the active trusted transit snapshot. Never pass a 511 token, GTFS file, or caller-supplied hash to the graph build.
+- Do not attach a public domain or publish a host port. Join the web/worker consumers and `otp` service only to the internal network.
+- Keep the pinned image digest, read-only root and graph mount, 4 GiB container limit, 3 GiB Java heap, dropped capabilities, and no-new-privileges settings unchanged.
+- Run the candidate build with an explicit Muni service date and time. It must load and pass health, neutral-transit, and unknown-wheelchair probes before the `current` graph moves.
+- Restart the private OTP service after a candidate is promoted, then run the private verifier again before enabling citywide planning.
+
 ## First release order
 
 1. Apply the committed Drizzle migrations once.
 2. Bootstrap the owner and judge-admin accounts once.
 3. Remove bootstrap passwords from every long-lived environment.
 4. Start the web service and verify `/api/health/live` and `/api/health/ready`.
-5. Start the worker and verify its heartbeat in the private operations page.
+5. Build, promote, and start the private OTP graph; verify its private health and sample candidate.
+6. Start the worker and verify its heartbeat in the private operations page.
 
 ## Private migration and bootstrap target
 
