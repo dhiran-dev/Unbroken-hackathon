@@ -21,6 +21,7 @@ import {
 import { requestFireworksReview } from "./fireworks-review";
 import { writeIncidentArtifact } from "./incident-artifacts";
 import {
+  getIncident,
   latestIncidentEvidence,
   recordIncidentEvidence,
   requireIncidentAction,
@@ -57,6 +58,59 @@ async function previousTrustedEvidence() {
   };
 }
 
+async function reconcileHealingFailure(input: {
+  incidentId: string;
+  actorUserId: string;
+  code: string;
+  productionCollectorMayHaveChanged?: boolean;
+}) {
+  try {
+    const current = await getIncident(input.incidentId);
+    const productionCollectorMayHaveChanged = input.productionCollectorMayHaveChanged ?? false;
+    if (current.state === "heal_requested") {
+      await transitionIncident({
+        incidentId: current.id,
+        toState: "acknowledged",
+        eventType: "healing.failed",
+        actorUserId: input.actorUserId,
+        details: { code: input.code, productionCollectorChanged: false },
+      });
+    } else if (current.state === "preview_received") {
+      await transitionIncident({
+        incidentId: current.id,
+        toState: "preview_rejected",
+        eventType: "healing.reconciliation_failed",
+        actorUserId: input.actorUserId,
+        details: { code: input.code, productionCollectorChanged: false },
+      });
+    } else if (
+      productionCollectorMayHaveChanged &&
+      ["awaiting_review", "awaiting_approval"].includes(current.state)
+    ) {
+      await transitionIncident({
+        incidentId: current.id,
+        toState: "verification_failed",
+        eventType: "healing.approval_ambiguous",
+        actorUserId: input.actorUserId,
+        details: {
+          code: input.code,
+          productionCollectorMayHaveChanged: true,
+          verificationRequired: true,
+        },
+      });
+    } else {
+      await recordIncidentEvidence({
+        incidentId: current.id,
+        eventType: "healing.reconciliation_recorded",
+        actorUserId: input.actorUserId,
+        details: { code: input.code, productionCollectorMayHaveChanged },
+      });
+    }
+  } catch {
+    // Preserve the original integration error if durable reconciliation is unavailable.
+  }
+}
+
 export async function healIncident(input: {
   incidentId: string;
   actorUserId: string;
@@ -76,6 +130,7 @@ export async function healIncident(input: {
     },
   });
 
+  try {
   const requestArtifact = await writeIncidentArtifact(
     incident.id,
     "heal-request.json",
@@ -242,6 +297,14 @@ export async function healIncident(input: {
     },
   });
   return { accepted: true, report: result.report };
+  } catch (error) {
+    await reconcileHealingFailure({
+      incidentId: incident.id,
+      actorUserId: input.actorUserId,
+      code: error instanceof HealingIntegrationError ? error.code : "HEALING_WORKFLOW_FAILED",
+    });
+    throw error;
+  }
 }
 
 export async function reviewIncident(input: {
@@ -394,6 +457,7 @@ export async function approveIncident(input: {
     throw new Error("Human approval requires a valid deterministic preview.");
   }
 
+  try {
   const envelope = await resolveBrightDataHealing("approve");
   if (envelope.status !== "done") {
     throw new HealingIntegrationError(
@@ -424,6 +488,15 @@ export async function approveIncident(input: {
     },
   });
   return envelope;
+  } catch (error) {
+    await reconcileHealingFailure({
+      incidentId: incident.id,
+      actorUserId: input.actorUserId,
+      code: error instanceof HealingIntegrationError ? error.code : "HEALING_APPROVAL_FAILED",
+      productionCollectorMayHaveChanged: true,
+    });
+    throw error;
+  }
 }
 
 export async function rejectIncident(input: {

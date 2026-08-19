@@ -9,6 +9,7 @@ import {
   reviewIncident,
   verifyIncident,
 } from "@/server/services/incident-workflow";
+import { getIncident, recordIncidentEvidence, transitionIncident } from "@/server/services/incidents";
 
 export const incidentJobActions = [
   "heal",
@@ -38,6 +39,68 @@ function isIncidentJobPayload(
 
 export function isIncidentJob(type: string) {
   return incidentJobActions.some((action) => type === `incident_${action}`);
+}
+
+export const MUTATING_INCIDENT_JOB_TYPES = [
+  "incident_heal",
+  "incident_approve",
+  "incident_reject",
+  "incident_verify",
+] as const;
+
+export function isMutatingIncidentJobType(type: string) {
+  return MUTATING_INCIDENT_JOB_TYPES.includes(type as (typeof MUTATING_INCIDENT_JOB_TYPES)[number]);
+}
+
+export async function reconcileAbandonedIncidentJob(job: {
+  type: string;
+  payload: Record<string, unknown>;
+}, now = new Date()) {
+  if (!isIncidentJobPayload(job.payload)) return;
+  const action = job.type.replace(/^incident_/, "") as IncidentJobAction;
+  try {
+    const incident = await getIncident(job.payload.incidentId);
+    if (action === "heal" && incident.state === "heal_requested") {
+      await transitionIncident({
+        incidentId: incident.id,
+        toState: "acknowledged",
+        eventType: "healing.worker_abandoned",
+        actorUserId: job.payload.actorUserId,
+        details: {
+          code: "HEALING_WORKER_ABANDONED",
+          productionCollectorChanged: false,
+          abandonedAt: now.toISOString(),
+        },
+      });
+      return;
+    }
+    if (
+      (action === "approve" || action === "verify") &&
+      ["awaiting_review", "awaiting_approval", "approved"].includes(incident.state)
+    ) {
+      await transitionIncident({
+        incidentId: incident.id,
+        toState: "verification_failed",
+        eventType: "healing.worker_abandoned",
+        actorUserId: job.payload.actorUserId,
+        details: {
+          code: "MUTATING_JOB_WORKER_ABANDONED",
+          productionCollectorMayHaveChanged: action === "approve",
+          verificationRequired: true,
+          abandonedAt: now.toISOString(),
+        },
+      });
+      return;
+    }
+    await recordIncidentEvidence({
+      incidentId: incident.id,
+      eventType: "incident.worker_abandoned",
+      actorUserId: job.payload.actorUserId,
+      details: { action, abandonedAt: now.toISOString() },
+    });
+  } catch {
+    // Recovery must never prevent the queue from releasing its lease.
+  }
 }
 
 export async function enqueueIncidentJob(input: {

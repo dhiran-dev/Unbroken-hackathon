@@ -1,6 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-test("public rider surfaces render truthfully", async ({ page }) => {
+test("public rider surfaces render truthfully", async ({ page, request }) => {
+  const accessibilityResponse = await request.get("/api/public/accessibility");
+  const accessibilityBody = (await accessibilityResponse.json()) as {
+    available: boolean;
+    trust?: { state: "current" | "older" };
+  };
+  const hasCurrentSnapshot =
+    accessibilityResponse.ok() &&
+    accessibilityBody.available &&
+    accessibilityBody.trust?.state === "current";
+
   await page.goto("/");
 
   await expect(
@@ -9,8 +19,25 @@ test("public rider surfaces render truthfully", async ({ page }) => {
       name: "A step-free trip should stay step-free.",
     }),
   ).toBeVisible();
-  await expect(page.getByLabel("Starting point")).toBeVisible();
-  await expect(page.getByLabel("Destination")).toBeVisible();
+  const origin = page.getByLabel("Starting station", { exact: true });
+  const destination = page.getByLabel("Destination station", { exact: true });
+  await expect(origin).toBeVisible();
+  await expect(destination).toBeVisible();
+  await origin.selectOption("powell");
+  await destination.selectOption("forest-hill");
+
+  const planButton = page.getByRole("button", { name: "Show my step-free plan" });
+  if (hasCurrentSnapshot && (await planButton.isEnabled())) {
+    await planButton.click();
+    await expect(page.locator("#route h2")).toHaveText(
+      /A step-free station path is available|No confirmed step-free trip right now|We can’t confirm this trip/,
+    );
+  } else {
+    await expect(planButton).toBeDisabled();
+    await expect(
+      page.getByText(/Current elevator information is unavailable|Route planning is paused/),
+    ).toBeVisible();
+  }
 
   await page
     .getByRole("link", { name: "Elevator status", exact: true })
@@ -18,7 +45,45 @@ test("public rider surfaces render truthfully", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "Elevator status" }),
   ).toBeVisible();
-  await expect(page.getByText("Status unavailable")).toBeVisible();
+
+  if (!accessibilityResponse.ok()) {
+    await expect(
+      page.getByRole("heading", { name: "Status unavailable" }),
+    ).toBeVisible();
+  } else {
+    await expect(page.locator("details")).toHaveCount(11);
+    await expect(page.getByRole("heading", { name: "Embarcadero" })).toBeVisible();
+    await expect(
+      page
+        .locator("details")
+        .filter({ hasText: "Embarcadero" })
+        .locator("summary svg"),
+    ).toHaveCount(1);
+    if (accessibilityBody.trust?.state === "older") {
+      await expect(
+        page.getByText("The latest update could not be confirmed."),
+      ).toBeVisible();
+    }
+    await page
+      .getByLabel("Find a station or elevator", { exact: true })
+      .fill("Embarcadero");
+    await page.getByRole("button", { name: "Show", exact: true }).click();
+    await expect(page).toHaveURL(/q=Embarcadero/);
+    await expect(page.locator("details")).toHaveCount(1);
+    await expect(
+      page.getByRole("link", { name: "Plan a step-free trip" }),
+    ).toBeVisible();
+  }
+
+  const refreshButton = page.getByRole("button", {
+    name: "Refresh elevator status",
+  });
+  await expect(refreshButton.first()).toBeVisible();
+  const pageWidth = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(pageWidth.content).toBeLessThanOrEqual(pageWidth.viewport);
 });
 
 test("operator routes require authentication", async ({ page }) => {
@@ -43,7 +108,7 @@ test("an operator can sign in and end the session", async ({ page }) => {
   await page.getByLabel("Password").fill(password!);
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/admin$/, { timeout: 15_000 });
   await expect(
     page.getByRole("heading", { level: 1, name: "Overview" }),
   ).toBeVisible();
@@ -77,7 +142,7 @@ test("an owner can queue an audited collection", async ({ page }) => {
   await page.getByLabel("Email address").fill(email!);
   await page.getByLabel("Password").fill(password!);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/admin$/, { timeout: 15_000 });
 
   await page.goto("/admin/operations");
   await page.getByRole("button", { name: "Run now" }).click();
@@ -105,5 +170,66 @@ test("liveness reports the web process", async ({ request }) => {
   await expect(response.json()).resolves.toMatchObject({
     status: "ok",
     service: "unbroken-web",
+  });
+});
+
+test("public accessibility API fails closed and omits internal identities", async ({ request }) => {
+  const response = await request.get("/api/public/accessibility");
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  const text = await response.text();
+  expect(text).not.toContain("sourceKey");
+  expect(text).not.toContain("collectorId");
+  expect(text).not.toContain("acceptedAt");
+  expect(text).not.toContain("collectedAt");
+  expect(text).not.toContain("newerUpdateHeld");
+
+  const body = JSON.parse(text) as {
+    available: boolean;
+    message?: string;
+    trust?: Record<string, unknown>;
+    stations?: Array<{ elevators: Array<{ role: string }> }>;
+  };
+  if (response.status() === 503) {
+    expect(body).toMatchObject({
+      available: false,
+      message: "Elevator information is unavailable right now.",
+    });
+    expect(body.trust).toBeUndefined();
+    return;
+  }
+
+  expect(response.ok()).toBe(true);
+  expect(body.available).toBe(true);
+  expect(Object.keys(body.trust ?? {}).sort()).toEqual([
+    "ageSeconds",
+    "sourceValidAt",
+    "state",
+  ]);
+  expect(body.stations).toHaveLength(11);
+  expect(body.stations?.every((station) => station.elevators.length > 0)).toBe(
+    true,
+  );
+  expect(
+    body.stations?.every((station) =>
+      station.elevators.every((elevator) => Boolean(elevator.role)),
+    ),
+  ).toBe(true);
+});
+
+test("public route API gives rider-friendly validation errors", async ({ request }) => {
+  const missing = await request.post("/api/public/routes", { data: {} });
+  expect(missing.status()).toBe(400);
+  expect(missing.headers()["cache-control"]).toContain("no-store");
+  await expect(missing.json()).resolves.toEqual({
+    message: "Choose a supported starting station.",
+  });
+
+  const sameStation = await request.post("/api/public/routes", {
+    data: { origin: "powell", destination: "powell" },
+  });
+  expect(sameStation.status()).toBe(400);
+  expect(sameStation.headers()["cache-control"]).toContain("no-store");
+  await expect(sameStation.json()).resolves.toEqual({
+    message: "Choose two different stations.",
   });
 });

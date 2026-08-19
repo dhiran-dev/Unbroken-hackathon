@@ -7,6 +7,7 @@ import { IncidentActions } from "@/components/incident-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPacific } from "@/lib/format";
+import { checkLabel, eventLabel, incidentStateLabel, runClassificationLabel, humanizeOperatorValue } from "@/lib/operator-labels";
 import { IncidentNotFoundError, incidentDetail } from "@/server/services/incidents";
 
 export const metadata: Metadata = { title: "Incident evidence" };
@@ -43,10 +44,10 @@ export default async function IncidentPage({
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
           href="/admin/incidents"
         >
-          <ArrowLeft className="size-3.5" /> Back to incidents
+          <ArrowLeft aria-hidden="true" className="size-3.5" /> Back to incidents
         </Link>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Badge>{detail.incident.state.replaceAll("_", " ")}</Badge>
+          <Badge>{incidentStateLabel(detail.incident.state)}</Badge>
           <span className="font-mono text-xs text-muted-foreground">
             {detail.incident.id}
           </span>
@@ -64,7 +65,7 @@ export default async function IncidentPage({
           <CardContent className="pt-5 sm:pt-6">
             <p className="text-xs text-muted-foreground">Classification</p>
             <p className="mt-2 text-sm font-medium capitalize">
-              {detail.incident.classification.replaceAll("_", " ")}
+              {runClassificationLabel(detail.incident.classification)}
             </p>
           </CardContent>
         </Card>
@@ -80,7 +81,7 @@ export default async function IncidentPage({
           <CardContent className="pt-5 sm:pt-6">
             <p className="text-xs text-muted-foreground">Publication</p>
             <p className="mt-2 inline-flex items-center gap-2 text-sm font-medium">
-              <ShieldCheck className="size-4 text-success" /> {verified ? "Verified and restored" : "Last trusted data held"}
+              <ShieldCheck aria-hidden="true" className="size-4 text-success" /> {verified ? "Verified and restored" : "Last trusted data held"}
             </p>
           </CardContent>
         </Card>
@@ -97,13 +98,13 @@ export default async function IncidentPage({
                 {contractReport.checks.map((check) => (
                   <div className="flex gap-3 px-5 py-4 sm:px-6" key={check.id}>
                     {check.passed ? (
-                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-success" />
                     ) : (
-                      <CircleDot className="mt-0.5 size-4 shrink-0 text-destructive" />
+                      <CircleDot aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-destructive" />
                     )}
                     <div>
                       <p className="text-sm font-medium capitalize">
-                        {check.id.replaceAll("_", " ")}
+                        {checkLabel(check.id)}
                       </p>
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">
                         {check.details}
@@ -122,14 +123,14 @@ export default async function IncidentPage({
             <CardContent className="divide-y p-0">
               {detail.events.map((event) => (
                 <div className="flex gap-3 px-5 py-4 sm:px-6" key={event.id}>
-                  <CircleDot className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <CircleDot aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">
-                      {event.eventType.replaceAll(".", " ")}
+                      {eventLabel(event.eventType)}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatPacific(event.createdAt)} ·{" "}
-                      {event.toState.replaceAll("_", " ")}
+                      {incidentStateLabel(event.toState)}
                     </p>
                   </div>
                 </div>
@@ -154,7 +155,7 @@ export default async function IncidentPage({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bot className="size-4" /> Fireworks advisory
+                <Bot aria-hidden="true" className="size-4" /> Fireworks advisory
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -163,8 +164,7 @@ export default async function IncidentPage({
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Recommendation</span>
                     <span className="font-medium capitalize">
-                      {latestReview.recommendation?.replaceAll("_", " ") ??
-                        "Human review"}
+                      {latestReview.recommendation ? humanizeOperatorValue(latestReview.recommendation) : "Human review"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-3">

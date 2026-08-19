@@ -58,6 +58,16 @@ Use the same repository, branch, Dockerfile, image, and environment variables.
 4. Start the web service and verify `/api/health/live` and `/api/health/ready`.
 5. Start the worker and verify its heartbeat in the private operations page.
 
+## Private migration and bootstrap target
+
+The Dockerfile also provides an `ops` target for one-off database work. It contains the checked-in Drizzle migrations and bootstrap script, but it is not a public service. Run these commands from a temporary Coolify task or release job with the production runtime environment attached:
+
+1. Build/select the Docker target `ops` and run `bun run db:migrate`.
+2. Set one-time `OWNER_*` and/or `JUDGE_ADMIN_*` variables and run `bun run auth:bootstrap`.
+3. Remove both bootstrap passwords from the task and every long-lived web/worker environment before starting services.
+
+The production environment must keep the exact `BRIGHTDATA_COLLECTOR_ID=c_msyjsllt1r9ej5tdub` and SFMTA source URL from `.env.example`. The exact existing PostgreSQL endpoint is temporarily owner-authorized without `sslmode`; this exception is restricted in code to that host, port, and database. Every other database URL must use `sslmode=require`, `verify-ca`, or `verify-full`, and explicit weak modes are rejected. `BETTER_AUTH_URL` must be HTTPS. Do not print task environments or migration output containing credentials.
+
 ## Rollback
 
 Redeploy the previous known-good Git commit. Database migrations are forward-only; do not manually delete tables or rewrite migration history.

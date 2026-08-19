@@ -31,8 +31,41 @@ function delay(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+const MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
+
+async function boundedResponseText(response: Response) {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_RESPONSE_BYTES) {
+        throw new BrightDataError(
+          "BRIGHT_DATA_RESPONSE_TOO_LARGE",
+          "Bright Data returned a response larger than the safety limit.",
+          false,
+        );
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(body);
+}
+
 async function responsePayload(response: Response) {
-  const text = await response.text();
+  const text = await boundedResponseText(response);
   try {
     return JSON.parse(text) as unknown;
   } catch {

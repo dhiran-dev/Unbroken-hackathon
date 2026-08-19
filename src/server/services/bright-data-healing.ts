@@ -16,15 +16,47 @@ export class HealingIntegrationError extends Error {
   }
 }
 
+async function readBoundedText(
+  stream: ReadableStream<Uint8Array>,
+  maxBytes: number,
+) {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        throw new HealingIntegrationError(
+          "BRIGHT_DATA_HEAL_OUTPUT_TOO_LARGE",
+          "Bright Data healing returned more evidence than the safety limit allows.",
+        );
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(body);
+}
+
 async function runBrightDataCli(args: string[]) {
   const env = getServerEnv();
-  const cliEntry = path.resolve(
-    "node_modules/@brightdata/cli/dist/index.js",
-  );
+  const cliEntry = path.resolve("node_modules/@brightdata/cli/dist/index.js");
   const subprocess = Bun.spawn([process.execPath, cliEntry, ...args], {
     cwd: process.cwd(),
     env: {
-      ...process.env,
+      PATH: process.env.PATH ?? "/usr/local/bin:/usr/bin:/bin",
+      HOME: "/tmp",
+      TMPDIR: "/tmp",
       BRIGHTDATA_API_KEY: env.BRIGHTDATA_API_TOKEN,
       NO_COLOR: "1",
     },
@@ -37,24 +69,31 @@ async function runBrightDataCli(args: string[]) {
     timedOut = true;
     subprocess.kill();
   }, CLI_TIMEOUT_MS);
-
-  const [exitCode, stdout, stderr] = await Promise.all([
+  const output = Promise.all([
     subprocess.exited,
-    new Response(subprocess.stdout).text(),
-    new Response(subprocess.stderr).text(),
+    readBoundedText(subprocess.stdout, MAX_OUTPUT_BYTES),
+    readBoundedText(subprocess.stderr, MAX_OUTPUT_BYTES),
   ]);
-  clearTimeout(timeout);
+  let exitCode: number;
+  let stdout: string;
+  try {
+    [exitCode, stdout] = await output;
+  } catch (error) {
+    subprocess.kill();
+    await Promise.allSettled([output, subprocess.exited]);
+    if (error instanceof HealingIntegrationError) throw error;
+    throw new HealingIntegrationError(
+      "BRIGHT_DATA_HEAL_CLI_FAILED",
+      "Bright Data healing could not be read safely. The existing production collector was left unchanged.",
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (timedOut) {
     throw new HealingIntegrationError(
       "BRIGHT_DATA_HEAL_TIMEOUT",
       "Bright Data healing did not finish before the bounded deadline.",
-    );
-  }
-  if (stdout.length > MAX_OUTPUT_BYTES || stderr.length > MAX_OUTPUT_BYTES) {
-    throw new HealingIntegrationError(
-      "BRIGHT_DATA_HEAL_OUTPUT_TOO_LARGE",
-      "Bright Data healing returned more evidence than the safety limit allows.",
     );
   }
   if (exitCode !== 0) {
@@ -89,7 +128,6 @@ async function runBrightDataCli(args: string[]) {
   }
   return parsed.data;
 }
-
 export async function requestBrightDataHealing(prompt: string) {
   const env = getServerEnv();
   return runBrightDataCli([

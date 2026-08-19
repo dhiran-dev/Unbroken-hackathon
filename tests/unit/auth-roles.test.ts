@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canManageAccounts, isUserRole } from "@/server/auth/roles";
+import { canManageAccounts, canManageSecurity, canPerformOperatorAction, isUserRole } from "@/server/auth/roles";
 
 describe("operator roles", () => {
   it("accepts only owner and admin", () => {
@@ -13,5 +13,18 @@ describe("operator roles", () => {
   it("reserves account management for the owner", () => {
     expect(canManageAccounts("owner")).toBe(true);
     expect(canManageAccounts("admin")).toBe(false);
+  });
+
+  it("keeps operator actions available to owners and admins", () => {
+    expect(canPerformOperatorAction("owner", "operate")).toBe(true);
+    expect(canPerformOperatorAction("admin", "operate")).toBe(true);
+  });
+
+  it("reserves accounts and security for the owner", () => {
+    expect(canManageSecurity("owner")).toBe(true);
+    expect(canManageSecurity("admin")).toBe(false);
+    expect(canPerformOperatorAction("owner", "manage_accounts")).toBe(true);
+    expect(canPerformOperatorAction("admin", "manage_accounts")).toBe(false);
+    expect(canPerformOperatorAction("admin", "manage_security")).toBe(false);
   });
 });
