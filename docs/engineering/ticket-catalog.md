@@ -100,7 +100,7 @@ All tickets inherit these rules:
 ### SF-OTP-01 — Build the private pinned SF routing service
 
 - **Owner**: OTP deployment
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete — verified and pushed
 - **Goal and visible outcome**: Build and serve a reproducible OTP 2.9.0 graph from the active GTFS and pinned SF OSM input; verify a candidate from 24th Street to Fisherman’s Wharf.
 - **Non-goals**: Public OTP exposure and UNBROKEN evidence decisions.
 - **Blocked by**: SF-DATA-01.
@@ -112,6 +112,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Retain prior healthy graph/service; disable citywide planner if no valid graph.
 - **Public copy**: Only “Current updates are unavailable” when planning cannot operate.
 - **Security/accessibility**: Private network only; no credentials or internal URLs in errors.
+- **Verification**: The authoritative active-database export matched 3,238 stops, 68 routes, 50,690 trips, 1,901,119 stop times, 6 services, and 45,308 shape points; it produced a deterministic 109,852,353-byte GTFS ZIP with SHA-256 `001ead2000773e7569435a6e14b0906bbef907900388dd81e506df472c34d9ae`, bound to active archive SHA-256 `e3fa3823286462e892aba89f3764e3e5bde8d9aaf9760b89261faf434c27192c`. The real OTP 2.9.0 build produced a 62,091,935-byte graph with SHA-256 `086089d02d2ad6ef3758ed1be19537a49ffd51a35b3a52f79bd080e39c50e582`, 121,795 vertices, 330,433 edges, 3,238 stops, 287 patterns, and 46,657 constrained transfers. The private service reported `UP`; the 24th Street-to-Fisherman’s Wharf probe returned 5/5 transit candidates, while the hard-wheelchair probe correctly returned zero because GTFS accessibility is unknown. Six focused files / 19 tests passed, including the real operator shell seam for failed-probe retention, success-only promotion, runtime restrictions, and stale-current refusal. `BETTER_AUTH_URL=https://unbroken.local NEXT_PUBLIC_APP_URL=https://unbroken.local bun run check` passed lint, types, 141 unit tests, production build, and release scan. `bun run test:e2e` passed 20 desktop/mobile tests with 4 credentialed tests skipped. T3 could not attach to the environment’s private ports; Playwright is the browser evidence and the inaccessible OTP port is consistent with no public exposure.
+- **Completion commit**: `29aca6f`.
 
 ### SF-PLACE-01 — Search every selectable stop and approved place
 
