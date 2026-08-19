@@ -82,7 +82,7 @@ All tickets inherit these rules:
 ### SF-DATA-04 — Publish reviewed accessible-stop guidance
 
 - **Owner**: Transit data
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Deterministically parse v3 underground and surface-rail guidance into reviewed stop evidence.
 - **Non-goals**: Inferring sidewalks, curb ramps, or unlisted entrances.
 - **Blocked by**: SF-DATA-03.
@@ -94,6 +94,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Unknown stays unknown; previous reviewed guidance remains active.
 - **Public copy**: Exact reviewed guidance only; never “wheelchair-safe.”
 - **Security/accessibility**: Sanitize rich text; instructions retain semantic order.
+- **Verification**: The fixed live v3 collector promoted 52 reviewed guides; all public stop IDs remain null, all accessibility states remain unknown, no internal guide IDs or “wheelchair-safe” claim are exposed, `checkedAt=2026-08-19T19:59:40.918Z`, and `sourceUpdatedAt=null` because SFMTA publishes no update time for this page. `bun run transit:verify` passed atomic promotion, unchanged provenance, safe rejection retention, equal-time changed-payload rejection, verified A→B→A restoration, public readback, and stale-baseline rejection in an isolated schema with 104 historical guide rows and 1 safe failure record. `BETTER_AUTH_URL=https://unbroken.local bun run check` passed lint, types, 122 unit tests, production build, and release scan. `bun run test:e2e` passed 20 desktop/mobile browser tests with 4 credentialed mutations skipped. T3 reached the canonical SFMTA page and verified its title; its snapshot channel timed out, so the full Playwright suite is the local browser evidence.
+- **Completion commit**: `3978119`.
 
 ### SF-OTP-01 — Build the private pinned SF routing service
 
