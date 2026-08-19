@@ -407,11 +407,11 @@ export const accessibilityAdvisories = pgTable(
     advisoryId: text("advisory_id").notNull(),
     title: text("title").notNull(),
     description: text("description").notNull(),
-    affectedStopIds: jsonb("affected_stop_ids")
+    affectedStops: jsonb("affected_stop_ids")
       .$type<string[]>()
       .default([])
       .notNull(),
-    affectedRouteIds: jsonb("affected_route_ids")
+    affectedRoutes: jsonb("affected_route_ids")
       .$type<string[]>()
       .default([])
       .notNull(),

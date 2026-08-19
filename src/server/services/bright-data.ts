@@ -22,10 +22,11 @@ export class BrightDataError extends Error {
   }
 }
 
-type BrightDataConfig = Pick<
-  ServerEnv,
-  "BRIGHTDATA_API_TOKEN" | "BRIGHTDATA_COLLECTOR_ID" | "SFMTA_SOURCE_URL"
->;
+type BrightDataConfig = {
+  BRIGHTDATA_API_TOKEN: ServerEnv["BRIGHTDATA_API_TOKEN"];
+  BRIGHTDATA_COLLECTOR_ID: string;
+  SFMTA_SOURCE_URL: string;
+};
 
 function delay(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -66,6 +67,31 @@ async function boundedResponseText(response: Response) {
 
 async function responsePayload(response: Response) {
   const text = await boundedResponseText(response);
+  const contentType = response.headers
+    .get("content-type")
+    ?.split(";", 1)[0]
+    ?.trim()
+    .toLowerCase();
+
+  if (
+    contentType === "application/jsonl" ||
+    contentType === "application/x-ndjson"
+  ) {
+    try {
+      const lines = text
+        .split(/\r?\n/)
+        .filter((line) => line.trim().length > 0);
+      if (lines.length === 0) throw new Error("Empty JSONL response");
+      return lines.map((line) => JSON.parse(line) as unknown);
+    } catch {
+      throw new BrightDataError(
+        "BRIGHT_DATA_NON_JSON_RESPONSE",
+        `Bright Data returned a non-JSON response with HTTP ${response.status}.`,
+        response.status >= 500,
+      );
+    }
+  }
+
   try {
     return JSON.parse(text) as unknown;
   } catch {
@@ -107,7 +133,8 @@ async function requestWithRetry(
       if (attempt === attempts) break;
     }
 
-    const backoff = 1_000 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
+    const backoff =
+      1_000 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
     await delay(backoff);
   }
 
@@ -138,7 +165,9 @@ export async function triggerBrightDataCollection(config: BrightDataConfig) {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     }),
   );
-  const parsed = triggerResponseSchema.safeParse(await responsePayload(response));
+  const parsed = triggerResponseSchema.safeParse(
+    await responsePayload(response),
+  );
   if (!parsed.success) {
     throw new BrightDataError(
       "BRIGHT_DATA_TRIGGER_CONTRACT_INVALID",

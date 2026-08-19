@@ -54,7 +54,7 @@ All tickets inherit these rules:
 - **Owned paths**: Transit advisory adapter, contract, fixtures, source tests.
 - **Shared files not edited**: Integration-owner list.
 - **Migration**: Uses tables created by SF-DATA-01; no migration edit.
-- **Fixtures/tests**: Pagination, detail navigation, malformed dates, missing affected entity, duplicate advisory, stale response, layout drift.
+- **Fixtures/tests**: Pagination, detail navigation, malformed collection time, missing affected entity, duplicate advisory, stale response, layout drift.
 - **Failure/rollback**: Retain previous advisory snapshot; emit no service event; flag unavailable/older.
 - **Public copy**: Short service-change wording plus both timestamps and official link.
 - **Security/accessibility**: Sanitize source text/URLs; warnings use text and icon, not color alone.

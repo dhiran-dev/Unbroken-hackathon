@@ -1,5 +1,7 @@
 import { and, eq, inArray, lte, notInArray, sql as drizzleSql } from "drizzle-orm";
 
+import { getServerEnv } from "@/lib/env";
+
 import { db, sql } from "@/server/db/client";
 import { collectionRuns, jobs } from "@/server/db/schema";
 import {
@@ -8,6 +10,7 @@ import {
   runCollection,
 } from "@/server/services/collection";
 import { expireIncidentArtifacts } from "@/server/services/incident-artifacts";
+import { runConfiguredAccessibilityAdvisoryRefresh } from "@/server/transit/run-accessibility-advisory-refresh";
 import {
   isIncidentJob,
   MUTATING_INCIDENT_JOB_TYPES,
@@ -16,6 +19,7 @@ import {
 } from "./incident-jobs";
 
 const COLLECTION_JOB = "collect_sfmta_elevators";
+const ACCESSIBILITY_ADVISORY_JOB = "refresh_accessibility_advisories";
 const RETENTION_JOB = "expire_raw_payloads";
 export const JOB_LEASE_TIMEOUT_MS = 15 * 60 * 1_000;
 export const JOB_LEASE_RENEWAL_INTERVAL_MS = 30 * 1_000;
@@ -40,6 +44,12 @@ export type ClaimedJob = {
   max_attempts: number;
   locked_by: string;
 };
+
+function accessibilityAdvisoryBucket(now: Date) {
+  const bucket = new Date(now);
+  bucket.setUTCMinutes(0, 0, 0);
+  return bucket;
+}
 
 function collectionBucket(now: Date) {
   const bucket = new Date(now);
@@ -101,6 +111,8 @@ async function recoverAbandonedWork(now: Date) {
 export async function enqueueScheduledJobs(now = new Date()) {
   await recoverAbandonedWork(now);
   const bucket = collectionBucket(now);
+  const advisoryBucket = accessibilityAdvisoryBucket(now);
+  const citywideEnabled = getServerEnv().CITYWIDE_DATA_ENABLED;
   const day = now.toISOString().slice(0, 10);
 
   await db.transaction(async (transaction) => {
@@ -114,6 +126,17 @@ export async function enqueueScheduledJobs(now = new Date()) {
           idempotencyKey: `collect:scheduled:${bucket.toISOString()}`,
           scheduledFor: bucket,
         },
+        ...(citywideEnabled
+          ? [
+              {
+                type: ACCESSIBILITY_ADVISORY_JOB,
+                payload: { bucket: advisoryBucket.toISOString() },
+                idempotencyKey: `advisories:scheduled:${advisoryBucket.toISOString()}`,
+                scheduledFor: advisoryBucket,
+                maxAttempts: 3,
+              },
+            ]
+          : []),
         {
           type: RETENTION_JOB,
           payload: { day },
@@ -283,6 +306,11 @@ export async function processJob(job: ClaimedJob) {
             ? "retry"
             : "scheduled";
       await runCollection(trigger);
+    } else if (job.type === ACCESSIBILITY_ADVISORY_JOB) {
+      const result = await runConfiguredAccessibilityAdvisoryRefresh();
+      if (result.status === "rejected" || result.status === "unavailable") {
+        throw new Error("Accessibility advisory refresh was not accepted.");
+      }
     } else if (job.type === RETENTION_JOB) {
       await Promise.all([expireRawPayloadBodies(), expireIncidentArtifacts()]);
     } else if (isIncidentJob(job.type)) {

@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import * as schema from "@/server/db/schema";
+import type { AccessibilityRefreshAttempt } from "@/server/transit/accessibility-advisories";
 import type { GtfsSnapshotAttempt } from "@/server/transit/gtfs-refresh";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -178,6 +179,40 @@ function attempt(
   };
 }
 
+function advisoryAttempt(
+  basedOnSnapshotId: string | null,
+  checkedAt: Date,
+): AccessibilityRefreshAttempt {
+  const advisories = Array.from({ length: 11 }, (_, index) => ({
+    advisoryId: "advisory-" + String(index + 1).padStart(2, "0"),
+    title: "Accessibility change " + (index + 1),
+    description: "Use the marked boarding area for change " + (index + 1) + ".",
+    affectedStops: index % 2 === 0 ? [] : ["STOP-" + (index + 1)],
+    affectedRoutes: index % 2 === 0 ? [String(index + 1)] : [],
+    startsAt: null,
+    endsAt: null,
+    publicUrl:
+      "https://www.sfmta.com/travel-updates/accessibility-change-" +
+      (index + 1),
+  }));
+  return {
+    status: "validated",
+    basedOnSnapshotId,
+    checkedAt,
+    sourceUpdatedAt: null,
+    sourceUrl:
+      "https://www.sfmta.com/travel-transit-updates?field_transit_type_disrupted_value=Accessibility",
+    payloadHash: "e".repeat(64),
+    structuralFingerprint: "f".repeat(64),
+    advisories,
+    validationReport: {
+      accepted: true,
+      rowCount: advisories.length,
+      structuralFingerprint: "f".repeat(64),
+    },
+  };
+}
+
 try {
   const [publicState] = await connection<
     Array<{ shapeTable: string | null; migrationApplied: boolean }>
@@ -256,6 +291,71 @@ try {
     "The trusted snapshot changed.",
   );
 
+  const { PostgresAccessibilityAdvisoryStore } =
+    await import("@/server/transit/accessibility-advisory-store");
+  const advisoryStore = new PostgresAccessibilityAdvisoryStore(
+    database as never,
+  );
+  const advisoryPromoted = await advisoryStore.applyRefreshAttempt(
+    advisoryAttempt(null, new Date("2026-08-19T12:00:00.000Z")),
+  );
+  ensure(
+    advisoryPromoted.status === "promoted" &&
+      advisoryPromoted.activeSnapshot.advisories.length === 11,
+    "The verified advisory snapshot was not promoted atomically.",
+  );
+  const advisoryRepeated = await advisoryStore.applyRefreshAttempt(
+    advisoryAttempt(
+      advisoryPromoted.activeSnapshot.snapshotId,
+      new Date("2026-08-19T12:30:00.000Z"),
+    ),
+  );
+  ensure(
+    advisoryRepeated.status === "unchanged" &&
+      advisoryRepeated.activeSnapshot.checkedAt.toISOString() ===
+        "2026-08-19T12:30:00.000Z",
+    "The same advisory payload did not refresh checked provenance.",
+  );
+  const advisoryRejected = await advisoryStore.applyRefreshAttempt({
+    status: "rejected",
+    basedOnSnapshotId: advisoryRepeated.activeSnapshot.snapshotId,
+    checkedAt: new Date("2026-08-19T12:40:00.000Z"),
+    sourceUpdatedAt: null,
+    sourceUrl:
+      "https://www.sfmta.com/travel-transit-updates?field_transit_type_disrupted_value=Accessibility",
+    payloadHash: "9".repeat(64),
+    structuralFingerprint: null,
+    validationReport: {
+      accepted: false,
+      rowCount: 10,
+      reasons: [
+        {
+          code: "ROW_COUNT_TOO_LOW",
+          message: "The advisory collection is smaller than the safe baseline.",
+        },
+      ],
+    },
+  });
+  ensure(
+    advisoryRejected.status === "rejected" &&
+      advisoryRejected.activeSnapshot?.advisories.length === 11,
+    "A rejected advisory refresh replaced trusted facts.",
+  );
+  const latestAdvisoryAttempt = await advisoryStore.getLatestAttempt();
+  ensure(
+    latestAdvisoryAttempt?.status === "rejected",
+    "Safe advisory failure evidence was not recorded.",
+  );
+
+  const advisoryStale = await advisoryStore.applyRefreshAttempt(
+    advisoryAttempt(null, new Date("2026-08-19T12:45:00.000Z")),
+  );
+  ensure(
+    advisoryStale.status === "rejected" &&
+      advisoryStale.activeSnapshot?.advisories.length === 11,
+    "A stale advisory baseline replaced trusted facts.",
+  );
+
   const [stored] = await connection<
     Array<{
       active: number;
@@ -265,6 +365,9 @@ try {
       stopTimes: number;
       services: number;
       shapePoints: number;
+      advisorySnapshots: number;
+      advisories: number;
+      advisoryFailures: number;
     }>
   >`
     select
@@ -274,7 +377,10 @@ try {
       (select count(*)::int from transit_trips) as trips,
       (select count(*)::int from transit_stop_times) as "stopTimes",
       (select count(*)::int from transit_services) as services,
-      (select count(*)::int from transit_shapes) as "shapePoints"
+      (select count(*)::int from transit_shapes) as "shapePoints",
+      (select count(*)::int from source_snapshots where kind = 'accessibility_advisories' and status = 'current') as "advisorySnapshots",
+      (select count(*)::int from accessibility_advisories) as advisories,
+      (select count(*)::int from source_snapshots where kind = 'accessibility_advisories' and status in ('rejected', 'unavailable')) as "advisoryFailures"
   `;
   ensure(
     stored?.active === 1 &&
@@ -283,7 +389,10 @@ try {
       stored.trips === 1 &&
       stored.stopTimes === 2 &&
       stored.services === 1 &&
-      stored.shapePoints === 2,
+      stored.shapePoints === 2 &&
+      stored.advisorySnapshots === 1 &&
+      stored.advisories === 11 &&
+      stored.advisoryFailures === 1,
     "Stored snapshot counts failed readback verification.",
   );
 
@@ -294,6 +403,10 @@ try {
       promoted: promoted.status,
       repeated: unchanged.status,
       stale: stale.status,
+      advisoryPromoted: advisoryPromoted.status,
+      advisoryRepeated: advisoryRepeated.status,
+      advisoryRejected: advisoryRejected.status,
+      advisoryStale: advisoryStale.status,
       counts: stored,
     })}\n`,
   );

@@ -24,6 +24,7 @@
     "auth:bootstrap": "bun scripts/bootstrap-accounts.ts",
     "collect:run": "bun scripts/run-collection.ts",
     "transit:refresh": "bun scripts/refresh-gtfs.ts",
+    "advisories:refresh": "bun scripts/refresh-accessibility-advisories.ts",
     "transit:verify": "bun scripts/verify-transit-store.ts",
     "worker": "bun src/worker/index.ts",
     "release:check": "bun scripts/release-check.ts"

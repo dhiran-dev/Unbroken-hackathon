@@ -5,7 +5,7 @@ Every source is untrusted until its current response passes its versioned contra
 | Source | Identity | Cadence | Older after | Verified baseline | Required validation | Public source |
 | --- | --- | ---: | ---: | --- | --- | --- |
 | Elevators | Bright Data `c_msyjsllt1r9ej5tdub` | 5 min | 12 min | 11 stations, 33 equipment records | Exact source, contract, station/equipment identity, timestamp, coverage, statuses, stable structure | SFMTA elevator status |
-| Accessibility advisories | Bright Data `c_mt00zyx63815q2j9g` | 60 min | 90 min | 11 filtered advisories | Exact source, pagination completeness, advisory identity, affected entity, dates, sanitized text | SFMTA accessibility advisories |
+| Accessibility advisories | Bright Data `c_mt00zyx63815q2j9g` | 60 min | 90 min | 11 filtered advisories | Exact source, pagination completeness, advisory identity, affected entity labels, collection time, sanitized text | SFMTA accessibility advisories |
 | Stop relocations | Bright Data `c_mt01m8hghrt0swozl` | 30 min | 60 min | 6 rows | Preserve every row, nullable applicant, duplicate stop IDs when destinations differ, coordinates and dates | SFMTA temporary stop changes |
 | Accessible-stop guidance | Bright Data `c_mt0719p0vuntmudm6` v3 | Daily | 36 hr | Underground guidance plus 41 surface-rail entries | Deterministic section parsing, stop identity, route association, reviewed prose, stable structure | SFMTA accessible stops |
 | Static Muni GTFS | 511 operator `SF` | Daily check | Calendar/validation gate | 3,238 stops; 68 routes; 50,690 trips; 1,901,119 stop times; 45,308 shape points; 10,347,998-byte archive | Required files, hashes, references, service date, row floors/ratios, coordinates, timestamps, fingerprint | 511 transit data |
