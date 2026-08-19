@@ -26,6 +26,7 @@
     "transit:refresh": "bun scripts/refresh-gtfs.ts",
     "advisories:refresh": "bun scripts/refresh-accessibility-advisories.ts",
     "relocations:refresh": "bun scripts/refresh-stop-relocations.ts",
+    "accessibility-guides:refresh": "bun scripts/refresh-stop-accessibility-guides.ts",
     "transit:verify": "bun scripts/verify-transit-store.ts",
     "worker": "bun src/worker/index.ts",
     "release:check": "bun scripts/release-check.ts"

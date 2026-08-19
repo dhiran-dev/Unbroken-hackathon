@@ -11,6 +11,7 @@ import {
 } from "@/server/services/collection";
 import { expireIncidentArtifacts } from "@/server/services/incident-artifacts";
 import { runConfiguredAccessibilityAdvisoryRefresh } from "@/server/transit/run-accessibility-advisory-refresh";
+import { runConfiguredStopAccessibilityGuideRefresh } from "@/server/transit/run-stop-accessibility-guide-refresh";
 import { runConfiguredStopRelocationRefresh } from "@/server/transit/run-stop-relocation-refresh";
 import {
   isIncidentJob,
@@ -21,6 +22,7 @@ import {
 
 const COLLECTION_JOB = "collect_sfmta_elevators";
 const ACCESSIBILITY_ADVISORY_JOB = "refresh_accessibility_advisories";
+const STOP_ACCESSIBILITY_GUIDE_JOB = "refresh_stop_accessibility_guides";
 const STOP_RELOCATION_JOB = "refresh_stop_relocations";
 const RETENTION_JOB = "expire_raw_payloads";
 export const JOB_LEASE_TIMEOUT_MS = 15 * 60 * 1_000;
@@ -124,6 +126,7 @@ export async function enqueueScheduledJobs(now = new Date()) {
   const relocationBucket = stopRelocationBucket(now);
   const citywideEnabled = getServerEnv().CITYWIDE_DATA_ENABLED;
   const day = now.toISOString().slice(0, 10);
+  const accessibilityGuideBucket = new Date(`${day}T08:00:00.000Z`);
 
   await db.transaction(async (transaction) => {
     await transaction.execute(drizzleSql`select pg_advisory_xact_lock(${COLLECTION_ENQUEUE_LOCK_KEY})`);
@@ -150,6 +153,13 @@ export async function enqueueScheduledJobs(now = new Date()) {
                 payload: { bucket: relocationBucket.toISOString() },
                 idempotencyKey: `relocations:scheduled:${relocationBucket.toISOString()}`,
                 scheduledFor: relocationBucket,
+                maxAttempts: 3,
+              },
+              {
+                type: STOP_ACCESSIBILITY_GUIDE_JOB,
+                payload: { bucket: accessibilityGuideBucket.toISOString() },
+                idempotencyKey: `accessibility-guides:scheduled:${accessibilityGuideBucket.toISOString()}`,
+                scheduledFor: accessibilityGuideBucket,
                 maxAttempts: 3,
               },
             ]
@@ -332,6 +342,11 @@ export async function processJob(job: ClaimedJob) {
       const result = await runConfiguredStopRelocationRefresh();
       if (result.status === "rejected" || result.status === "unavailable") {
         throw new Error("Stop relocation refresh was not accepted.");
+      }
+    } else if (job.type === STOP_ACCESSIBILITY_GUIDE_JOB) {
+      const result = await runConfiguredStopAccessibilityGuideRefresh();
+      if (result.status === "rejected" || result.status === "unavailable") {
+        throw new Error("Accessible-stop guidance refresh was not accepted.");
       }
     } else if (job.type === RETENTION_JOB) {
       await Promise.all([expireRawPayloadBodies(), expireIncidentArtifacts()]);

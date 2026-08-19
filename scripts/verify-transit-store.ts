@@ -6,6 +6,7 @@ import postgres from "postgres";
 import * as schema from "@/server/db/schema";
 import type { AccessibilityRefreshAttempt } from "@/server/transit/accessibility-advisories";
 import type { GtfsSnapshotAttempt } from "@/server/transit/gtfs-refresh";
+import type { StopAccessibilityGuideRefreshAttempt } from "@/server/transit/stop-accessibility-guides";
 import type { StopRelocationRefreshAttempt } from "@/server/transit/stop-relocations";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -250,6 +251,46 @@ function relocationAttempt(
       accepted: true,
       rowCount: relocations.length,
       structuralFingerprint: "7".repeat(64),
+    },
+  };
+}
+
+function accessibilityGuideAttempt(
+  variant: "a" | "b",
+  basedOnSnapshotId: string | null,
+  checkedAt: Date,
+): StopAccessibilityGuideRefreshAttempt {
+  const sourceUrl =
+    "https://www.sfmta.com/getting-around/sfmta-accessibility/muni-access-guide/access-muni-metro/muni-metro-accessible-stops" as const;
+  const guides = Array.from({ length: 52 }, (_, index) => ({
+    guideId: `guide-${String(index).padStart(3, "0")}`,
+    stopId: null,
+    stationName:
+      index === 0 && variant === "b"
+        ? "Changed platform"
+        : `Station ${index + 1}`,
+    routeNames: index === 51 ? ["T"] : ["Muni Metro"],
+    guidance:
+      index === 0 && variant === "b"
+        ? "Use the reviewed changed platform guidance."
+        : `Use the reviewed guidance for station ${index + 1}.`,
+    accessibilityState: "unknown" as const,
+    reviewed: true as const,
+    publicUrl: sourceUrl,
+  }));
+  return {
+    status: "validated",
+    basedOnSnapshotId,
+    checkedAt,
+    sourceUpdatedAt: null,
+    sourceUrl,
+    payloadHash: variant.repeat(64),
+    structuralFingerprint: "6".repeat(64),
+    guides,
+    validationReport: {
+      accepted: true,
+      rowCount: guides.length,
+      structuralFingerprint: "6".repeat(64),
     },
   };
 }
@@ -501,6 +542,141 @@ try {
     "A stale relocation baseline replaced trusted facts.",
   );
 
+  const { PostgresStopAccessibilityGuideStore } =
+    await import("@/server/transit/stop-accessibility-guide-store");
+  const { readStopAccessibilityGuides } =
+    await import("@/server/transit/stop-accessibility-guides");
+  const accessibilityGuideStore = new PostgresStopAccessibilityGuideStore(
+    database as never,
+  );
+  const accessibilityGuidePromoted =
+    await accessibilityGuideStore.applyRefreshAttempt(
+      accessibilityGuideAttempt(
+        "a",
+        null,
+        new Date("2026-08-19T14:00:00.000Z"),
+      ),
+    );
+  ensure(
+    accessibilityGuidePromoted.status === "promoted" &&
+      accessibilityGuidePromoted.activeSnapshot.guides.length === 52,
+    "The reviewed accessible-stop snapshot was not promoted atomically.",
+  );
+  const firstAccessibilityGuideSnapshotId =
+    accessibilityGuidePromoted.activeSnapshot.snapshotId;
+  const accessibilityGuideRepeated =
+    await accessibilityGuideStore.applyRefreshAttempt(
+      accessibilityGuideAttempt(
+        "a",
+        firstAccessibilityGuideSnapshotId,
+        new Date("2026-08-19T14:30:00.000Z"),
+      ),
+    );
+  ensure(
+    accessibilityGuideRepeated.status === "unchanged" &&
+      accessibilityGuideRepeated.activeSnapshot.checkedAt.toISOString() ===
+        "2026-08-19T14:30:00.000Z",
+    "The same accessible-stop payload did not refresh checked provenance.",
+  );
+  const accessibilityGuideEqualTimeChanged =
+    await accessibilityGuideStore.applyRefreshAttempt(
+      accessibilityGuideAttempt(
+        "b",
+        firstAccessibilityGuideSnapshotId,
+        new Date("2026-08-19T14:30:00.000Z"),
+      ),
+    );
+  ensure(
+    accessibilityGuideEqualTimeChanged.status === "rejected" &&
+      accessibilityGuideEqualTimeChanged.activeSnapshot?.snapshotId ===
+        firstAccessibilityGuideSnapshotId,
+    "Changed accessible-stop guidance with tied provenance was not rejected.",
+  );
+  const accessibilityGuideRejected =
+    await accessibilityGuideStore.applyRefreshAttempt({
+      status: "rejected",
+      basedOnSnapshotId: firstAccessibilityGuideSnapshotId,
+      checkedAt: new Date("2026-08-19T14:40:00.000Z"),
+      sourceUpdatedAt: null,
+      sourceUrl:
+        "https://www.sfmta.com/getting-around/sfmta-accessibility/muni-access-guide/access-muni-metro/muni-metro-accessible-stops",
+      payloadHash: "5".repeat(64),
+      structuralFingerprint: null,
+      validationReport: {
+        accepted: false,
+        rowCount: 0,
+        reasons: [
+          {
+            code: "LAYOUT_CHANGED",
+            message: "The accessible-stop guidance layout changed.",
+          },
+        ],
+      },
+    });
+  ensure(
+    accessibilityGuideRejected.status === "rejected" &&
+      accessibilityGuideRejected.activeSnapshot?.snapshotId ===
+        firstAccessibilityGuideSnapshotId,
+    "A rejected accessible-stop refresh replaced reviewed guidance.",
+  );
+  const accessibilityGuideChanged =
+    await accessibilityGuideStore.applyRefreshAttempt(
+      accessibilityGuideAttempt(
+        "b",
+        firstAccessibilityGuideSnapshotId,
+        new Date("2026-08-19T14:50:00.000Z"),
+      ),
+    );
+  ensure(
+    accessibilityGuideChanged.status === "promoted",
+    "Changed reviewed accessible-stop guidance was not promoted.",
+  );
+  const accessibilityGuideReturned =
+    await accessibilityGuideStore.applyRefreshAttempt(
+      accessibilityGuideAttempt(
+        "a",
+        accessibilityGuideChanged.activeSnapshot.snapshotId,
+        new Date("2026-08-19T15:00:00.000Z"),
+      ),
+    );
+  ensure(
+    accessibilityGuideReturned.status === "promoted" &&
+      accessibilityGuideReturned.activeSnapshot.snapshotId ===
+        firstAccessibilityGuideSnapshotId,
+    "A verified historical accessible-stop state did not become current again.",
+  );
+  const accessibilityGuideView = await readStopAccessibilityGuides(
+    { at: new Date("2026-08-19T15:01:00.000Z") },
+    { store: accessibilityGuideStore },
+  );
+  ensure(
+    accessibilityGuideView.state === "current" &&
+      accessibilityGuideView.guides.length === 52 &&
+      accessibilityGuideView.guides.every(
+        (guide) =>
+          guide.stopId === null &&
+          guide.accessibilityState === "unknown" &&
+          guide.reviewed,
+      ) &&
+      !JSON.stringify(accessibilityGuideView).includes("guideId") &&
+      !JSON.stringify(accessibilityGuideView).includes("wheelchair-safe"),
+    "The database-backed accessible-stop view exposed unsafe or inferred evidence.",
+  );
+  const accessibilityGuideStale =
+    await accessibilityGuideStore.applyRefreshAttempt(
+      accessibilityGuideAttempt(
+        "b",
+        null,
+        new Date("2026-08-19T15:10:00.000Z"),
+      ),
+    );
+  ensure(
+    accessibilityGuideStale.status === "rejected" &&
+      accessibilityGuideStale.activeSnapshot?.snapshotId ===
+        firstAccessibilityGuideSnapshotId,
+    "A stale accessible-stop baseline replaced reviewed guidance.",
+  );
+
   const [stored] = await connection<
     Array<{
       active: number;
@@ -516,6 +692,9 @@ try {
       relocationSnapshots: number;
       relocations: number;
       relocationFailures: number;
+      accessibilityGuideSnapshots: number;
+      accessibilityGuides: number;
+      accessibilityGuideFailures: number;
     }>
   >`
     select
@@ -531,7 +710,10 @@ try {
       (select count(*)::int from source_snapshots where kind = 'accessibility_advisories' and status in ('rejected', 'unavailable')) as "advisoryFailures",
       (select count(*)::int from source_snapshots where kind = 'stop_relocations' and status = 'current') as "relocationSnapshots",
       (select count(*)::int from stop_relocations) as relocations,
-      (select count(*)::int from source_snapshots where kind = 'stop_relocations' and status in ('rejected', 'unavailable')) as "relocationFailures"
+      (select count(*)::int from source_snapshots where kind = 'stop_relocations' and status in ('rejected', 'unavailable')) as "relocationFailures",
+      (select count(*)::int from source_snapshots where kind = 'stop_accessibility' and status = 'current') as "accessibilityGuideSnapshots",
+      (select count(*)::int from stop_accessibility_guides) as "accessibilityGuides",
+      (select count(*)::int from source_snapshots where kind = 'stop_accessibility' and status in ('rejected', 'unavailable')) as "accessibilityGuideFailures"
   `;
   ensure(
     stored?.active === 1 &&
@@ -546,7 +728,10 @@ try {
       stored.advisoryFailures === 1 &&
       stored.relocationSnapshots === 2 &&
       stored.relocations === 12 &&
-      stored.relocationFailures === 1,
+      stored.relocationFailures === 1 &&
+      stored.accessibilityGuideSnapshots === 2 &&
+      stored.accessibilityGuides === 104 &&
+      stored.accessibilityGuideFailures === 1,
     "Stored snapshot counts failed readback verification.",
   );
 
@@ -567,6 +752,14 @@ try {
       relocationChanged: relocationChanged.status,
       relocationReturned: relocationReturned.status,
       relocationStale: relocationStale.status,
+      accessibilityGuidePromoted: accessibilityGuidePromoted.status,
+      accessibilityGuideRepeated: accessibilityGuideRepeated.status,
+      accessibilityGuideEqualTimeChanged:
+        accessibilityGuideEqualTimeChanged.status,
+      accessibilityGuideRejected: accessibilityGuideRejected.status,
+      accessibilityGuideChanged: accessibilityGuideChanged.status,
+      accessibilityGuideReturned: accessibilityGuideReturned.status,
+      accessibilityGuideStale: accessibilityGuideStale.status,
       counts: stored,
     })}\n`,
   );
