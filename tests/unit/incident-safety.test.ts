@@ -6,7 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   APPROVAL_CONFIRMATION,
+  REJECTION_CONFIRMATION,
   fireworksReviewSchema,
+  hasExactIncidentConfirmation,
+  incidentActionIdempotencyKey,
+  incidentActionRequestHash,
   incidentActionBodySchema,
 } from "@/domain/incidents/contract";
 import {
@@ -18,6 +22,7 @@ import {
   expireIncidentArtifacts,
   writeIncidentArtifact,
 } from "@/server/services/incident-artifacts";
+import { hasStableProductionCollectorId } from "@/server/services/bright-data-healing";
 import { requestFireworksReview } from "@/server/services/fireworks-review";
 
 const temporaryRoots: string[] = [];
@@ -48,11 +53,61 @@ describe("incident state safety", () => {
         confirmation: APPROVAL_CONFIRMATION,
       }).confirmation,
     ).toBe(APPROVAL_CONFIRMATION);
+    expect(hasExactIncidentConfirmation("approve", APPROVAL_CONFIRMATION)).toBe(true);
+    expect(hasExactIncidentConfirmation("approve", "APPROVE")).toBe(false);
+  });
+
+  it("rejects invalid previews without opening approval", () => {
+    expect(actionAllowed("preview_rejected", "approve")).toBe(false);
+    expect(actionAllowed("preview_rejected", "reject")).toBe(true);
+    expect(canTransition("preview_received", "preview_rejected")).toBe(true);
+    expect(canTransition("preview_rejected", "approved")).toBe(false);
+  });
+
+  it("requires the exact rejection phrase too", () => {
+    expect(REJECTION_CONFIRMATION).toBe("REJECT HEALED COLLECTOR");
+    expect(hasExactIncidentConfirmation("reject", REJECTION_CONFIRMATION)).toBe(true);
+    expect(hasExactIncidentConfirmation("reject", "REJECT")).toBe(false);
+  });
+
+  it("requires a fresh live verification after approval", () => {
+    expect(actionAllowed("approved", "verify")).toBe(true);
+    expect(canTransition("approved", "verified")).toBe(true);
+    expect(canTransition("approved", "verification_failed")).toBe(true);
   });
 
   it("allows a successful retry after verification failed", () => {
     expect(actionAllowed("verification_failed", "verify")).toBe(true);
     expect(canTransition("verification_failed", "verified")).toBe(true);
+  });
+});
+
+describe("healing boundary invariants", () => {
+  it("accepts only the exact production collector identity", () => {
+    expect(hasStableProductionCollectorId("c_msyjsllt1r9ej5tdub")).toBe(true);
+    expect(hasStableProductionCollectorId("c_other_collector")).toBe(false);
+    expect(hasStableProductionCollectorId("c_msyjsllt1r9ej5tdub", "c_other_collector")).toBe(false);
+  });
+
+  it("scopes idempotency to an incident and hashes the complete request", () => {
+    const incidentId = "11111111-1111-4111-8111-111111111111";
+    const key = incidentActionIdempotencyKey(incidentId, "request-1234567890");
+    expect(key).toBe("incident:" + incidentId + ":request-1234567890");
+    const base = incidentActionRequestHash({
+      incidentId,
+      action: "approve",
+      confirmation: APPROVAL_CONFIRMATION,
+    });
+    expect(incidentActionRequestHash({
+      incidentId,
+      action: "approve",
+      confirmation: APPROVAL_CONFIRMATION,
+    })).toBe(base);
+    expect(incidentActionRequestHash({
+      incidentId,
+      action: "reject",
+      confirmation: REJECTION_CONFIRMATION,
+    })).not.toBe(base);
   });
 });
 
@@ -148,6 +203,8 @@ describe("Fireworks advisory boundary", () => {
       type: "json_schema",
       json_schema: { strict: true },
     });
+    expect(requestBody.messages[0].content).toContain("Never approve deployment");
+    expect(requestBody.messages[1].content).toContain("human must make the final decision");
     expect(result.review.recommendation).toBe("human_review");
   });
 });

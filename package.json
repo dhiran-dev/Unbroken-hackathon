@@ -16,14 +16,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "check": "bun run lint && bun run typecheck && bun run test && bun run build",
+    "check": "bun run lint && bun run typecheck && bun run test && bun run build && bun run release:check",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
     "db:studio": "drizzle-kit studio",
     "auth:bootstrap": "bun scripts/bootstrap-accounts.ts",
     "collect:run": "bun scripts/run-collection.ts",
-    "worker": "bun src/worker/index.ts"
+    "worker": "bun src/worker/index.ts",
+    "release:check": "bun scripts/release-check.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
@@ -54,6 +55,6 @@
     "eslint-config-next": "16.3.1",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "vitest": "4.1.11"
   }
 }

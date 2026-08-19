@@ -19,6 +19,7 @@ test("public rider surfaces render truthfully", async ({ page, request }) => {
       name: "A step-free trip should stay step-free.",
     }),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
   const origin = page.getByLabel("Starting station", { exact: true });
   const destination = page.getByLabel("Destination station", { exact: true });
   await expect(origin).toBeVisible();
@@ -39,6 +40,11 @@ test("public rider surfaces render truthfully", async ({ page, request }) => {
     ).toBeVisible();
   }
 
+  if (!accessibilityResponse.ok()) {
+    await expect(page.getByText("Current elevator information is unavailable.", { exact: true })).toBeVisible();
+  } else if (accessibilityBody.trust?.state === "older") {
+    await expect(page.getByText("Route planning is paused until a fresh update arrives.", { exact: true })).toBeVisible();
+  }
   await page
     .getByRole("link", { name: "Elevator status", exact: true })
     .click();
@@ -86,6 +92,27 @@ test("public rider surfaces render truthfully", async ({ page, request }) => {
   expect(pageWidth.content).toBeLessThanOrEqual(pageWidth.viewport);
 });
 
+test("the public planner supports keyboard-only dropdown use", async ({ page }) => {
+  await page.goto("/");
+  const origin = page.getByLabel("Starting station", { exact: true });
+  const destination = page.getByLabel("Destination station", { exact: true });
+
+  await origin.focus();
+  await origin.press("p");
+  await expect(origin).toHaveValue("powell");
+  await expect(destination.locator('option[value="powell"]')).toBeDisabled();
+
+  await destination.focus();
+  await destination.press("f");
+  await expect(destination).toHaveValue("forest-hill");
+
+  const swap = page.getByRole("button", { name: "Swap starting station and destination" });
+  await swap.focus();
+  await swap.press("Enter");
+  await expect(origin).toHaveValue("forest-hill");
+  await expect(destination).toHaveValue("powell");
+  await expect(page.getByRole("button", { name: "Show my step-free plan" })).toBeVisible();
+});
 test("operator routes require authentication", async ({ page }) => {
   await page.goto("/admin");
 
@@ -167,6 +194,13 @@ test("incident actions reject anonymous callers", async ({ request }) => {
 test("liveness reports the web process", async ({ request }) => {
   const response = await request.get("/api/health/live");
   expect(response.ok()).toBe(true);
+  expect(response.headers()).toMatchObject({
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "camera=(), geolocation=(), microphone=()",
+    "x-frame-options": "DENY",
+  });
   await expect(response.json()).resolves.toMatchObject({
     status: "ok",
     service: "unbroken-web",

@@ -1,10 +1,21 @@
 import path from "node:path";
 
 import { brightDataHealEnvelopeSchema } from "@/domain/incidents/contract";
-import { getServerEnv } from "@/lib/env";
+import { getServerEnv, PRODUCTION_COLLECTOR_ID } from "@/lib/env";
 
 const CLI_TIMEOUT_MS = 11 * 60 * 1_000;
 const MAX_OUTPUT_BYTES = 5 * 1024 * 1024;
+
+export function hasStableProductionCollectorId(
+  value: unknown,
+  configuredCollectorId = PRODUCTION_COLLECTOR_ID,
+) {
+  return (
+    typeof value === "string" &&
+    configuredCollectorId === PRODUCTION_COLLECTOR_ID &&
+    value === PRODUCTION_COLLECTOR_ID
+  );
+}
 
 export class HealingIntegrationError extends Error {
   constructor(
@@ -120,7 +131,7 @@ async function runBrightDataCli(args: string[]) {
       "Bright Data healing returned an unexpected envelope.",
     );
   }
-  if (parsed.data.collector_id !== env.BRIGHTDATA_COLLECTOR_ID) {
+  if (!hasStableProductionCollectorId(parsed.data.collector_id, env.BRIGHTDATA_COLLECTOR_ID)) {
     throw new HealingIntegrationError(
       "BRIGHT_DATA_COLLECTOR_ID_CHANGED",
       "Bright Data returned a different collector identifier.",

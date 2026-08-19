@@ -25,6 +25,7 @@ type IncidentJobPayload = {
   incidentId: string;
   actorUserId: string;
   prompt?: string;
+  confirmation?: string;
 };
 
 function isIncidentJobPayload(
@@ -33,7 +34,8 @@ function isIncidentJobPayload(
   return (
     typeof value.incidentId === "string" &&
     typeof value.actorUserId === "string" &&
-    (value.prompt === undefined || typeof value.prompt === "string")
+    (value.prompt === undefined || typeof value.prompt === "string") &&
+    (value.confirmation === undefined || typeof value.confirmation === "string")
   );
 }
 
@@ -108,6 +110,7 @@ export async function enqueueIncidentJob(input: {
   incidentId: string;
   actorUserId: string;
   prompt?: string;
+  confirmation?: string;
   idempotencyKey: string;
 }) {
   const maxAttempts = ["heal", "approve", "reject"].includes(input.action)
@@ -121,6 +124,7 @@ export async function enqueueIncidentJob(input: {
         incidentId: input.incidentId,
         actorUserId: input.actorUserId,
         ...(input.prompt ? { prompt: input.prompt } : {}),
+        ...(input.confirmation ? { confirmation: input.confirmation } : {}),
       },
       idempotencyKey: `incident:${input.action}:${input.idempotencyKey}`,
       scheduledFor: new Date(),
@@ -164,14 +168,20 @@ export async function processIncidentJob(job: {
   } else if (action === "review") {
     await reviewIncident(input);
   } else if (action === "approve") {
-    await approveIncident(input);
+    if (job.payload.confirmation === undefined) {
+      throw new Error("Explicit approval confirmation is required.");
+    }
+    await approveIncident({ ...input, confirmation: job.payload.confirmation });
     await enqueueIncidentJob({
       action: "verify",
       ...input,
       idempotencyKey: `verify-after-approval:${job.id}`,
     });
   } else if (action === "reject") {
-    await rejectIncident(input);
+    if (job.payload.confirmation === undefined) {
+      throw new Error("Explicit rejection confirmation is required.");
+    }
+    await rejectIncident({ ...input, confirmation: job.payload.confirmation });
   } else if (action === "verify") {
     await verifyIncident(input);
   } else {

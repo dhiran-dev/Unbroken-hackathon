@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { sha256Json } from "@/domain/collection/identity";
 import {
   APPROVAL_CONFIRMATION,
+  hasExactIncidentConfirmation,
+  incidentActionIdempotencyKey,
+  incidentActionRequestHash,
   incidentActionBodySchema,
   incidentActionSchema,
   REJECTION_CONFIRMATION,
@@ -79,7 +82,7 @@ export async function POST(
   }
   if (
     action.data === "approve" &&
-    parsedBody.data.confirmation !== APPROVAL_CONFIRMATION
+    !hasExactIncidentConfirmation(action.data, parsedBody.data.confirmation)
   ) {
     return NextResponse.json(
       { error: `Type ${APPROVAL_CONFIRMATION} to approve.` },
@@ -88,7 +91,7 @@ export async function POST(
   }
   if (
     action.data === "reject" &&
-    parsedBody.data.confirmation !== REJECTION_CONFIRMATION
+    !hasExactIncidentConfirmation(action.data, parsedBody.data.confirmation)
   ) {
     return NextResponse.json(
       { error: `Type ${REJECTION_CONFIRMATION} to reject.` },
@@ -96,7 +99,74 @@ export async function POST(
     );
   }
 
+  const requestHash = incidentActionRequestHash({
+    incidentId: incidentId.data,
+    action: action.data,
+    prompt: parsedBody.data.prompt ?? null,
+    confirmation: parsedBody.data.confirmation ?? null,
+  });
+  const auditIdempotencyKey = incidentActionIdempotencyKey(
+    incidentId.data,
+    idempotency.data,
+  );
+  let reservationId: string | undefined;
+
   try {
+    const [reservation] = await db
+      .insert(operatorActions)
+      .values({
+        actorUserId: session.user.id,
+        action: `incident.${action.data}`,
+        targetType: "incident",
+        targetId: incidentId.data,
+        idempotencyKey: auditIdempotencyKey,
+        requestHash,
+        outcome: "pending",
+        metadata: {
+          incidentId: incidentId.data,
+          humanInitiated: true,
+          pending: true,
+        },
+      })
+      .onConflictDoNothing({ target: operatorActions.idempotencyKey })
+      .returning({ id: operatorActions.id });
+
+    if (!reservation) {
+      const [existingAction] = await db
+        .select({
+          requestHash: operatorActions.requestHash,
+          targetId: operatorActions.targetId,
+          outcome: operatorActions.outcome,
+        })
+        .from(operatorActions)
+        .where(eq(operatorActions.idempotencyKey, auditIdempotencyKey))
+        .limit(1);
+      if (!existingAction) {
+        throw new Error("Could not resolve the incident Idempotency-Key.");
+      }
+      if (existingAction.requestHash !== requestHash) {
+        return NextResponse.json(
+          { error: "The Idempotency-Key was already used for a different incident action." },
+          { status: 409 },
+        );
+      }
+      if (existingAction.outcome === "pending") {
+        return NextResponse.json(
+          { error: "An incident action with this Idempotency-Key is already in progress." },
+          { status: 409 },
+        );
+      }
+      return NextResponse.json(
+        {
+          replayed: true,
+          outcome: existingAction.outcome,
+          targetId: existingAction.targetId,
+        },
+        { status: existingAction.outcome === "queued" ? 202 : existingAction.outcome === "completed" ? 200 : 409 },
+      );
+    }
+    reservationId = reservation.id;
+
     let targetId = incidentId.data;
     let outcome = "completed";
     let responseStatus = 200;
@@ -115,6 +185,7 @@ export async function POST(
         incidentId: incidentId.data,
         actorUserId: session.user.id,
         prompt: parsedBody.data.prompt,
+        confirmation: parsedBody.data.confirmation,
         idempotencyKey: idempotency.data,
       });
       targetId = job.id;
@@ -124,29 +195,35 @@ export async function POST(
     }
 
     await db
-      .insert(operatorActions)
-      .values({
-        actorUserId: session.user.id,
-        action: `incident.${action.data}`,
+      .update(operatorActions)
+      .set({
         targetType: action.data === "acknowledge" ? "incident" : "job",
         targetId,
-        idempotencyKey: `incident.${action.data}:${idempotency.data}`,
-        requestHash: sha256Json({
-          incidentId: incidentId.data,
-          action: action.data,
-          prompt: parsedBody.data.prompt ?? null,
-          confirmed: Boolean(parsedBody.data.confirmation),
-        }),
         outcome,
         metadata: {
           incidentId: incidentId.data,
           humanInitiated: true,
         },
       })
-      .onConflictDoNothing({ target: operatorActions.idempotencyKey });
+      .where(eq(operatorActions.id, reservation.id));
 
     return NextResponse.json(responseBody, { status: responseStatus });
+
   } catch (error) {
+    if (reservationId) {
+      await db
+        .update(operatorActions)
+        .set({
+          outcome: "failed",
+          metadata: {
+            incidentId: incidentId.data,
+            humanInitiated: true,
+            error:
+              error instanceof Error ? error.message.slice(0, 300) : "unknown",
+          },
+        })
+        .where(eq(operatorActions.id, reservationId));
+    }
     if (error instanceof IncidentNotFoundError) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }

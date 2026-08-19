@@ -126,7 +126,7 @@ export default async function IncidentsPage({ searchParams }: IncidentsPageProps
               <table className="w-full min-w-[900px] text-left text-sm">
                 <caption className="sr-only">Incident history</caption>
                 <thead className="border-b bg-muted/35 text-xs text-muted-foreground">
-                  <tr><th className="px-5 py-3 font-medium sm:px-6">Detected</th><th className="px-4 py-3 font-medium">Incident</th><th className="px-4 py-3 font-medium">State</th><th className="px-4 py-3 font-medium">Reason</th><th className="px-4 py-3 font-medium">Resolution</th><th className="px-5 py-3 text-right font-medium sm:px-6">Evidence</th></tr>
+                  <tr><th scope="col" className="px-5 py-3 font-medium sm:px-6">Detected</th><th scope="col" className="px-4 py-3 font-medium">Incident</th><th scope="col" className="px-4 py-3 font-medium">State</th><th scope="col" className="px-4 py-3 font-medium">Reason</th><th scope="col" className="px-4 py-3 font-medium">Resolution</th><th scope="col" className="px-5 py-3 text-right font-medium sm:px-6">Evidence</th></tr>
                 </thead>
                 <tbody className="divide-y">
                   {result.rows.map((incident) => (

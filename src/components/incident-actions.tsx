@@ -68,7 +68,8 @@ export function IncidentActions({
     "rejected",
     "verification_failed",
   ].includes(state);
-  const canDecide = ["preview_rejected", "awaiting_review", "awaiting_approval"].includes(state);
+  const canApprove = ["awaiting_review", "awaiting_approval"].includes(state);
+  const canReject = ["preview_rejected", "awaiting_review", "awaiting_approval"].includes(state);
 
   return (
     <div className="space-y-5">
@@ -114,7 +115,7 @@ export function IncidentActions({
         </Button>
       )}
 
-      {canDecide && (
+      {(canApprove || canReject) && (
         <div className="space-y-3 rounded-xl border bg-muted/25 p-4">
           <div>
             <p className="text-sm font-medium">Explicit human decision</p>
@@ -133,16 +134,18 @@ export function IncidentActions({
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              disabled={
-                pending !== null || confirmation !== APPROVAL_CONFIRMATION
-              }
-              onClick={() =>
-                submit("approve", { confirmation: APPROVAL_CONFIRMATION })
-              }
-            >
-              Approve and save
-            </Button>
+            {canApprove && (
+              <Button
+                disabled={
+                  pending !== null || confirmation !== APPROVAL_CONFIRMATION
+                }
+                onClick={() =>
+                  submit("approve", { confirmation: APPROVAL_CONFIRMATION })
+                }
+              >
+                Approve and save
+              </Button>
+            )}
             <Button
               disabled={
                 pending !== null || confirmation !== REJECTION_CONFIRMATION

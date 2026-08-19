@@ -1,6 +1,10 @@
 import { desc, eq } from "drizzle-orm";
 
 import { sha256Json } from "@/domain/collection/identity";
+import {
+  APPROVAL_CONFIRMATION,
+  REJECTION_CONFIRMATION,
+} from "@/domain/incidents/contract";
 import { validateCollectorDataset } from "@/domain/collection/validation";
 import { getServerEnv } from "@/lib/env";
 import { db } from "@/server/db/client";
@@ -15,6 +19,7 @@ import {
 import { normalizeCollectorPayload } from "./bright-data";
 import {
   HealingIntegrationError,
+  hasStableProductionCollectorId,
   requestBrightDataHealing,
   resolveBrightDataHealing,
 } from "./bright-data-healing";
@@ -199,6 +204,7 @@ export async function healIncident(input: {
     actorUserId: input.actorUserId,
     details: {
       collectorId: envelope.collector_id,
+      collectorIdStable: hasStableProductionCollectorId(envelope.collector_id, getServerEnv().BRIGHTDATA_COLLECTOR_ID),
       diffSummary: envelope.diff_summary ?? null,
       artifact: previewArtifact,
       productionCollectorChanged: false,
@@ -220,13 +226,35 @@ export async function healIncident(input: {
   const newIdentities = [...previewKeys]
     .filter((key) => !baseline.sourceKeys.has(key))
     .sort();
+  const collectorIdStable =
+    hasStableProductionCollectorId(envelope.collector_id, getServerEnv().BRIGHTDATA_COLLECTOR_ID);
+  const structuralFingerprintStable =
+    result.report.structuralFingerprint !== null &&
+    result.report.structuralFingerprint === baseline.snapshot.structuralFingerprint;
+  const deterministicAccepted =
+    result.accepted && collectorIdStable && structuralFingerprintStable;
+  const contractReport = collectorIdStable
+    ? result.report
+    : {
+        ...result.report,
+        valid: false,
+        checks: [
+          ...result.report.checks,
+          {
+            id: "collector_id",
+            passed: false,
+            details: "The healing response did not identify the configured production collector.",
+          },
+        ],
+        reasonCodes: [...new Set([...result.report.reasonCodes, "COLLECTOR_ID_CHANGED"])],
+      };
   const deterministicEvidence = {
-    accepted: result.accepted,
-    classification: result.classification,
-    contractReport: result.report,
+    accepted: deterministicAccepted,
+    classification: collectorIdStable ? result.classification : "ambiguous_contract_failure",
+    contractReport,
     identityDiff: { missingIdentities, newIdentities },
-    collectorIdStable:
-      envelope.collector_id === getServerEnv().BRIGHTDATA_COLLECTOR_ID,
+    collectorIdStable,
+    structuralFingerprintStable,
     productionCollectorChanged: false,
   };
   const deterministicArtifact = await writeIncidentArtifact(
@@ -235,7 +263,7 @@ export async function healIncident(input: {
     deterministicEvidence,
   );
 
-  if (!result.accepted) {
+  if (!deterministicAccepted) {
     await transitionIncident({
       incidentId: incident.id,
       toState: "preview_rejected",
@@ -281,7 +309,7 @@ export async function healIncident(input: {
         },
       });
     }
-    return { accepted: false, report: result.report };
+    return { accepted: false, report: contractReport };
   }
 
   await transitionIncident({
@@ -316,7 +344,12 @@ export async function reviewIncident(input: {
     incident.id,
     "healing.preview_validated",
   );
-  if (!deterministic) {
+  if (
+    !deterministic ||
+    deterministic.details.accepted !== true ||
+    deterministic.details.collectorIdStable !== true ||
+    deterministic.details.structuralFingerprintStable !== true
+  ) {
     throw new Error("A valid deterministic preview is required before LLM review.");
   }
 
@@ -447,18 +480,34 @@ export async function reviewIncident(input: {
 export async function approveIncident(input: {
   incidentId: string;
   actorUserId: string;
+  confirmation: string;
 }) {
+  if (input.confirmation !== APPROVAL_CONFIRMATION) {
+    throw new Error("Type " + APPROVAL_CONFIRMATION + " to approve.");
+  }
   const incident = await requireIncidentAction(input.incidentId, "approve");
   const deterministic = await latestIncidentEvidence(
     incident.id,
     "healing.preview_validated",
   );
-  if (!deterministic || deterministic.details.accepted !== true) {
-    throw new Error("Human approval requires a valid deterministic preview.");
+  if (
+    !deterministic ||
+    deterministic.details.accepted !== true ||
+    deterministic.details.collectorIdStable !== true ||
+    deterministic.details.structuralFingerprintStable !== true ||
+    deterministic.details.productionCollectorChanged === true
+  ) {
+    throw new Error("Human approval requires a valid deterministic preview from the configured collector.");
   }
 
   try {
   const envelope = await resolveBrightDataHealing("approve");
+  if (!hasStableProductionCollectorId(envelope.collector_id, getServerEnv().BRIGHTDATA_COLLECTOR_ID)) {
+    throw new HealingIntegrationError(
+      "BRIGHT_DATA_COLLECTOR_ID_CHANGED",
+      "Bright Data approval returned a different collector identifier.",
+    );
+  }
   if (envelope.status !== "done") {
     throw new HealingIntegrationError(
       "BRIGHT_DATA_APPROVAL_NOT_APPLIED",
@@ -502,7 +551,11 @@ export async function approveIncident(input: {
 export async function rejectIncident(input: {
   incidentId: string;
   actorUserId: string;
+  confirmation: string;
 }) {
+  if (input.confirmation !== REJECTION_CONFIRMATION) {
+    throw new Error("Type " + REJECTION_CONFIRMATION + " to reject.");
+  }
   const incident = await requireIncidentAction(input.incidentId, "reject");
   const alreadyRejected = await latestIncidentEvidence(
     incident.id,

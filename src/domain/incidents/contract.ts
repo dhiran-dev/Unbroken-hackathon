@@ -1,3 +1,4 @@
+import { sha256Json } from "@/domain/collection/identity";
 import { z } from "zod";
 
 export const incidentActionSchema = z.enum([
@@ -93,3 +94,30 @@ export const fireworksReviewJsonSchema = {
 
 export const APPROVAL_CONFIRMATION = "APPROVE HEALED COLLECTOR";
 export const REJECTION_CONFIRMATION = "REJECT HEALED COLLECTOR";
+
+export function hasExactIncidentConfirmation(
+  action: IncidentAction,
+  confirmation: string | undefined,
+) {
+  if (action === "approve") return confirmation === APPROVAL_CONFIRMATION;
+  if (action === "reject") return confirmation === REJECTION_CONFIRMATION;
+  return true;
+}
+
+export function incidentActionIdempotencyKey(incidentId: string, key: string) {
+  return "incident:" + incidentId + ":" + key;
+}
+
+export function incidentActionRequestHash(input: {
+  incidentId: string;
+  action: IncidentAction;
+  prompt?: string | null;
+  confirmation?: string | null;
+}) {
+  return sha256Json({
+    incidentId: input.incidentId,
+    action: input.action,
+    prompt: input.prompt ?? null,
+    confirmation: input.confirmation ?? null,
+  });
+}
