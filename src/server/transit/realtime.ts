@@ -27,6 +27,7 @@ export type RawTripStopUpdate = {
   departureDelaySeconds?: unknown;
   arrivalTime?: unknown;
   departureTime?: unknown;
+  scheduleRelationship?: unknown;
 };
 
 export type RawRealtimeEntity =
@@ -168,6 +169,12 @@ const safeRelationships = new Set([
   "REPLACEMENT",
   "DUPLICATED",
   "NEW",
+]);
+const safeStopRelationships = new Set([
+  "SCHEDULED",
+  "SKIPPED",
+  "NO_DATA",
+  "UNSCHEDULED",
 ]);
 
 function safeInteger(value: unknown): number | null {
@@ -344,6 +351,15 @@ function validateTrips(
       const departureDelay = safeOptionalInteger(raw.departureDelaySeconds);
       const arrivalTime = safeOptionalInteger(raw.arrivalTime);
       const departureTime = safeOptionalInteger(raw.departureTime);
+      const stopRelationship =
+        raw.scheduleRelationship === undefined ||
+        raw.scheduleRelationship === null
+          ? "SCHEDULED"
+          : typeof raw.scheduleRelationship === "string"
+            ? raw.scheduleRelationship
+            : "";
+      if (!safeStopRelationships.has(stopRelationship))
+        reasons.push("INVALID_ENTITY");
       if (
         !stopId ||
         sequence === "invalid" ||
@@ -381,7 +397,12 @@ function validateTrips(
         entityId,
         tripId,
         routeId,
-        scheduleRelationship: relationship,
+        scheduleRelationship:
+          relationship === "CANCELED" || relationship === "DELETED"
+            ? relationship
+            : stopRelationship === "SKIPPED"
+              ? "SKIPPED"
+              : relationship,
         stopId,
         stopSequence: sequence,
         arrivalDelaySeconds:

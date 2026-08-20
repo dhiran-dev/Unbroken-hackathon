@@ -77,6 +77,10 @@ function decodeProtobuf(body: Uint8Array): RawRealtimeFeed {
           (update) => ({
             stopId: update.stopId,
             stopSequence: optionalInteger(update.stopSequence),
+            scheduleRelationship: enumName(
+              realtime.TripUpdate.StopTimeUpdate.ScheduleRelationship,
+              update.scheduleRelationship,
+            ),
             arrivalDelaySeconds: optionalInteger(update.arrival?.delay),
             departureDelaySeconds: optionalInteger(update.departure?.delay),
             arrivalTime: optionalInteger(update.arrival?.time),
