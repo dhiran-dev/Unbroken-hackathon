@@ -1,12 +1,16 @@
 # UNBROKEN agent notes
 
-## Bright Data collector
+## Government source compliance
 
-- Production collector ID: `c_msyjsllt1r9ej5tdub` (Bright Data-assigned stable identifier; do not rename)
-- Target source: `https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod`
-- Keep the Collector ID stable across `run`, `heal`, `approve`, and verification.
-- Never use `--auto-approve` in the judged workflow.
-- Save CLI envelopes under an incident artifact directory when the live integration is enabled.
+- Use documented official APIs or bulk downloads directly within their terms. Limit Bright Data to project-owned or explicitly consented synthetic demos.
+- Keep government-targeting Bright Data jobs disabled. Treat existing collector records and snapshots as quarantined audit history: they cannot be published, routed, healed, approved, or verified.
+
+## Legacy Bright Data collector identity
+
+- Retain collector ID `c_msyjsllt1r9ej5tdub` only as historical audit identity; never invoke or rename it.
+- Its SFMTA source (`https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod`) is a prohibited Bright Data target absent written Bright Data compliance and source-owner approval.
+- Keep `--auto-approve` disabled for demo runs.
+- Write demo CLI envelopes only under ignored incident artifacts.
 
 ## Safety contract
 
