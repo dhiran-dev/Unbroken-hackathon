@@ -1,28 +1,51 @@
 import { NextResponse } from "next/server";
 
 import {
-  getPublicGoogleSignupAvailability,
+  projectPublicSignupAvailability,
+  type PublicSignupAdmissionState,
+} from "@/lib/public-signup-availability";
+import {
   isGoogleProviderConfigured,
+  isPublicGoogleSignupEnabled,
 } from "@/server/auth/policy";
+import { readPublicSignupAdmissionState } from "@/server/services/public-signup-availability";
 
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  const availability = getPublicGoogleSignupAvailability({
-    flagValue: process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED,
-    providerConfigured: isGoogleProviderConfigured({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
+export type PublicSignupAdmissionReader =
+  () => Promise<PublicSignupAdmissionState>;
+
+export async function getPublicSignupAvailabilityResponse(
+  readAdmissionState: PublicSignupAdmissionReader = readPublicSignupAdmissionState,
+) {
+  const providerConfigured = isGoogleProviderConfigured({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  });
+  const publicSignupEnabled = isPublicGoogleSignupEnabled(
+    process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED,
+  );
+
+  let admissionState: PublicSignupAdmissionState = "open";
+  if (providerConfigured && publicSignupEnabled) {
+    try {
+      admissionState = await readAdmissionState();
+    } catch {
+      admissionState = "unavailable";
+    }
+  }
+
+  const availability = projectPublicSignupAvailability({
+    admissionState,
+    providerConfigured,
+    publicSignupEnabled,
   });
 
-  return NextResponse.json(
-    {
-      available: availability.available,
-      message: availability.message,
-    },
-    {
-      headers: { "Cache-Control": "no-store" },
-    },
-  );
+  return NextResponse.json(availability, {
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
+export function GET() {
+  return getPublicSignupAvailabilityResponse();
 }

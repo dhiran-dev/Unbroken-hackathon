@@ -58,7 +58,11 @@ async function expectGoogleStartRequest(
 
     const request = await requestPromise;
     const body = request.postDataJSON() as Record<string, unknown>;
-    expect(body).toEqual({ provider: "google", callbackURL: "/" });
+    expect(body).toEqual({
+      provider: "google",
+      callbackURL: "/",
+      errorCallbackURL: "/rider/sign-in",
+    });
     expect(request.postData() ?? "").not.toMatch(
       /scopes?|secret|token|state/iu,
     );

@@ -4,8 +4,8 @@ import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 
 type ContinueWithGoogleProps = {
   available: boolean;
@@ -28,6 +28,7 @@ export function ContinueWithGoogle({
     const result = await authClient.signIn.social({
       provider: "google",
       callbackURL: "/",
+      errorCallbackURL: "/rider/sign-in",
     });
 
     if (result.error) {

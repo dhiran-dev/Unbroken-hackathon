@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
@@ -6,6 +7,8 @@ import { admin as adminPlugin } from "better-auth/plugins";
 import { getAppEnv } from "@/lib/env";
 import { db } from "@/server/db/client";
 import * as authSchema from "@/server/db/schema/auth";
+import { createAdmissionHooks } from "./admission-hooks";
+import { createPostgresAdmissionPolicy } from "./admission";
 import { authAccess, authRoles } from "./access";
 import { buildAuthPolicy } from "./policy";
 
@@ -15,6 +18,24 @@ const authPolicy = buildAuthPolicy({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   signupFlag: process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED,
+});
+
+const admissionPolicy = createPostgresAdmissionPolicy(db);
+const admissionHooks = createAdmissionHooks({
+  policy: admissionPolicy,
+  signupFlag: process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED,
+  resolveUser: async (userId) => {
+    const [user] = await db
+      .select({
+        id: authSchema.user.id,
+        email: authSchema.user.email,
+        role: authSchema.user.role,
+      })
+      .from(authSchema.user)
+      .where(eq(authSchema.user.id, userId))
+      .limit(1);
+    return user ?? null;
+  },
 });
 
 export const auth = betterAuth({
@@ -48,20 +69,9 @@ export const auth = betterAuth({
     }),
   },
   user: {
-    validateUserInfo: ({ source }) => {
-      if (
-        !authPolicy.shouldAllowGoogleSignup({
-          action: source.action,
-          providerId: source.oauth?.providerId,
-        })
-      ) {
-        return {
-          error: "google_signup_disabled",
-          errorDescription: "Google rider signup is currently unavailable.",
-        };
-      }
-    },
+    validateUserInfo: admissionHooks.validateUserInfo,
   },
+  databaseHooks: admissionHooks.databaseHooks,
   session: {
     expiresIn: 60 * 60 * 12,
     updateAge: 60 * 60,

@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { GET } from "@/app/api/public/signup-availability/route";
+import { getPublicSignupAvailabilityResponse } from "@/app/api/public/signup-availability/route";
 
 const original = {
   flag: process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED,
@@ -26,7 +26,10 @@ describe("public signup availability route", () => {
 
   it("returns a safe unavailable projection when the exact flag is off", async () => {
     process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED = "false";
-    const response = await GET();
+    const readAdmissionState = vi.fn(async () => "full" as const);
+    const response =
+      await getPublicSignupAvailabilityResponse(readAdmissionState);
+    expect(readAdmissionState).not.toHaveBeenCalled();
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toContain("no-store");
     await expect(response.json()).resolves.toEqual({
@@ -38,7 +41,9 @@ describe("public signup availability route", () => {
 
   it("returns only the public boolean and message when enabled", async () => {
     process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED = "true";
-    const response = await GET();
+    const response = await getPublicSignupAvailabilityResponse(
+      async () => "open",
+    );
     const body = await response.json();
     expect(body).toEqual({
       available: true,

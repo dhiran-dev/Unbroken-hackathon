@@ -11,21 +11,49 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import {
-  getPublicGoogleSignupAvailability,
   isGoogleProviderConfigured,
+  isPublicGoogleSignupEnabled,
 } from "@/server/auth/policy";
+import {
+  projectPublicSignupAvailability,
+  publicRiderAuthCallbackMessage,
+} from "@/lib/public-signup-availability";
+import { readPublicSignupAdmissionState } from "@/server/services/public-signup-availability";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Rider sign in" };
 
-export default function RiderSignInPage() {
-  const availability = getPublicGoogleSignupAvailability({
-    flagValue: process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED,
-    providerConfigured: isGoogleProviderConfigured({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
+type RiderSignInPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function RiderSignInPage({
+  searchParams,
+}: RiderSignInPageProps) {
+  const providerConfigured = isGoogleProviderConfigured({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   });
+  const publicSignupEnabled = isPublicGoogleSignupEnabled(
+    process.env.PUBLIC_GOOGLE_SIGNUP_ENABLED,
+  );
+  const admissionState =
+    providerConfigured && publicSignupEnabled
+      ? await readPublicSignupAdmissionState()
+      : "open";
+  const availability = projectPublicSignupAvailability({
+    admissionState,
+    providerConfigured,
+    publicSignupEnabled,
+  });
+
+  const params = searchParams ? await searchParams : {};
+  const hasCallbackError = params.error !== undefined;
+  const callbackMessage = hasCallbackError
+    ? publicRiderAuthCallbackMessage(
+        typeof params.error === "string" ? params.error : "",
+      )
+    : null;
 
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden px-4 py-10">
@@ -57,8 +85,8 @@ export default function RiderSignInPage() {
           </CardHeader>
           <CardContent>
             <ContinueWithGoogle
-              available={availability.providerSignInAvailable}
-              message={availability.message}
+              available={providerConfigured}
+              message={callbackMessage ?? availability.message}
             />
           </CardContent>
         </Card>
