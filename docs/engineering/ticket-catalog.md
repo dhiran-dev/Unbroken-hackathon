@@ -138,7 +138,7 @@ All tickets inherit these rules:
 ### SF-REALTIME-01 — Poll current Muni updates within one shared budget
 
 - **Owner**: Transit data
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Persist validated trip updates, vehicles, and alerts while staying at or below 52 requests per hour.
 - **Non-goals**: Candidate ranking or live map UI.
 - **Blocked by**: SF-DATA-01.
@@ -150,6 +150,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Ignore invalid/stale realtime and preserve static planning; stop polling via data flag.
 - **Public copy**: Updates unavailable/older; no protocol names.
 - **Security/accessibility**: Token never logged; live markers have text equivalents.
+- **Verification**: The shared rolling-hour ledger admitted exactly 52 of 53 concurrent claims across 12 independent Postgres connections, used the database clock, and still deferred after a fresh connection; its disposable schema was removed. The production 511 boundary was verified without saving raw payloads: exact PascalCase service-alert JSON normalized successfully, vehicle positions with no trip assignment stayed outside `VehicleView`, partial descriptors still rejected, and the normal entrypoint returned `not_due` for all three feeds immediately after polling. Configured reads published 333 referenced vehicles from 566 source entities and 16 current alerts. Trip updates remained unavailable because 58 of 21,036 delay fields exceeded the fixed ±6-hour plausibility bound, including extreme negative values; the deterministic gate was deliberately retained. Ten focused files / 34 tests and 36 repository files / 197 tests passed. The full lint, type, production build, and release gate passed before the final narrow regression; the settled source then passed focused tests, full typecheck, formatting, and diff checks. T3 preview status was available but navigation/open/snapshot failed; this ticket adds no rider-facing route, so the successful production build is the applicable surface-regression evidence.
+- **Completion commit**: `0870be0`.
 
 ### SF-ROUTE-01 — Normalize up to five static journey candidates
 
