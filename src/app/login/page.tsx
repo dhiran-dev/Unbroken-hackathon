@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { LoginForm } from "@/components/login-form";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getOperatorSession } from "@/server/auth/session";
 
 export const metadata: Metadata = { title: "Operator sign in" };
@@ -26,7 +26,7 @@ export default async function LoginPage() {
         <Card>
           <CardHeader>
             <div className="mb-2 grid size-10 place-items-center rounded-xl border bg-muted"><ShieldCheck className="size-5 text-primary" /></div>
-            <CardTitle className="text-xl">Operator sign in</CardTitle>
+            <h1 className="text-xl font-semibold tracking-tight">Operator sign in</h1>
             <p className="text-sm leading-6 text-muted-foreground">Access monitoring, history, and incident controls.</p>
           </CardHeader>
           <CardContent><LoginForm /></CardContent>

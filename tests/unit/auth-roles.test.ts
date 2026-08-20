@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { canManageAccounts, canManageSecurity, canPerformOperatorAction, isUserRole } from "@/server/auth/roles";
+import {
+  canManageAccounts,
+  canManageSecurity,
+  canPerformOperatorAction,
+  isOperatorRole,
+  isUserRole,
+} from "@/server/auth/roles";
 
 describe("operator roles", () => {
   it("accepts only owner and admin", () => {
@@ -8,6 +14,12 @@ describe("operator roles", () => {
     expect(isUserRole("admin")).toBe(true);
     expect(isUserRole("user")).toBe(false);
     expect(isUserRole(undefined)).toBe(false);
+  });
+
+  it("accepts riders as users without treating them as operators", () => {
+    expect(isUserRole("rider")).toBe(true);
+    expect(isOperatorRole("rider")).toBe(false);
+    expect(canPerformOperatorAction("rider", "operate")).toBe(false);
   });
 
   it("reserves account management for the owner", () => {

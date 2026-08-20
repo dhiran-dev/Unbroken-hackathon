@@ -22,6 +22,13 @@
       "when": 1787154515787,
       "tag": "0002_citywide_transit",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787227389443,
+      "tag": "0003_rider_accounts",
+      "breakpoints": true
     }
   ]
 }

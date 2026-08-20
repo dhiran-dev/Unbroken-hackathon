@@ -1,8 +1,5 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import {
-  adminAc,
-  defaultStatements,
-} from "better-auth/plugins/admin/access";
+import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
 
 const statement = {
   ...defaultStatements,
@@ -19,7 +16,13 @@ export const adminRole = authAccess.newRole({
   session: [],
 });
 
+export const riderRole = authAccess.newRole({
+  user: [],
+  session: [],
+});
+
 export const authRoles = {
   owner: ownerRole,
   admin: adminRole,
+  rider: riderRole,
 };
