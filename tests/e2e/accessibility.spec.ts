@@ -19,7 +19,10 @@ test("public planner has no serious or critical accessibility violations", async
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "A step-free trip should stay step-free.",
+      name:
+        process.env.CITYWIDE_PLANNER_ENABLED === "true"
+          ? "Plan a step-free trip across San Francisco."
+          : "A step-free trip should stay step-free.",
     }),
   ).toBeVisible();
   await expectNoSeriousAccessibilityViolations(page);
@@ -28,7 +31,13 @@ test("public planner has no serious or critical accessibility violations", async
 test("public status page has no serious or critical accessibility violations", async ({ page }) => {
   await page.goto("/status");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Elevator status" }),
+    page.getByRole("heading", {
+      level: 1,
+      name:
+        process.env.CITYWIDE_PLANNER_ENABLED === "true"
+          ? "Citywide service status"
+          : "Elevator status",
+    }),
   ).toBeVisible();
   await expectNoSeriousAccessibilityViolations(page);
 });

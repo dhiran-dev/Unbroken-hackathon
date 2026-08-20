@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 test("public rider surfaces render truthfully", async ({ page, request }) => {
+  test.skip(
+    process.env.CITYWIDE_PLANNER_ENABLED === "true",
+    "This assertion covers the legacy planner surface when the citywide flag is off.",
+  );
   const accessibilityResponse = await request.get("/api/public/accessibility");
   const accessibilityBody = (await accessibilityResponse.json()) as {
     available: boolean;
@@ -93,6 +97,10 @@ test("public rider surfaces render truthfully", async ({ page, request }) => {
 });
 
 test("the public planner supports keyboard-only dropdown use", async ({ page }) => {
+  test.skip(
+    process.env.CITYWIDE_PLANNER_ENABLED === "true",
+    "This assertion covers the legacy planner surface when the citywide flag is off.",
+  );
   await page.goto("/");
   const origin = page.getByLabel("Starting station", { exact: true });
   const destination = page.getByLabel("Destination station", { exact: true });

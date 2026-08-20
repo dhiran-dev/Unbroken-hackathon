@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { CitywideJourneyForm } from "@/components/citywide-journey-form";
+import { CitywideStopMapShell } from "@/components/map/citywide-stop-map-shell";
 import { JourneyForm } from "@/components/journey-form";
 import { PublicRefreshButton } from "@/components/public-refresh-button";
 import { PublicHeader } from "@/components/public-header";
@@ -27,7 +29,107 @@ type HomePageProps = {
   searchParams: Promise<{ origin?: string; destination?: string }>;
 };
 
+function CitywideHomePage() {
+  return (
+    <div className="min-h-screen">
+      <PublicHeader />
+      <main>
+        <section className="relative overflow-hidden border-b">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_-10%,oklch(0.65_0.18_264/0.14),transparent_42%)]"
+          />
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.03fr_0.97fr] lg:items-center lg:py-28">
+            <div className="max-w-2xl">
+              <Badge>
+                <CircleCheck aria-hidden="true" className="size-3.5" />
+                Citywide step-free Muni trips
+              </Badge>
+              <h1 className="mt-5 text-balance text-4xl font-semibold tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+                Plan a step-free trip across San Francisco.
+              </h1>
+              <p className="mt-5 max-w-xl text-balance text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+                Choose a stop, station, or place for each end of your journey.
+                UNBROKEN will use current evidence to plan the next step.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link className={cn(buttonVariants({ size: "lg" }))} href="#planner">
+                  Plan a trip <ArrowRight />
+                </Link>
+                <Link
+                  className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
+                  href="/status"
+                >
+                  Check elevator status
+                </Link>
+              </div>
+            </div>
+
+            <Card className="overflow-hidden" id="planner">
+              <div className="border-b bg-muted/35 px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Route aria-hidden="true" className="size-4 text-primary" />
+                  Plan a step-free trip
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  San Francisco Muni
+                </p>
+              </div>
+              <CardContent className="space-y-5 pt-5 sm:pt-6">
+                <CitywideJourneyForm />
+                <div className="border-t pt-5">
+                  <CitywideStopMapShell height={420} />
+                </div>
+                <div className="grid gap-3 border-t pt-5 text-sm sm:grid-cols-2">
+                  <div className="flex gap-2.5">
+                    <ShieldCheck
+                      aria-hidden="true"
+                      className="mt-0.5 size-4 shrink-0 text-primary"
+                    />
+                    <span>Choose a listed place so the journey starts and ends clearly.</span>
+                  </div>
+                  <div className="flex gap-2.5">
+                    <Clock3
+                      aria-hidden="true"
+                      className="mt-0.5 size-4 shrink-0 text-primary"
+                    />
+                    <span>Leave now is selected by default.</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              ["Choose places", "Search active stops, stations, and approved San Francisco places."],
+              ["Use your location once", "If you allow it, your current location is used only for this journey."],
+              ["See what needs checking", "Journey details will keep current evidence and uncertainty visible."],
+            ].map(([title, body]) => (
+              <Card key={title} className="p-5 sm:p-6">
+                <h2 className="font-semibold">{title}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+      </main>
+      <footer className="border-t">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <span>UNBROKEN</span>
+          <span>Accessibility information should inform, never overpromise.</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 export default async function HomePage({ searchParams }: HomePageProps) {
+  if (process.env.CITYWIDE_PLANNER_ENABLED === "true") {
+    return <CitywideHomePage />;
+  }
   const { origin = "", destination = "" } = await searchParams;
   const accessibility = await getPublicAccessibility().catch(() => null);
   const journey =
