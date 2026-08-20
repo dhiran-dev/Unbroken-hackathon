@@ -29,6 +29,13 @@
       "when": 1787227389443,
       "tag": "0003_rider_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787237530732,
+      "tag": "0004_commute_notifications",
+      "breakpoints": true
     }
   ]
 }
