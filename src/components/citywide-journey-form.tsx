@@ -46,6 +46,7 @@ import {
   type SafeJourneyPlan,
 } from "@/domain/journey/citywide-journey-form";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { CitywideJourneyResult } from "@/components/citywide-journey-result";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -118,7 +119,7 @@ export function CitywideJourneyForm() {
   const [locationBusy, setLocationBusy] = useState(false);
   const [locationHasBeenUsed, setLocationHasBeenUsed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [, setJourneyPlan] = useState<SafeJourneyPlan | null>(null);
+  const [journeyPlan, setJourneyPlan] = useState<SafeJourneyPlan | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
   const formErrorRef = useRef<HTMLParagraphElement>(null);
@@ -373,7 +374,9 @@ export function CitywideJourneyForm() {
           setLocationMessage(null);
           setLocationBusy(false);
           clearSearch("origin");
-          window.requestAnimationFrame(() => fieldInputRefs.current.origin?.focus());
+          window.requestAnimationFrame(() =>
+            fieldInputRefs.current.origin?.focus(),
+          );
         },
         (error) => {
           showLocationMessage(
@@ -426,6 +429,7 @@ export function CitywideJourneyForm() {
 
     setIsSubmitting(true);
     setFormError(null);
+    setJourneyPlan(null);
 
     try {
       const response = await fetch("/api/public/journeys", {
@@ -438,8 +442,7 @@ export function CitywideJourneyForm() {
       const body: unknown = await response.json().catch(() => null);
       if (!response.ok) {
         setFormError(
-          safeResponseMessage(body) ??
-            CITYWIDE_FORM_ERROR_MESSAGES.unavailable,
+          safeResponseMessage(body) ?? CITYWIDE_FORM_ERROR_MESSAGES.unavailable,
         );
         focusFormError();
         return;
@@ -589,7 +592,10 @@ export function CitywideJourneyForm() {
                   </p>
                 )}
                 {search.message && (
-                  <p className="px-3 py-4 text-sm text-destructive-content" role="alert">
+                  <p
+                    className="px-3 py-4 text-sm text-destructive-content"
+                    role="alert"
+                  >
                     {search.message}
                   </p>
                 )}
@@ -599,8 +605,14 @@ export function CitywideJourneyForm() {
         </div>
         {selected && (
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Check aria-hidden="true" className="size-3.5 text-success-foreground" />
-            Selected: {selected.kind === "catalog" ? selected.place.name : "Current location"}
+            <Check
+              aria-hidden="true"
+              className="size-3.5 text-success-foreground"
+            />
+            Selected:{" "}
+            {selected.kind === "catalog"
+              ? selected.place.name
+              : "Current location"}
           </p>
         )}
         {!isOrigin && <span className="sr-only" id={`${inputId}-fallback`} />}
@@ -611,135 +623,151 @@ export function CitywideJourneyForm() {
   const canSubmit = selectedEndpointsDiffer(formState);
 
   return (
-    <form
-      aria-label="Find a step-free route"
-      className="space-y-5"
-      noValidate
-      onSubmit={handleSubmit}
-      ref={formRef}
-    >
-      <div className="space-y-4">
-        {renderPlaceField("origin")}
-        <div className="flex justify-center py-0.5">
-          <button
-            aria-label="Swap From and To"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "icon" }),
-              "min-h-11 min-w-11 sm:size-10",
-            )}
-            disabled={!formState.origin.text && !formState.destination.text}
-            onClick={handleSwap}
-            type="button"
-          >
-            <ArrowDownUp aria-hidden="true" />
-          </button>
+    <>
+      <form
+        aria-label="Find a step-free route"
+        className="space-y-5"
+        noValidate
+        onSubmit={handleSubmit}
+        ref={formRef}
+      >
+        <div className="space-y-4">
+          {renderPlaceField("origin")}
+          <div className="flex justify-center py-0.5">
+            <button
+              aria-label="Swap From and To"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "icon" }),
+                "min-h-11 min-w-11 sm:size-10",
+              )}
+              disabled={!formState.origin.text && !formState.destination.text}
+              onClick={handleSwap}
+              type="button"
+            >
+              <ArrowDownUp aria-hidden="true" />
+            </button>
+          </div>
+          {renderPlaceField("destination")}
         </div>
-        {renderPlaceField("destination")}
-      </div>
 
-      <div className="rounded-xl border bg-muted/25 p-4">
-        <fieldset className="space-y-3">
-          <legend className="text-sm font-semibold">Departure</legend>
-          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
-            <input
-              aria-controls={
-                formState.departureMode === "future"
-                  ? "citywide-departure-time"
-                  : undefined
-              }
-              aria-label="Leave now"
-              checked={formState.departureMode === "now"}
-              className="size-5 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              onChange={(event) => {
-                setFormState((current) =>
-                  setDepartureMode(current, event.currentTarget.checked ? "now" : "future"),
-                );
-                setFormError(null);
-              }}
-              role="switch"
-              type="checkbox"
-            />
-            <span className="font-medium">Leave now</span>
-          </label>
-          {formState.departureMode === "future" && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="citywide-departure-time">
-                Departure time
-              </label>
-              <Input
-                aria-invalid={Boolean(visibleFormError)}
-                id="citywide-departure-time"
-                name="departureAt"
+        <div className="rounded-xl border bg-muted/25 p-4">
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-semibold">Departure</legend>
+            <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+              <input
+                aria-controls={
+                  formState.departureMode === "future"
+                    ? "citywide-departure-time"
+                    : undefined
+                }
+                aria-label="Leave now"
+                checked={formState.departureMode === "now"}
+                className="size-5 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 onChange={(event) => {
                   setFormState((current) =>
-                    setFutureDeparture(current, event.currentTarget.value),
+                    setDepartureMode(
+                      current,
+                      event.currentTarget.checked ? "now" : "future",
+                    ),
                   );
                   setFormError(null);
                 }}
-                type="datetime-local"
-                value={formState.futureDeparture}
+                role="switch"
+                type="checkbox"
               />
-            </div>
+              <span className="font-medium">Leave now</span>
+            </label>
+            {formState.departureMode === "future" && (
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="citywide-departure-time"
+                >
+                  Departure time
+                </label>
+                <Input
+                  aria-invalid={Boolean(visibleFormError)}
+                  id="citywide-departure-time"
+                  name="departureAt"
+                  onChange={(event) => {
+                    setFormState((current) =>
+                      setFutureDeparture(current, event.currentTarget.value),
+                    );
+                    setFormError(null);
+                  }}
+                  type="datetime-local"
+                  value={formState.futureDeparture}
+                />
+              </div>
+            )}
+          </fieldset>
+        </div>
+
+        <Button
+          className="min-h-11 w-full"
+          disabled={locationBusy || locationHasBeenUsed}
+          onClick={handleUseLocation}
+          type="button"
+          variant="outline"
+        >
+          {locationBusy ? (
+            <LoaderCircle aria-hidden="true" className="animate-spin" />
+          ) : (
+            <LocateFixed aria-hidden="true" />
           )}
-        </fieldset>
-      </div>
+          Use my location
+        </Button>
 
-      <Button
-        className="min-h-11 w-full"
-        disabled={locationBusy || locationHasBeenUsed}
-        onClick={handleUseLocation}
-        type="button"
-        variant="outline"
-      >
-        {locationBusy ? (
-          <LoaderCircle aria-hidden="true" className="animate-spin" />
-        ) : (
-          <LocateFixed aria-hidden="true" />
+        {locationMessage && (
+          <p
+            aria-live="assertive"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-content"
+            id="citywide-location-message"
+            ref={locationMessageRef}
+            role="alert"
+            tabIndex={-1}
+          >
+            {locationMessage}
+          </p>
         )}
-        Use my location
-      </Button>
-
-      {locationMessage && (
-        <p
-          aria-live="assertive"
-          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-content"
-          id="citywide-location-message"
-          ref={locationMessageRef}
-          role="alert"
-          tabIndex={-1}
+        {visibleFormError && (
+          <p
+            aria-live="assertive"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-content"
+            id="citywide-form-error"
+            ref={formErrorRef}
+            role="alert"
+            tabIndex={-1}
+          >
+            {visibleFormError}
+          </p>
+        )}
+        {isSubmitting && (
+          <p
+            aria-live="polite"
+            className="text-sm text-muted-foreground"
+            role="status"
+          >
+            Planning your step-free route…
+          </p>
+        )}
+        <Button
+          className="min-h-11 w-full"
+          disabled={!canSubmit || isSubmitting}
+          type="submit"
         >
-          {locationMessage}
+          {isSubmitting ? (
+            <LoaderCircle aria-hidden="true" className="animate-spin" />
+          ) : null}
+          Find a step-free route
+          {!isSubmitting ? <ArrowRight aria-hidden="true" /> : null}
+        </Button>
+        <p className="text-center text-xs leading-5 text-muted-foreground">
+          Choose a result from the list so UNBROKEN can plan between known
+          places.
         </p>
-      )}
-      {visibleFormError && (
-        <p
-          aria-live="assertive"
-          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-content"
-          id="citywide-form-error"
-          ref={formErrorRef}
-          role="alert"
-          tabIndex={-1}
-        >
-          {visibleFormError}
-        </p>
-      )}
-      {isSubmitting && (
-        <p aria-live="polite" className="text-sm text-muted-foreground" role="status">
-          Planning your step-free route…
-        </p>
-      )}
-      <Button
-        className="min-h-11 w-full"
-        disabled={!canSubmit || isSubmitting}
-        type="submit"
-      >
-        {isSubmitting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
-        Find a step-free route
-        {!isSubmitting ? <ArrowRight aria-hidden="true" /> : null}
-      </Button>
-      <p className="text-center text-xs leading-5 text-muted-foreground">
-        Choose a result from the list so UNBROKEN can plan between known places.
-      </p>
-    </form>
+      </form>
+      <CitywideJourneyResult plan={journeyPlan} />
+    </>
   );
 }
