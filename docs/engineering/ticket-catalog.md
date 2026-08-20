@@ -156,7 +156,7 @@ All tickets inherit these rules:
 ### SF-ROUTE-01 — Normalize up to five static journey candidates
 
 - **Owner**: Journey planning
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Convert private OTP GraphQL results into stable walking, waiting, riding, and transfer candidates.
 - **Non-goals**: Accessibility confirmation or rider wording.
 - **Blocked by**: SF-OTP-01 and SF-PLACE-01.
@@ -168,6 +168,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Return typed unavailable result; never leak GraphQL/internal URL.
 - **Public copy**: None directly.
 - **Security/accessibility**: Validate response size/shape; geometry supports later text-equivalent itinerary.
+- **Verification**: The production boundary posts the fixed neutral static query to a private-only OTP origin, caps and validates the response, cancels rejected bodies, and collapses provider detail to one safe typed error. Normalization rejects disconnected places or geometry, preserves valid null headsigns, emits stable deduplicated candidates, and makes no accessibility claim. Thirty-eight focused seam tests and 235 repository tests passed, along with full lint, TypeScript, production build, release scan, formatting, and diff checks. The collaborative browser was attached but its navigation, open, and snapshot actions failed while the local server was ready; this ticket adds no rider-facing route, so the successful production build is the applicable surface-regression evidence. The private OTP runtime URL and container tooling were not attached to this environment, so a live private plan query remains an integration risk for deployment verification.
+- **Completion commit**: `fa7898f`.
 
 ### SF-ROUTE-02 — Apply current accessibility and service evidence
 
