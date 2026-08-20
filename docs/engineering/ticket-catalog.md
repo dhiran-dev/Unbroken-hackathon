@@ -230,7 +230,7 @@ All tickets inherit these rules:
 ### SF-UI-01 — Select places and use current location accessibly
 
 - **Owner**: Public experience
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Deliver keyboard-accessible From/To selection, swap, leave-time choice, and a clear GPS flow.
 - **Non-goals**: Map and journey cards.
 - **Blocked by**: SF-PLACE-01 and SF-ROUTE-04.
@@ -242,11 +242,13 @@ All tickets inherit these rules:
 - **Failure/rollback**: Form remains usable without GPS/map; disable planner flag for compatibility surface.
 - **Public copy**: From, To, Use my location, Leave now, Find a step-free route.
 - **Security/accessibility**: No coordinates logged; combobox roles, focus, errors, and touch targets pass.
+- **Verification**: Exact catalog selection, edit-to-clear, swap, leave-now/future time, one-use SF location, denial/inaccuracy/out-of-area fallback, duplicate result rejection, stale request cancellation, bounded public journey projection, and rollback behavior passed primary review. The settled repository passed lint, TypeScript, 59 files / 498 unit tests, production build, and release scan. With the flag enabled, the full desktop/mobile browser suite passed 42 tests with 8 intentional credential/legacy skips; the flag-off suite passed 20 tests with 30 intentional citywide/credential skips. Desktop and mobile axe scans passed.
+- **Completion commit**: `aaa218d`.
 
 ### SF-MAP-01 — Render every active stop without clustering
 
 - **Owner**: Map
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Lazy-load a CARTO/MapLibre map and display every active stop as an individual point in light/dark mode.
 - **Non-goals**: Journey geometry and live vehicles.
 - **Blocked by**: SF-DATA-01.
@@ -258,6 +260,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Text planner remains complete; map error is non-blocking; flag can hide citywide map.
 - **Public copy**: Plain map unavailable fallback.
 - **Security/accessibility**: Safe style allowlist, attribution, no token in client URL, text alternative.
+- **Verification**: The versioned active-feed GeoJSON route validates the exact flag and feed hash, returns immutable bounded `application/geo+json`, and reads only active stop rows. MapLibre 6.4.1 uses allowlisted CARTO vector styles, literal `cluster: false`, individual hit/point/label layers, attribution, cooperative gestures, reduced-motion handling, and a lazy 3,238-stop text alternative. Forty-seven focused tests passed. Desktop and mobile browser checks rendered all 3,238 stops individually in light/dark mode and retained the text fallback on map failure; the full settled repository gates are recorded under SF-UI-01.
+- **Completion commit**: `c1de23a`.
 
 ### SF-MAP-02 — Show the selected journey and current changes
 
@@ -294,7 +298,7 @@ All tickets inherit these rules:
 ### SF-UI-03 — Expand public status to all current citywide changes
 
 - **Owner**: Public experience
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Show elevators, advisories, moved stops, accessible-stop guidance, freshness, and official links in one searchable status surface.
 - **Non-goals**: Operator evidence and raw feeds.
 - **Blocked by**: SF-DATA-02, SF-DATA-03, SF-DATA-04, and SF-REALTIME-01.
@@ -306,6 +310,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Each source degrades independently; trusted elevator behavior remains.
 - **Public copy**: Short source-specific status plus distinct time labels.
 - **Security/accessibility**: Public allowlist excludes collector/internal evidence; semantic filters and lists.
+- **Verification**: Elevator, advisory, moved-stop, accessible-stop guidance, and realtime-alert reads degrade independently through bounded public projections. Current sections require valid check times; filters hide nonmatching sections; repeated public labels render safely; station-name search retains every matching station elevator. Exact flag-off behavior preserves the legacy page and returns a fixed no-store API 503. Nineteen focused status tests passed. Desktop/mobile status search, source/age filters, 360 px layout, keyboard controls, no-store allowlist, official-link safety, and axe checks passed as part of the full settled browser and repository gates recorded under SF-UI-01.
+- **Completion commit**: `1bad92b`.
 
 ## Phase 5 — Google riders and saved commutes
 
