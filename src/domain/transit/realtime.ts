@@ -36,6 +36,10 @@ export type VehicleView = {
   observedAt: Date;
 };
 
+export type CurrentVehicleSnapshotView =
+  | ({ state: "current"; vehicles: VehicleView[] } & RealtimeProvenance)
+  | { state: "unavailable"; vehicles: [] };
+
 export type ServiceAlertView = {
   entityId: string;
   cause: string | null;
@@ -81,6 +85,7 @@ export interface RealtimeReadStore {
 export interface RealtimeTransit {
   getTripUpdates(at: Date): Promise<TripUpdateView>;
   getVehicles(bounds?: MapBounds): Promise<VehicleView[]>;
+  getCurrentVehicles(at: Date): Promise<CurrentVehicleSnapshotView>;
   getAlerts(at: Date): Promise<ServiceAlertView[]>;
 }
 
@@ -141,6 +146,19 @@ export function createRealtimeTransit(
         ...vehicle,
         observedAt: new Date(vehicle.observedAt),
       }));
+    },
+
+    async getCurrentVehicles(at) {
+      const snapshot = await store.getTrustedSnapshot("vehicles", at);
+      if (!snapshot) return { state: "unavailable", vehicles: [] };
+      return {
+        state: "current",
+        ...provenance(snapshot),
+        vehicles: snapshot.vehicles.map((vehicle) => ({
+          ...vehicle,
+          observedAt: new Date(vehicle.observedAt),
+        })),
+      };
     },
 
     async getAlerts(at) {
