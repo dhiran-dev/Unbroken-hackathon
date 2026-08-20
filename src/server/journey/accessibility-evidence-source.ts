@@ -61,6 +61,16 @@ function unavailable(sourceUrl: string) {
   return provenance("unavailable", null, null, sourceUrl);
 }
 
+function safeJourneyText(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= 500 &&
+    value === value.trim() &&
+    !/[<>\u0000-\u001f\u007f]/u.test(value)
+  );
+}
+
 function safeId(value: unknown): value is string {
   return (
     typeof value === "string" &&
@@ -227,6 +237,16 @@ async function relocations(
           row.routeIds.length === 0 ||
           new Set(row.routeIds).size !== row.routeIds.length ||
           !row.routeIds.every(safeId) ||
+          !safeJourneyText(row.temporaryStop) ||
+          !safeJourneyText(row.boardingInstruction) ||
+          !view.relocations.some(
+            (sourceRow) =>
+              sourceRow.stopId === row.stopId &&
+              sourceRow.temporaryStop === row.temporaryStop &&
+              sourceRow.boardingInstruction === row.boardingInstruction &&
+              sourceRow.startsAt.getTime() === row.startsAt.getTime() &&
+              sourceRow.endsAt.getTime() === row.endsAt.getTime(),
+          ) ||
           !validDate(row.startsAt) ||
           !validDate(row.endsAt) ||
           row.startsAt > row.endsAt,
@@ -240,6 +260,8 @@ async function relocations(
         relocationId: row.relocationId,
         stopId: row.stopId,
         routeIds: [...row.routeIds].sort(),
+        temporaryStop: row.temporaryStop,
+        boardingInstruction: row.boardingInstruction,
         startsAt: new Date(row.startsAt),
         endsAt: new Date(row.endsAt),
       })),

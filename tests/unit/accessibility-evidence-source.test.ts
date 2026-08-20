@@ -75,7 +75,7 @@ function dependencies(): TrustedAccessibilityReadDependencies {
             stopId: "15417",
             stopName: "raw stop name",
             routeNames: ["Inbound: N"],
-            temporaryStop: "raw moved location",
+            temporaryStop: "Market Street near Fifth Street",
             scheduleText: "raw schedule",
             startsAt: new Date("2026-08-20T11:00:00.000Z"),
             endsAt: new Date("2026-08-20T13:00:00.000Z"),
@@ -83,7 +83,7 @@ function dependencies(): TrustedAccessibilityReadDependencies {
             longitude: null,
             publicUrl:
               "https://www.sfmta.com/travel-updates/temporary-stop-relocations",
-            boardingInstruction: "raw rider wording",
+            boardingInstruction: "Board at Market Street near Fifth Street.",
           },
         ],
       };
@@ -94,6 +94,8 @@ function dependencies(): TrustedAccessibilityReadDependencies {
           relocationId: "relocation:resolved-row-1",
           stopId: "15417",
           routeIds: ["ROUTE-N"],
+          temporaryStop: "Market Street near Fifth Street",
+          boardingInstruction: "Board at Market Street near Fifth Street.",
           startsAt: new Date("2026-08-20T11:00:00.000Z"),
           endsAt: new Date("2026-08-20T13:00:00.000Z"),
         },
@@ -202,6 +204,8 @@ describe("trusted accessibility evidence source", () => {
           {
             relocationId: "relocation:resolved-row-1",
             stopId: "15417",
+            temporaryStop: "Market Street near Fifth Street",
+            boardingInstruction: "Board at Market Street near Fifth Street.",
           },
         ],
       },
@@ -226,6 +230,34 @@ describe("trusted accessibility evidence source", () => {
       },
     });
     expect(JSON.stringify(snapshot)).not.toContain("raw ");
+    expect(JSON.stringify(snapshot)).not.toContain("applicant");
+  });
+
+  it.each([
+    ["unsafe temporary stop", { temporaryStop: "<b>unsafe</b>" }],
+    [
+      "unsafe boarding instruction",
+      { boardingInstruction: "Board here.\nprivate detail" },
+    ],
+  ])("fails relocation detail closed for %s", async (_name, unsafe) => {
+    const reads = dependencies();
+    const resolved = await reads.resolveRelocations!(
+      await reads.readRelocations(EVALUATED_AT),
+    );
+    reads.resolveRelocations = async () => [{ ...resolved![0]!, ...unsafe }];
+
+    const snapshot =
+      await createTrustedAccessibilityEvidenceSource(reads).read(EVALUATED_AT);
+
+    expect(snapshot.relocations).toEqual({
+      state: "unavailable",
+      checkedAt: null,
+      sourceUpdatedAt: null,
+      sourceUrl:
+        "https://www.sfmta.com/travel-updates/temporary-stop-relocations",
+      relocations: [],
+    });
+    expect(JSON.stringify(snapshot)).not.toContain("private detail");
   });
 
   it("fails a current advisory source closed until an exact resolver is injected", async () => {

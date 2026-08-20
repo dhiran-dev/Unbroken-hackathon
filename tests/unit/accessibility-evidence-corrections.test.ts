@@ -195,7 +195,7 @@ describe("AccessibilityEvidence corrected dependency semantics", () => {
     });
   });
 
-  it("requires relocation route, endpoint, and leg-interval overlap", async () => {
+  it("keeps only an exact route, endpoint, and leg-interval relocation selectable with checks", async () => {
     const leg = rideLeg({ intermediateStopIds: ["MID"] });
     const assessment = await evaluate([leg], (snapshot) => {
       snapshot.relocations.relocations = [
@@ -203,6 +203,8 @@ describe("AccessibilityEvidence corrected dependency semantics", () => {
           relocationId: "exact",
           stopId: "15417",
           routeIds: ["ROUTE-N"],
+          temporaryStop: "Fifth Street near Market Street",
+          boardingInstruction: "Board at Fifth Street near Market Street.",
           startsAt: new Date("2026-08-20T12:02:00.000Z"),
           endsAt: new Date("2026-08-20T12:02:00.000Z"),
         },
@@ -210,6 +212,8 @@ describe("AccessibilityEvidence corrected dependency semantics", () => {
           relocationId: "wrong-route",
           stopId: "15417",
           routeIds: ["ROUTE-J"],
+          temporaryStop: "Fifth Street near Market Street",
+          boardingInstruction: "Board at Fifth Street near Market Street.",
           startsAt: leg.startAt,
           endsAt: leg.endAt,
         },
@@ -217,6 +221,8 @@ describe("AccessibilityEvidence corrected dependency semantics", () => {
           relocationId: "intermediate",
           stopId: "MID",
           routeIds: ["ROUTE-N"],
+          temporaryStop: "Fifth Street near Market Street",
+          boardingInstruction: "Board at Fifth Street near Market Street.",
           startsAt: leg.startAt,
           endsAt: leg.endAt,
         },
@@ -228,7 +234,7 @@ describe("AccessibilityEvidence corrected dependency semantics", () => {
         (item) => item.kind === "stop_relocation",
       ),
     ).toMatchObject({
-      state: "blocked",
+      state: "unknown",
       reasons: [{ code: "STOP_RELOCATION_ACTIVE", entityId: "exact" }],
     });
   });

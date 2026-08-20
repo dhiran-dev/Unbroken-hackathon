@@ -142,6 +142,7 @@ function relocationIdentity(row: StopRelocationView["relocations"][number]) {
         row.stopId,
         row.routeNames,
         row.temporaryStop,
+        row.boardingInstruction,
         row.startsAt.toISOString(),
         row.endsAt.toISOString(),
       ]),
@@ -220,6 +221,8 @@ export function createExactAccessibilityResolvers(
           relocationId: `relocation:${identity}`,
           stopId: relocation.stopId,
           routeIds: unique(routeIds),
+          temporaryStop: relocation.temporaryStop,
+          boardingInstruction: relocation.boardingInstruction,
           startsAt: new Date(relocation.startsAt),
           endsAt: new Date(relocation.endsAt),
         });

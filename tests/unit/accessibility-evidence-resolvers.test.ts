@@ -167,7 +167,12 @@ describe("exact accessibility evidence resolvers", () => {
       ]),
     );
     expect(resolved).toHaveLength(2);
-    expect(resolved?.[0]).toMatchObject({ stopId: "15417", routeIds: ["N"] });
+    expect(resolved?.[0]).toMatchObject({
+      stopId: "15417",
+      routeIds: ["N"],
+      temporaryStop: "First location",
+      boardingInstruction: "source wording",
+    });
     expect(resolved?.[0]?.relocationId).not.toBe(resolved?.[1]?.relocationId);
     expect(resolved?.[0]?.relocationId).toMatch(/^relocation:[a-f0-9]{64}$/u);
   });

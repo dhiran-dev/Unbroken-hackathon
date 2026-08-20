@@ -16,6 +16,7 @@ export type EvidenceSourceName =
 
 export type AccessibilityReasonCode =
   | "ACCESSIBILITY_ADVISORY_ACTIVE"
+  | "CURRENT_TIMING_UNCERTAIN"
   | "ELEVATOR_OUT_OF_SERVICE"
   | "ELEVATOR_STATUS_UNKNOWN"
   | "INVALID_CANDIDATE"
@@ -67,8 +68,16 @@ export type ExactStopRelocation = {
   relocationId: string;
   stopId: string;
   routeIds: string[];
+  temporaryStop: string;
+  boardingInstruction: string;
   startsAt: Date;
   endsAt: Date;
+};
+
+export type AccessibilityRelocationDetail = {
+  relocationId: string;
+  role: "boarding" | "alighting";
+  instruction: string;
 };
 
 export type ExactTripUpdate = {
@@ -118,6 +127,7 @@ export type AccessibilityDependency = {
   kind: AccessibilityDependencyKind;
   state: AccessibilityState;
   reasons: AccessibilityReason[];
+  relocations?: AccessibilityRelocationDetail[];
 };
 
 export type AccessibilityLegAssessment = {
@@ -143,6 +153,10 @@ export interface AccessibilityEvidence {
     candidate: RouteCandidate,
     at: Date,
   ): Promise<AccessibilityAssessment>;
+  evaluateCandidates?(
+    candidates: readonly RouteCandidate[],
+    at: Date,
+  ): Promise<AccessibilityAssessment[]>;
 }
 
 type StationStop = { stationId: string; direction?: "eastbound" | "westbound" };
@@ -405,28 +419,58 @@ function advisoryDependency(
 function relocationDependency(
   leg: Extract<RouteCandidate["legs"][number], { type: "ride" }>,
   snapshot: AccessibilityEvidenceSnapshot,
-) {
-  const stopIds = endpointStopIds(leg);
-  return eventDependency(
+): AccessibilityDependency {
+  const freshness = freshnessDependency(
     "stop_relocation",
     snapshot.relocations,
-    snapshot.relocations.relocations
-      .filter(
-        (relocation) =>
-          safeEntityId(relocation.relocationId) &&
-          relocation.routeIds.includes(leg.routeId) &&
-          stopIds.has(relocation.stopId) &&
-          intervalsOverlap(
-            relocation.startsAt,
-            relocation.endsAt,
-            leg.startAt,
-            leg.endAt,
-          ),
-      )
-      .map((relocation) =>
-        reason("STOP_RELOCATION_ACTIVE", relocation.relocationId),
+  );
+  if (freshness) return freshness;
+  const matches = snapshot.relocations.relocations.filter(
+    (relocation) =>
+      safeEntityId(relocation.relocationId) &&
+      relocation.routeIds.includes(leg.routeId) &&
+      (relocation.stopId === leg.from.stopId ||
+        relocation.stopId === leg.to.stopId) &&
+      intervalsOverlap(
+        relocation.startsAt,
+        relocation.endsAt,
+        leg.startAt,
+        leg.endAt,
       ),
   );
+  const relocations = matches
+    .map((relocation): AccessibilityRelocationDetail => {
+      const boarding = relocation.stopId === leg.from.stopId;
+      return {
+        relocationId: relocation.relocationId,
+        role: boarding ? "boarding" : "alighting",
+        instruction: boarding
+          ? relocation.boardingInstruction
+          : `Get off at ${relocation.temporaryStop}.`,
+      };
+    })
+    .sort(
+      (left, right) =>
+        left.role.localeCompare(right.role) ||
+        left.relocationId.localeCompare(right.relocationId),
+    );
+  const reasons = sortedReasons(
+    relocations.map((relocation) =>
+      reason("STOP_RELOCATION_ACTIVE", relocation.relocationId),
+    ),
+  );
+  return reasons.length > 0
+    ? {
+        kind: "stop_relocation",
+        state: "unknown",
+        reasons,
+        relocations,
+      }
+    : {
+        kind: "stop_relocation",
+        state: "confirmed",
+        reasons: [],
+      };
 }
 
 const MAX_DELAY_SECONDS = 6 * 60 * 60;
@@ -647,6 +691,16 @@ function safeEntityId(value: unknown): value is string {
   );
 }
 
+function safeEvidenceText(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= 500 &&
+    value === value.trim() &&
+    !/[<>\u0000-\u001f\u007f]/u.test(value)
+  );
+}
+
 function finiteDate(value: unknown): value is Date {
   return value instanceof Date && Number.isFinite(value.getTime());
 }
@@ -758,6 +812,8 @@ function validRelocations(value: unknown) {
       ids.has(relocation.relocationId) ||
       !safeEntityId(relocation.stopId) ||
       !validIdArray(relocation.routeIds, false) ||
+      !safeEvidenceText(relocation.temporaryStop) ||
+      !safeEvidenceText(relocation.boardingInstruction) ||
       !validWindow(relocation.startsAt, relocation.endsAt, false)
     ) {
       return false;
@@ -936,118 +992,133 @@ function validCandidate(candidate: RouteCandidate, at: Date) {
   });
 }
 
+async function readEvidenceSnapshot(
+  source: AccessibilityEvidenceSource,
+  at: Date,
+) {
+  try {
+    const snapshot = structuredClone(await source.read(new Date(at)));
+    return validSnapshot(snapshot) ? snapshot : unavailableSnapshot();
+  } catch {
+    return unavailableSnapshot();
+  }
+}
+
+function assertValidCandidate(candidate: RouteCandidate, at: Date) {
+  let candidateIsValid = false;
+  try {
+    candidateIsValid = validCandidate(candidate, at);
+  } catch {
+    candidateIsValid = false;
+  }
+  if (!candidateIsValid) {
+    throw new AccessibilityEvidenceInvalidError();
+  }
+}
+
+function evaluateEvidenceSnapshot(
+  candidate: RouteCandidate,
+  at: Date,
+  snapshot: AccessibilityEvidenceSnapshot,
+): AccessibilityAssessment {
+  assertValidCandidate(candidate, at);
+  const rideIndices = candidate.legs.flatMap((leg, index) =>
+    leg.type === "ride" ? [index] : [],
+  );
+  const firstRideIndex = rideIndices[0] ?? -1;
+  const lastRideIndex = rideIndices.at(-1) ?? -1;
+  const legs = candidate.legs.map(
+    (leg, legIndex): AccessibilityLegAssessment => {
+      const dependencies: AccessibilityDependency[] = [];
+      if (leg.type === "walk" || leg.type === "transfer") {
+        dependencies.push({
+          kind: "mapped_path",
+          state: "unknown",
+          reasons: [reason("MAPPED_PATH_UNCONFIRMED", "leg:" + legIndex)],
+        });
+        if (leg.type === "transfer") {
+          dependencies.push(stopAccess(leg.from.stopId, "platform", snapshot));
+          if (leg.to.stopId !== leg.from.stopId) {
+            dependencies.push(stopAccess(leg.to.stopId, "platform", snapshot));
+          }
+        }
+      } else if (leg.type === "wait") {
+        dependencies.push(stopAccess(leg.from.stopId, "platform", snapshot));
+      } else {
+        if (leg.type !== "ride") {
+          throw new AccessibilityEvidenceInvalidError();
+        }
+        dependencies.push(
+          stopAccess(
+            leg.from.stopId,
+            legIndex === firstRideIndex ? "street_and_platform" : "platform",
+            snapshot,
+          ),
+        );
+        dependencies.push(
+          stopAccess(
+            leg.to.stopId,
+            legIndex === lastRideIndex ? "street_and_platform" : "platform",
+            snapshot,
+          ),
+        );
+        dependencies.push(advisoryDependency(leg, snapshot));
+        dependencies.push(relocationDependency(leg, snapshot));
+        const trip = tripEvidence(leg, snapshot);
+        dependencies.push(trip.dependency);
+        dependencies.push(alertDependency(leg, snapshot));
+        return {
+          legIndex,
+          type: leg.type,
+          state: stateOf(dependencies),
+          delaySeconds: trip.delaySeconds,
+          departureDelaySeconds: trip.departureDelaySeconds,
+          arrivalDelaySeconds: trip.arrivalDelaySeconds,
+          dependencies,
+        };
+      }
+      return {
+        legIndex,
+        type: leg.type,
+        state: stateOf(dependencies),
+        delaySeconds: 0,
+        departureDelaySeconds: 0,
+        arrivalDelaySeconds: 0,
+        dependencies,
+      };
+    },
+  );
+  return {
+    candidateId: candidate.id,
+    state: stateOf(
+      legs.map((leg) => ({
+        kind: "mapped_path",
+        state: leg.state,
+        reasons: [],
+      })),
+    ),
+    delaySeconds:
+      [...legs].reverse().find((leg) => leg.type === "ride")?.delaySeconds ?? 0,
+    legs,
+    sources: provenance(snapshot),
+  };
+}
+
 export function createAccessibilityEvidence(
   source: AccessibilityEvidenceSource,
 ): AccessibilityEvidence {
   return {
     async evaluate(candidate, at) {
-      let candidateIsValid = false;
-      try {
-        candidateIsValid = validCandidate(candidate, at);
-      } catch {
-        candidateIsValid = false;
-      }
-      if (!candidateIsValid) {
-        throw new AccessibilityEvidenceInvalidError();
-      }
-      let snapshot: AccessibilityEvidenceSnapshot;
-      try {
-        snapshot = structuredClone(await source.read(new Date(at)));
-        if (!validSnapshot(snapshot)) {
-          snapshot = unavailableSnapshot();
-        }
-      } catch {
-        snapshot = unavailableSnapshot();
-      }
-      const rideIndices = candidate.legs.flatMap((leg, index) =>
-        leg.type === "ride" ? [index] : [],
+      assertValidCandidate(candidate, at);
+      const snapshot = await readEvidenceSnapshot(source, at);
+      return evaluateEvidenceSnapshot(candidate, at, snapshot);
+    },
+    async evaluateCandidates(candidates, at) {
+      candidates.forEach((candidate) => assertValidCandidate(candidate, at));
+      const snapshot = await readEvidenceSnapshot(source, at);
+      return candidates.map((candidate) =>
+        evaluateEvidenceSnapshot(candidate, at, snapshot),
       );
-      const firstRideIndex = rideIndices[0] ?? -1;
-      const lastRideIndex = rideIndices.at(-1) ?? -1;
-      const legs = candidate.legs.map(
-        (leg, legIndex): AccessibilityLegAssessment => {
-          const dependencies: AccessibilityDependency[] = [];
-          if (leg.type === "walk" || leg.type === "transfer") {
-            dependencies.push({
-              kind: "mapped_path",
-              state: "unknown",
-              reasons: [reason("MAPPED_PATH_UNCONFIRMED", "leg:" + legIndex)],
-            });
-            if (leg.type === "transfer") {
-              dependencies.push(
-                stopAccess(leg.from.stopId, "platform", snapshot),
-              );
-              if (leg.to.stopId !== leg.from.stopId) {
-                dependencies.push(
-                  stopAccess(leg.to.stopId, "platform", snapshot),
-                );
-              }
-            }
-          } else if (leg.type === "wait") {
-            dependencies.push(
-              stopAccess(leg.from.stopId, "platform", snapshot),
-            );
-          } else {
-            if (leg.type !== "ride") {
-              throw new AccessibilityEvidenceInvalidError();
-            }
-            dependencies.push(
-              stopAccess(
-                leg.from.stopId,
-                legIndex === firstRideIndex
-                  ? "street_and_platform"
-                  : "platform",
-                snapshot,
-              ),
-            );
-            dependencies.push(
-              stopAccess(
-                leg.to.stopId,
-                legIndex === lastRideIndex ? "street_and_platform" : "platform",
-                snapshot,
-              ),
-            );
-            dependencies.push(advisoryDependency(leg, snapshot));
-            dependencies.push(relocationDependency(leg, snapshot));
-            const trip = tripEvidence(leg, snapshot);
-            dependencies.push(trip.dependency);
-            dependencies.push(alertDependency(leg, snapshot));
-            return {
-              legIndex,
-              type: leg.type,
-              state: stateOf(dependencies),
-              delaySeconds: trip.delaySeconds,
-              departureDelaySeconds: trip.departureDelaySeconds,
-              arrivalDelaySeconds: trip.arrivalDelaySeconds,
-              dependencies,
-            };
-          }
-          return {
-            legIndex,
-            type: leg.type,
-            state: stateOf(dependencies),
-            delaySeconds: 0,
-            departureDelaySeconds: 0,
-            arrivalDelaySeconds: 0,
-            dependencies,
-          };
-        },
-      );
-      return {
-        candidateId: candidate.id,
-        state: stateOf(
-          legs.map((leg) => ({
-            kind: "mapped_path",
-            state: leg.state,
-            reasons: [],
-          })),
-        ),
-        delaySeconds:
-          [...legs].reverse().find((leg) => leg.type === "ride")
-            ?.delaySeconds ?? 0,
-        legs,
-        sources: provenance(snapshot),
-      };
     },
   };
 }

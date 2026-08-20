@@ -150,7 +150,7 @@ describe("AccessibilityEvidence current events", () => {
       name: "for the exact boarding stop",
       stopId: "15417",
       startsAt: "2026-08-20T11:00:00.000Z",
-      expected: "blocked",
+      expected: "unknown",
     },
   ])(
     "classifies a relocation $name",
@@ -162,15 +162,95 @@ describe("AccessibilityEvidence current events", () => {
           stopId,
           startsAt: new Date(startsAt),
           routeIds: ["ROUTE-N"],
+          temporaryStop: "Fifth Street near Market Street",
+          boardingInstruction: "Board at Fifth Street near Market Street.",
           endsAt: new Date("2026-08-20T14:00:00.000Z"),
         },
       ];
 
-      expect(
-        dependency(await evaluate(snapshot), "stop_relocation")?.state,
-      ).toBe(expected);
+      const relocation = dependency(
+        await evaluate(snapshot),
+        "stop_relocation",
+      );
+      expect(relocation?.state).toBe(expected);
+      if (expected === "unknown") {
+        expect(relocation?.relocations).toEqual([
+          {
+            relocationId: "move-1",
+            role: "boarding",
+            instruction: "Board at Fifth Street near Market Street.",
+          },
+        ]);
+      }
     },
   );
+
+  it("keeps boarding and alighting relocation roles distinct", async () => {
+    const snapshot = evidenceSnapshot();
+    snapshot.relocations.relocations = [
+      {
+        relocationId: "move-boarding",
+        stopId: "15417",
+        routeIds: ["ROUTE-N"],
+        temporaryStop: "Fifth Street near Market Street",
+        boardingInstruction: "Board at Fifth Street near Market Street.",
+        startsAt: new Date("2026-08-20T11:00:00.000Z"),
+        endsAt: new Date("2026-08-20T14:00:00.000Z"),
+      },
+      {
+        relocationId: "move-alighting",
+        stopId: "16994",
+        routeIds: ["ROUTE-N"],
+        temporaryStop: "Second Street near Market Street",
+        boardingInstruction: "Board at Second Street near Market Street.",
+        startsAt: new Date("2026-08-20T11:00:00.000Z"),
+        endsAt: new Date("2026-08-20T14:00:00.000Z"),
+      },
+    ];
+
+    expect(
+      dependency(await evaluate(snapshot), "stop_relocation")?.relocations,
+    ).toEqual([
+      {
+        relocationId: "move-alighting",
+        role: "alighting",
+        instruction: "Get off at Second Street near Market Street.",
+      },
+      {
+        relocationId: "move-boarding",
+        role: "boarding",
+        instruction: "Board at Fifth Street near Market Street.",
+      },
+    ]);
+  });
+
+  it("does not duplicate a relocation when one stop is both ride endpoints", async () => {
+    const snapshot = evidenceSnapshot();
+    snapshot.relocations.relocations = [
+      {
+        relocationId: "move-loop",
+        stopId: "15417",
+        routeIds: ["ROUTE-N"],
+        temporaryStop: "Fifth Street near Market Street",
+        boardingInstruction: "Board at Fifth Street near Market Street.",
+        startsAt: new Date("2026-08-20T11:00:00.000Z"),
+        endsAt: new Date("2026-08-20T14:00:00.000Z"),
+      },
+    ];
+    const base = rideLeg();
+    const loop = rideLeg({ to: { ...base.from } });
+    const assessment = await createAccessibilityEvidence(
+      new MemoryAccessibilityEvidenceSource(snapshot),
+    ).evaluate(candidate([loop]), EVALUATED_AT);
+
+    expect(dependency(assessment, "stop_relocation")?.relocations).toEqual([
+      {
+        relocationId: "move-loop",
+        role: "boarding",
+        instruction: "Board at Fifth Street near Market Street.",
+      },
+    ]);
+  });
 
   it.each([
     {
