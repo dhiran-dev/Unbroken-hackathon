@@ -210,7 +210,7 @@ All tickets inherit these rules:
 ### SF-ROUTE-04 — Serve one citywide journey vertical slice
 
 - **Owner**: Journey planning
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Validate a citywide request and return one complete `JourneyPlan` with legs, warnings, changes, sources, and map data.
 - **Non-goals**: Browser UI and saved commutes.
 - **Blocked by**: SF-ROUTE-03.
@@ -222,6 +222,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Flagged endpoint returns plain unavailable; existing route adapter remains.
 - **Public copy**: Full journey wording and prominent source labels.
 - **Security/accessibility**: Rate/size/coordinate validation; safe URLs; response supports a complete text itinerary.
+- **Verification**: The public planner accepts only exact catalog references or a validated one-time SF location, resolves selected places through the active catalog, and projects the deterministic core result through an explicit allowlist that excludes candidate IDs, fingerprints, evidence entity IDs, internal URLs, and technical reason codes. The endpoint bounds JSON bodies, rejects duplicate/extra keys and malformed UTF-8, enforces the exact feature flag, applies a bounded privacy-preserving request-rate gate, returns fixed no-store errors, and maps separate SFMTA and 511 source provenance without inventing check times. Deterministic GeoJSON covers both endpoints, journey geometry, and unique affected stops. Fifty-one focused tests and all 412 repository tests passed, along with full lint, TypeScript, Prettier, whitespace checks, a production build using non-secret HTTPS placeholders, and the release scan. The built route returned the exact disabled 503/no-store contract from a synthetic local POST without contacting OTP or production data. T3 preview remained unable to navigate to the ready local server; this ticket adds an API rather than a rider-facing page, so the local POST is the applicable surface evidence.
+- **Completion commit**: `d588cf6`.
 
 ## Phase 4 — Public planner and map
 
