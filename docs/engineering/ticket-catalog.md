@@ -192,7 +192,7 @@ All tickets inherit these rules:
 ### SF-ROUTE-03 — Select and describe journeys deterministically
 
 - **Owner**: Journey planning
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Rank assessed candidates, calculate current duration, create stable instructions, and produce an internal change fingerprint.
 - **Non-goals**: HTTP handling, map rendering, or AI wording.
 - **Blocked by**: SF-ROUTE-02.
@@ -204,6 +204,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Return check/unavailable states conservatively; compatibility planner continues behind flag.
 - **Public copy**: Exact four state labels and mapped-stairs sidewalk caveat.
 - **Security/accessibility**: No LLM/network other than module adapters; instructions have ordered text.
+- **Verification**: The planner ranks at most five candidates against one immutable evidence snapshot, rejects blocked or structurally inconsistent assessments, and applies a monotonic live-adjusted timeline before deterministic selection. Exact endpoint-aware relocation wording, ordered plain instructions, allowlisted warnings, defensive output copies, and semantic route/stop/elevator/warning/ETA fingerprints are covered through the public core seam; fingerprints remain internal for the SF-ROUTE-04 allowlisted projection. One hundred twenty-six focused tests and all 361 repository tests passed, along with full lint, TypeScript, Prettier, whitespace checks, a production build using non-secret HTTPS placeholders, and the release scan. The local health endpoint and root returned 200. T3 preview was available, but navigation failed against the ready local server after a corrected retry; this ticket adds no rider-facing route, so build and local HTTP evidence are the applicable surface checks.
+- **Completion commit**: `7410d31`.
 
 ### SF-ROUTE-04 — Serve one citywide journey vertical slice
 
