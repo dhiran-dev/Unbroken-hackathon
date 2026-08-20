@@ -174,7 +174,7 @@ All tickets inherit these rules:
 ### SF-ROUTE-02 — Apply current accessibility and service evidence
 
 - **Owner**: Journey planning
-- **Status**: pending — verification and commit not recorded
+- **Status**: complete
 - **Goal and visible outcome**: Block disrupted candidates and classify every leg dependency as confirmed, unknown, or blocked.
 - **Non-goals**: Final wording and API handler.
 - **Blocked by**: SF-DATA-02, SF-DATA-03, SF-DATA-04, SF-REALTIME-01, and SF-ROUTE-01.
@@ -186,6 +186,8 @@ All tickets inherit these rules:
 - **Failure/rollback**: Unknown remains unknown; invalid realtime is excluded; no source failure becomes a transit event.
 - **Public copy**: Reason codes map later to approved plain warnings.
 - **Security/accessibility**: Public reasons are allowlisted and never expose raw source text.
+- **Verification**: The evaluator now classifies every mapped path, stop/station dependency, accessibility advisory, stop relocation, trip update, and service alert as confirmed, unknown, or blocked without promoting missing evidence. Exact per-leg time and endpoint matching covers elevator alternatives, Powell–Union Square topology, route-specific relocations, cancellations/deletions, skipped boarding or alighting stops, bounded delays, and SF-only alerts. Current source envelopes require fixed official URLs, checked times, strict entity shapes, duplicate-free identities, and safe dates/IDs; any malformed input fails closed to unavailable provenance without exposing source detail. The production advisory/relocation resolver uses reviewed exact labels against the active static feed, caches the 3,238-stop/68-route identity scan once per active snapshot, and reloads after feed promotion. Ninety-one focused tests and 326 repository tests passed, along with full lint, TypeScript, Prettier, whitespace checks, a production build using non-secret HTTPS placeholders, and the release scan. A read-only configured-database evaluation returned only expected `SOURCE_OLDER`/`SOURCE_UNAVAILABLE` reasons: elevator and accessibility-advisory evidence were older, stop relocations and realtime evidence unavailable, and the station-access guide current; it fabricated no blocking event. The local health endpoint and root returned 200. T3 preview status was available, but open/navigation failed against the ready server; this ticket adds no rider-facing page, so the production build and local HTTP checks are the applicable surface evidence.
+- **Completion commit**: `c70f2c4`.
 
 ### SF-ROUTE-03 — Select and describe journeys deterministically
 
