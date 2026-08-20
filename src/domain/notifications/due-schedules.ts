@@ -203,6 +203,29 @@ function parseDepartureTime(
   };
 }
 
+/** Resolve an approved schedule's Pacific wall-clock departure for one date. */
+export function resolvePacificDepartureAt(
+  serviceDate: string,
+  departureTime: string,
+): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(serviceDate)) return null;
+  const calendarDate = new Date(serviceDate + "T00:00:00.000Z");
+  if (
+    !Number.isFinite(calendarDate.getTime()) ||
+    calendarDate.toISOString().slice(0, 10) !== serviceDate
+  ) {
+    return null;
+  }
+  const parsed = parseDepartureTime(departureTime);
+  if (!parsed) return null;
+  return pacificWallClockToDate({
+    year: calendarDate.getUTCFullYear(),
+    month: calendarDate.getUTCMonth() + 1,
+    day: calendarDate.getUTCDate(),
+    ...parsed,
+  });
+}
+
 function isReminderLead(value: number): value is ReminderLeadMinutes {
   return (REMINDER_LEAD_MINUTES as readonly number[]).includes(value);
 }

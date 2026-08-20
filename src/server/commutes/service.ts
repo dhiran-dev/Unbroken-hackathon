@@ -100,7 +100,7 @@ export class PostgresCommuteScheduleStore implements CommuteScheduleStore {
           timezone: draft.timezone,
           leadMinutes: draft.reminderMinutes,
           paused: draft.paused,
-          updatedAt: sql`CURRENT_TIMESTAMP`,
+          updatedAt: sql`clock_timestamp()`,
         },
       })
       .returning({

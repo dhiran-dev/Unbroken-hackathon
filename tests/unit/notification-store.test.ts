@@ -22,6 +22,7 @@ type OutboxState = {
   status: "pending" | "sending" | "failed" | "sent" | "suppressed";
   attemptCount: number;
   nextAttemptAt: Date | null;
+  preparedAt: Date;
   updatedAt: Date;
 };
 
@@ -42,7 +43,8 @@ function outbox(index: number, serviceDate = SERVICE_DATE): OutboxState {
     idempotencyKey: "commute/" + scheduleId + "/" + serviceDate,
     status: "pending",
     attemptCount: 0,
-    nextAttemptAt: null,
+    nextAttemptAt: new Date(NOW),
+    preparedAt: new Date(NOW),
     updatedAt: NOW,
   };
 }
@@ -194,6 +196,8 @@ class FakeTransaction {
       row.scheduleId = scheduleId;
       row.idempotencyKey = String(params[3]);
       row.departureAt = new Date(String(params[2]));
+      row.nextAttemptAt = new Date(String(params[4]));
+      row.preparedAt = new Date(this.database.now);
       row.updatedAt = new Date(this.database.now);
       this.database.outboxes.set(row.id, row);
       return [{ id: row.id }];
@@ -239,6 +243,33 @@ class FakeTransaction {
       return [];
     }
     if (text.startsWith("insert into email_deliveries")) return [];
+    if (
+      text.includes("from commute_schedules") &&
+      text.includes("for update") &&
+      text.includes("where id =")
+    ) {
+      const scheduleId = String(params[0]);
+      const configured = this.database.scheduleRows.filter(
+        (row) => row.id === scheduleId,
+      );
+      if (configured.length > 0) return configured;
+      const outbox = [...this.database.outboxes.values()].find(
+        (row) => row.scheduleId === scheduleId,
+      );
+      return outbox
+        ? [
+            {
+              id: scheduleId,
+              paused: false,
+              days: ["wednesday"],
+              departureTime: "08:00",
+              timezone: "America/Los_Angeles",
+              leadMinutes: 30,
+              updatedAt: new Date(NOW),
+            },
+          ]
+        : [];
+    }
     if (text.includes("from commute_schedules"))
       return this.database.scheduleRows;
     return [];
@@ -254,6 +285,7 @@ class FakeTransaction {
       status: row.status,
       attemptCount: row.attemptCount,
       nextAttemptAt: row.nextAttemptAt ? new Date(row.nextAttemptAt) : null,
+      preparedAt: new Date(row.preparedAt),
       updatedAt: new Date(row.updatedAt),
     };
   }
@@ -388,6 +420,89 @@ describe("Postgres notification transaction seam", () => {
       secondClaim.status === "claimed" ? secondClaim.claim.attemptNumber : 0,
     ).toBe(2);
     expect(database.ledger("day", SERVICE_DATE).reservedCount).toBe(1);
+  });
+
+  it("allows a prepared row whose durable timestamp is just after its due instant", async () => {
+    const database = new FakeDatabase();
+    const notificationStore = store(database);
+    const row = outbox(1);
+    row.preparedAt = new Date("2026-08-19T14:30:05.000Z");
+    database.outboxes.set(row.id, row);
+
+    await expect(claim(notificationStore, row.id)).resolves.toMatchObject({
+      status: "claimed",
+    });
+  });
+
+  it("suppresses a pending row when the schedule was edited after preparation", async () => {
+    const database = new FakeDatabase();
+    const row = outbox(1);
+    database.outboxes.set(row.id, row);
+    database.scheduleRows = [
+      {
+        id: row.scheduleId,
+        paused: false,
+        days: ["wednesday"],
+        departureTime: "08:00",
+        timezone: "America/Los_Angeles",
+        leadMinutes: 60,
+        updatedAt: new Date("2026-08-19T14:30:01.000Z"),
+      },
+    ];
+    const notificationStore = store(database);
+
+    await expect(claim(notificationStore, row.id)).resolves.toEqual({
+      status: "suppressed",
+    });
+    expect(database.outboxes.get(row.id)?.status).toBe("suppressed");
+    expect(database.ledger("day", SERVICE_DATE).reservedCount).toBe(0);
+  });
+
+  it("releases a retry reservation when a schedule is paused after preparation", async () => {
+    const database = new FakeDatabase();
+    const row = outbox(1);
+    database.outboxes.set(row.id, row);
+    const notificationStore = store(database);
+    const first = await claim(notificationStore, row.id);
+    expect(first.status).toBe("claimed");
+    if (first.status !== "claimed") return;
+
+    await expect(
+      notificationStore.markFailure({
+        claim: first.claim,
+        decision: {
+          status: "retry_scheduled",
+          errorCode: "timeout",
+          nextAttemptAt: new Date("2026-08-19T14:31:00.000Z"),
+          pauseCircuit: false,
+        },
+      }),
+    ).resolves.toMatchObject({ status: "retry_scheduled" });
+
+    database.now = new Date("2026-08-19T14:31:00.000Z");
+    database.scheduleRows = [
+      {
+        id: row.scheduleId,
+        paused: true,
+        days: ["wednesday"],
+        departureTime: "08:00",
+        timezone: "America/Los_Angeles",
+        leadMinutes: 30,
+        updatedAt: new Date("2026-08-19T14:30:30.000Z"),
+      },
+    ];
+
+    await expect(
+      notificationStore.claim({
+        outboxId: row.id,
+        now: database.now,
+        dailyBudget: 80,
+        monthlyBudget: 2_480,
+        maxAttempts: 3,
+        leaseMs: 5 * 60 * 1_000,
+      }),
+    ).resolves.toEqual({ status: "suppressed" });
+    expect(database.ledger("day", SERVICE_DATE).reservedCount).toBe(0);
   });
 
   it("suppresses a claim when the DB clock crosses departure before provider work", async () => {

@@ -5,7 +5,10 @@ import type {
   SavedCommuteSchedule,
   Weekday,
 } from "@/domain/notifications/due-schedules";
-import { findDueSchedules } from "@/domain/notifications/due-schedules";
+import {
+  findDueSchedules,
+  resolvePacificDepartureAt,
+} from "@/domain/notifications/due-schedules";
 import {
   SEND_LEASE_MS,
   type NotificationClaimResult,
@@ -125,6 +128,7 @@ type OutboxRow = {
   status: string;
   attemptCount: number;
   nextAttemptAt: Date | null;
+  preparedAt: Date;
   updatedAt: Date;
 };
 
@@ -133,6 +137,7 @@ function outboxRow(value: unknown): OutboxRow | null {
   if (!source) return null;
   const attemptCount = safeInteger(source.attemptCount);
   const departureAt = safeDate(source.departureAt);
+  const preparedAt = safeDate(source.preparedAt);
   const updatedAt = safeDate(source.updatedAt);
   const nextAttemptAt =
     source.nextAttemptAt === null || source.nextAttemptAt === undefined
@@ -149,15 +154,17 @@ function outboxRow(value: unknown): OutboxRow | null {
     !status ||
     !OUTBOX_STATUSES.has(status) ||
     !departureAt ||
+    !preparedAt ||
     attemptCount === null ||
     attemptCount < 0 ||
     !updatedAt ||
     (source.nextAttemptAt !== null &&
       source.nextAttemptAt !== undefined &&
       !nextAttemptAt) ||
-    (status === "pending" && attemptCount !== 0) ||
+    (status === "pending" && (attemptCount !== 0 || nextAttemptAt === null)) ||
     (status === "sending" && attemptCount < 1) ||
-    (status !== "failed" && nextAttemptAt !== null)
+    ((status === "sending" || status === "sent" || status === "suppressed") &&
+      nextAttemptAt !== null)
   ) {
     return null;
   }
@@ -170,6 +177,7 @@ function outboxRow(value: unknown): OutboxRow | null {
     status,
     attemptCount,
     nextAttemptAt,
+    preparedAt,
     updatedAt,
   };
 }
@@ -189,6 +197,7 @@ async function lockedOutbox(
         status,
         attempt_count as "attemptCount",
         next_attempt_at as "nextAttemptAt",
+        prepared_at as "preparedAt",
         updated_at as "updatedAt"
       from notification_outbox
       where id = ${outboxId}
@@ -196,6 +205,99 @@ async function lockedOutbox(
     `,
   );
   return outboxRow(rows[0]);
+}
+
+function serviceWeekday(serviceDate: string): Weekday | null {
+  if (!validServiceDate(serviceDate)) return null;
+  const date = new Date(serviceDate + "T00:00:00.000Z");
+  const day = date.getUTCDay();
+  return (day === 0 ? 7 : day) as Weekday;
+}
+
+function validLockedSchedule(row: OutboxRow, value: unknown): boolean {
+  const schedule = object(value);
+  const days = scheduleDays(schedule?.days);
+  const leadMinutes = safeInteger(schedule?.leadMinutes);
+  const scheduleUpdatedAt = safeDate(schedule?.updatedAt);
+  const departureTime = schedule?.departureTime;
+  if (
+    !schedule ||
+    schedule.id !== row.scheduleId ||
+    schedule.paused !== false ||
+    schedule.timezone !== "America/Los_Angeles" ||
+    !days ||
+    !days.includes(serviceWeekday(row.serviceDate) as Weekday) ||
+    typeof departureTime !== "string" ||
+    !/^(?:[01]\d|2[0-3]):[0-5]\d$/u.test(departureTime) ||
+    leadMinutes === null ||
+    !APPROVED_LEADS.has(leadMinutes) ||
+    !scheduleUpdatedAt ||
+    scheduleUpdatedAt.getTime() > row.preparedAt.getTime()
+  ) {
+    return false;
+  }
+  const departureAt = resolvePacificDepartureAt(row.serviceDate, departureTime);
+  if (
+    departureAt === null ||
+    departureAt.getTime() !== row.departureAt.getTime()
+  ) {
+    return false;
+  }
+  if (row.attemptCount === 0) {
+    return (
+      row.nextAttemptAt !== null &&
+      departureAt.getTime() - leadMinutes * 60_000 ===
+        row.nextAttemptAt.getTime()
+    );
+  }
+  return true;
+}
+
+async function lockAndValidateSchedule(
+  transaction: Transaction,
+  row: OutboxRow,
+): Promise<boolean> {
+  const schedules = await transaction.execute(
+    drizzleSql`
+      select
+        id::text as id,
+        paused,
+        days,
+        departure_time as "departureTime",
+        timezone,
+        lead_minutes as "leadMinutes",
+        updated_at as "updatedAt"
+      from commute_schedules
+      where id = ${row.scheduleId}
+      for update
+    `,
+  );
+  return schedules.length === 1 && validLockedSchedule(row, schedules[0]);
+}
+
+async function suppressLockedOutbox(transaction: Transaction, row: OutboxRow) {
+  if (row.attemptCount > 0) {
+    await settleBudgetReservation(
+      transaction,
+      row.serviceDate,
+      row.id,
+      "release",
+    );
+  }
+  const updated = await transaction.execute(
+    drizzleSql`
+      update notification_outbox
+      set status = 'suppressed', next_attempt_at = null,
+          updated_at = clock_timestamp()
+      where id = ${row.id}
+        and status = ${row.status}
+        and attempt_count = ${row.attemptCount}
+      returning id
+    `,
+  );
+  if (updated.length !== 1) {
+    throw new Error("notification suppression transition failed");
+  }
 }
 
 async function lockBudget(
@@ -603,22 +705,7 @@ export class PostgresNotificationOutboxStore implements NotificationDeliveryStor
         return { status: "failed" as const };
       }
       if (now >= row.departureAt) {
-        if (row.attemptCount > 0) {
-          await settleBudgetReservation(
-            transaction,
-            row.serviceDate,
-            row.id,
-            "release",
-          );
-        }
-        await transaction.execute(
-          drizzleSql`
-            update notification_outbox
-            set status = 'suppressed', next_attempt_at = null,
-                updated_at = clock_timestamp()
-            where id = ${row.id}
-          `,
-        );
+        await suppressLockedOutbox(transaction, row);
         return { status: "suppressed" as const };
       }
       if (
@@ -645,9 +732,15 @@ export class PostgresNotificationOutboxStore implements NotificationDeliveryStor
             set status = 'failed', next_attempt_at = null,
                 updated_at = clock_timestamp()
             where id = ${row.id}
+              and status = ${row.status}
+              and attempt_count = ${row.attemptCount}
           `,
         );
         return { status: "failed" as const };
+      }
+      if (!(await lockAndValidateSchedule(transaction, row))) {
+        await suppressLockedOutbox(transaction, row);
+        return { status: "suppressed" as const };
       }
       if (await circuitIsPaused(transaction)) {
         return { status: "circuit_paused" as const };
@@ -721,28 +814,13 @@ export class PostgresNotificationOutboxStore implements NotificationDeliveryStor
       ) {
         return { status: "ignored" as const };
       }
+      if (!(await lockAndValidateSchedule(transaction, row))) {
+        await suppressLockedOutbox(transaction, row);
+        return { status: "suppressed" as const };
+      }
       if (now < row.departureAt) return { status: "ready" as const };
 
-      await settleBudgetReservation(
-        transaction,
-        row.serviceDate,
-        row.id,
-        "release",
-      );
-      const updated = await transaction.execute(
-        drizzleSql`
-          update notification_outbox
-          set status = 'suppressed', next_attempt_at = null,
-              updated_at = clock_timestamp()
-          where id = ${row.id}
-            and status = 'sending'
-            and attempt_count = ${input.claim.attemptNumber}
-          returning id
-        `,
-      );
-      if (updated.length !== 1) {
-        throw new Error("notification send readiness transition failed");
-      }
+      await suppressLockedOutbox(transaction, row);
       return { status: "suppressed" as const };
     });
   }
