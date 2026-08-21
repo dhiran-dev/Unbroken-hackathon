@@ -477,24 +477,41 @@ export type LeaderboardResult = {
 };
 
 /**
- * Entries of `boardKey` from the most recent immutable leaderboard snapshot,
- * ordered by rank. Returns null when no snapshot exists at all; an existing
- * snapshot without that board yields empty entries.
+ * Entries of `boardKey` from the most recent immutable leaderboard snapshot
+ * for that board, ordered by rank. Snapshots written by the A7b rebuild carry
+ * their board in `summary.boardKey`, so the latest snapshot FOR the board is
+ * selected; older snapshots without the tag fall back to the legacy behavior
+ * (latest snapshot of any board, filtered by metric key). Returns null when
+ * no snapshot exists at all; an existing snapshot without that board yields
+ * empty entries.
  */
 export async function getLeaderboard(
   boardKey: string,
   limit = 50,
 ): Promise<LeaderboardResult | null> {
-  const snapshots = await db
+  const tagged = await db
     .select({
       id: pulseLeaderboardSnapshots.id,
       rebuiltAt: pulseLeaderboardSnapshots.rebuiltAt,
     })
     .from(pulseLeaderboardSnapshots)
+    .where(sql`${pulseLeaderboardSnapshots.summary} ->> 'boardKey' = ${boardKey}`)
     .orderBy(desc(pulseLeaderboardSnapshots.rebuiltAt))
     .limit(1);
 
-  const snapshot = snapshots[0];
+  const snapshot =
+    tagged[0] ??
+    (
+      await db
+        .select({
+          id: pulseLeaderboardSnapshots.id,
+          rebuiltAt: pulseLeaderboardSnapshots.rebuiltAt,
+        })
+        .from(pulseLeaderboardSnapshots)
+        .orderBy(desc(pulseLeaderboardSnapshots.rebuiltAt))
+        .limit(1)
+    )[0];
+
   if (!snapshot) return null;
 
   const rows = await db

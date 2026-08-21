@@ -1,5 +1,5 @@
 /**
- * PulseRank job dispatcher (Agent A7a skeleton — NO data binding).
+ * PulseRank job dispatcher (Agent A7a skeleton, handlers wired by A7b).
  *
  * Single fail-closed gate between any enqueueing surface (API routes, worker,
  * CLI) and PulseRank job execution:
@@ -10,13 +10,16 @@
  * - Rejection never throws and never executes anything; it returns a structured
  *   `{ accepted: false }` result so callers can log and move on.
  *
- * Every accepted job resolves to a handler from `pulseJobHandlers`. All
- * handlers are typed stubs (`{ status: "not_implemented", job }`) until the
- * pipeline agents bind real implementations (ingestion, validation, promotion,
- * change detection, leaderboards, retention, incidents, healing).
+ * Every accepted job resolves to a handler from `pulseJobHandlers`. Six jobs
+ * are wired to real pipeline implementations in `./pulse-handlers` (ingest,
+ * validate, promote, leaderboards, sample + discovery collection); the rest
+ * remain typed stubs (`{ status: "not_implemented", job }`). The dispatch
+ * contract (fail-closed, never throws) is unchanged by the wiring.
  *
- * Deliberately dependency-free: importing this module must never open a
- * database connection or a network socket.
+ * Import-safety: importing this module still never opens a database connection
+ * or a network socket. `./pulse-handlers` reaches the db client only through
+ * the lazy dynamic import inside `runInPulseTransaction`, and the Bright Data
+ * client only spawns a process when a handler actually runs.
  */
 
 /** The complete set of PulseRank job names. Nothing else may be dispatched. */
@@ -55,6 +58,8 @@ export const LEGACY_JOB_DENYLIST = [
 
 export type LegacyJobName = (typeof LEGACY_JOB_DENYLIST)[number];
 
+import { createDefaultPulseJobHandlers } from "./pulse-handlers";
+
 /** Structured rejection reason. One value today; room for more later. */
 export type PulseJobRejectionReason = "legacy_or_unknown_job_rejected";
 
@@ -70,6 +75,32 @@ export type PulseJobNotImplementedResult = {
   job: PulseJobName;
 };
 
+/** Structured success: the handler ran its pipeline to a definite outcome. */
+export type PulseJobOkResult = {
+  status: "ok";
+  job: PulseJobName;
+  summary: string;
+  details: Record<string, unknown>;
+};
+
+/** Structured skip: the job was intentionally not executed (e.g. flag off). */
+export type PulseJobSkippedResult = {
+  status: "skipped";
+  job: PulseJobName;
+  reason: string;
+  summary: string;
+  details: Record<string, unknown>;
+};
+
+/** Structured failure: the handler executed and failed with a stable code. */
+export type PulseJobFailedResult = {
+  status: "failed";
+  job: PulseJobName;
+  errorCode: string;
+  message: string;
+  details: Record<string, unknown>;
+};
+
 export type PulseJobHandlerErrorResult = {
   status: "handler_error";
   job: PulseJobName;
@@ -78,6 +109,9 @@ export type PulseJobHandlerErrorResult = {
 
 export type PulseJobExecutionResult =
   | PulseJobNotImplementedResult
+  | PulseJobOkResult
+  | PulseJobSkippedResult
+  | PulseJobFailedResult
   | PulseJobHandlerErrorResult;
 
 export type PulseJobDispatchResult =
@@ -98,30 +132,16 @@ function notImplementedHandler(job: PulseJobName): PulseJobHandler {
 }
 
 /**
- * Handler registry, one entry per PulseRank job name. Every handler is a typed
- * stub until its pipeline agent lands the real implementation; the dispatch
- * contract (fail-closed, never throws) does not change when they do.
+ * Handler registry, one entry per PulseRank job name. The six A7b jobs are
+ * bound to the real pipeline implementations from `./pulse-handlers` with the
+ * default runtime (real db transactions, env flags, wall clock, Bright Data
+ * client); the rest stay typed stubs. Tests build their own registry via
+ * `createPulseJobHandlers(runtime, notImplementedHandler)` with an in-memory
+ * repo — they never mutate this module-level default.
  */
 export const pulseJobHandlers: Readonly<
   Record<PulseJobName, PulseJobHandler>
-> = Object.freeze({
-  "pulse.collect.sample": notImplementedHandler("pulse.collect.sample"),
-  "pulse.collect.discovery": notImplementedHandler("pulse.collect.discovery"),
-  "pulse.collect.refresh-batch": notImplementedHandler(
-    "pulse.collect.refresh-batch",
-  ),
-  "pulse.ingest.run": notImplementedHandler("pulse.ingest.run"),
-  "pulse.validate.run": notImplementedHandler("pulse.validate.run"),
-  "pulse.promote.snapshot": notImplementedHandler("pulse.promote.snapshot"),
-  "pulse.detect.changes": notImplementedHandler("pulse.detect.changes"),
-  "pulse.rebuild.leaderboards": notImplementedHandler(
-    "pulse.rebuild.leaderboards",
-  ),
-  "pulse.retention": notImplementedHandler("pulse.retention"),
-  "pulse.incident.open": notImplementedHandler("pulse.incident.open"),
-  "pulse.heal.preview": notImplementedHandler("pulse.heal.preview"),
-  "pulse.heal.verify": notImplementedHandler("pulse.heal.verify"),
-});
+> = Object.freeze(createDefaultPulseJobHandlers(notImplementedHandler));
 
 /** True only for an exact, case-sensitive PulseRank job name. */
 export function isPulseJobName(name: unknown): name is PulseJobName {

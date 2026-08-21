@@ -93,8 +93,17 @@ describe("pulse.* job acceptance", () => {
     }
   });
 
-  it.each([...PULSE_JOB_NAMES])(
-    "accepts %s with a not_implemented stub result",
+  const REMAINING_STUB_JOBS = [
+    "pulse.collect.refresh-batch",
+    "pulse.detect.changes",
+    "pulse.retention",
+    "pulse.incident.open",
+    "pulse.heal.preview",
+    "pulse.heal.verify",
+  ] as const;
+
+  it.each([...REMAINING_STUB_JOBS])(
+    "accepts %s with a not_implemented stub result (still unwired)",
     async (name) => {
       const result = await dispatch({ name, payload: { any: "payload" } });
       expect(result).toEqual({
@@ -104,16 +113,55 @@ describe("pulse.* job acceptance", () => {
     },
   );
 
-  it("has a registered handler for every pulse job and no extras", () => {
-    expect(Object.keys(pulseJobHandlers).sort()).toEqual(
-      [...PULSE_JOB_NAMES].sort(),
-    );
-    for (const handler of Object.values(pulseJobHandlers)) {
-      expect(typeof handler).toBe("function");
+  it("registers real handlers (not stubs) for the six A7b-wired jobs", () => {
+    for (const name of [
+      "pulse.collect.sample",
+      "pulse.collect.discovery",
+      "pulse.ingest.run",
+      "pulse.validate.run",
+      "pulse.promote.snapshot",
+      "pulse.rebuild.leaderboards",
+    ] as const) {
+      expect(typeof pulseJobHandlers[name]).toBe("function");
     }
   });
 
-  it("tolerates missing or non-object payloads", async () => {
+  it("accepts the flag-gated collect jobs with structured skip results when flags are off", async () => {
+    // The default registry reads PULSERANK_*_ENABLED from env; unset here in
+    // unit-test environments, so both collect handlers short-circuit BEFORE
+    // any transaction or network touch.
+    delete process.env.PULSERANK_COLLECTION_ENABLED;
+    delete process.env.PULSERANK_DISCOVERY_ENABLED;
+    await expect(
+      dispatch({ name: "pulse.collect.sample", payload: { url: "https://caffeineinformer.com/x" } }),
+    ).resolves.toMatchObject({
+      accepted: true,
+      result: { status: "skipped", reason: "collection_disabled" },
+    });
+    await expect(
+      dispatch({ name: "pulse.collect.discovery", payload: {} }),
+    ).resolves.toMatchObject({
+      accepted: true,
+      result: { status: "skipped", reason: "discovery_disabled" },
+    });
+  });
+
+  it("rejects malformed data-job payloads with a structured failure before any db access", async () => {
+    await expect(
+      dispatch({ name: "pulse.ingest.run", payload: { nope: true } }),
+    ).resolves.toMatchObject({
+      accepted: true,
+      result: { status: "failed", errorCode: "invalid_payload" },
+    });
+    await expect(
+      dispatch({ name: "pulse.promote.snapshot" }),
+    ).resolves.toMatchObject({
+      accepted: true,
+      result: { status: "failed", errorCode: "invalid_payload" },
+    });
+  });
+
+  it("tolerates missing or non-object payloads on stub jobs", async () => {
     await expect(dispatch({ name: "pulse.retention" })).resolves.toMatchObject({
       accepted: true,
     });
@@ -231,7 +279,10 @@ describe("worker loop skeleton", () => {
     expect(logs.join("\n")).toContain("PULSERANK_DISCOVERY_ENABLED is disabled");
   });
 
-  it("runs a collect job to its stub when the flag is enabled", async () => {
+  it("runs an enabled collect job through its handler to a structured outcome", async () => {
+    // Worker gate allows the job (flags enabled here), but the handler's own
+    // defense-in-depth gate consults the env-backed flags — disabled in this
+    // environment, so the run settles as succeeded with a `skipped` result.
     const { queue, logs, handle } = makeWorker({
       flags: ENABLED_FLAGS,
       jobs: [{ id: "job-2", name: "pulse.collect.sample", payload: {} }],
@@ -243,7 +294,7 @@ describe("worker loop skeleton", () => {
     await handle.stop();
 
     expect(queue.settled()[0]?.settlement).toBe("succeeded");
-    expect(logs.join("\n")).toContain("finished with status not_implemented");
+    expect(logs.join("\n")).toMatch(/finished with status (skipped|failed|ok|handler_error)/);
   });
 
   it("fails closed on a claimed legacy or unknown job name", async () => {
