@@ -2,7 +2,7 @@ import { sql } from "@/server/db/client";
 import { runCollection } from "@/server/services/collection";
 
 try {
-  const result = await runCollection("manual_cli");
+  const result: { status: string } = await runCollection("manual_cli");
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   if (result.status !== "accepted") process.exitCode = 2;
 } catch (error) {

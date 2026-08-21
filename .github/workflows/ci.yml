@@ -18,12 +18,9 @@ jobs:
     timeout-minutes: 15
     env:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
-      BETTER_AUTH_URL: https://127.0.0.1:3000
-      BETTER_AUTH_SECRET: ci-only-secret-not-used-at-runtime-0123456789abcdef
-      DATABASE_URL: postgres://unbroken:unbroken@127.0.0.1:5432/unbroken?sslmode=require
+      DATABASE_URL: postgres://ci:ci@127.0.0.1:5432/unbroken?sslmode=require
       BRIGHTDATA_API_TOKEN: ci-placeholder
-      BRIGHTDATA_COLLECTOR_ID: c_msyjsllt1r9ej5tdub
-      SFMTA_SOURCE_URL: https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod
+      BRIGHTDATA_COLLECTOR_ID: c_mt2yacvcyvyvim56d
       FIREWORKS_API_KEY: ci-placeholder
       FIREWORKS_API_BASE_URL: https://api.fireworks.ai/inference/v1
       FIREWORKS_MODEL: accounts/fireworks/models/deepseek-v4-flash-0731

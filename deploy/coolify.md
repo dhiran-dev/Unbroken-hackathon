@@ -78,7 +78,7 @@ The Dockerfile also provides an `ops` target for one-off database work. It conta
 2. Set one-time `OWNER_*` and/or `JUDGE_ADMIN_*` variables and run `bun run auth:bootstrap`.
 3. Remove both bootstrap passwords from the task and every long-lived web/worker environment before starting services.
 
-The production environment must keep the exact `BRIGHTDATA_COLLECTOR_ID=c_msyjsllt1r9ej5tdub` and SFMTA source URL from `.env.example`. The exact existing PostgreSQL endpoint is temporarily owner-authorized without `sslmode`; this exception is restricted in code to that host, port, and database. Every other database URL must use `sslmode=require`, `verify-ca`, or `verify-full`, and explicit weak modes are rejected. `BETTER_AUTH_URL` must be HTTPS. Do not print task environments or migration output containing credentials.
+The production environment must keep the exact `BRIGHTDATA_COLLECTOR_ID` PulseRank collector value from `.env.example` (`c_mt2yacvcyvyvim56d`). The retired UNBROKEN collector identity is audit history only and must never be configured. The exact existing PostgreSQL endpoint is temporarily owner-authorized without `sslmode`; this exception is restricted in code to that host, port, and database. Every other database URL must use `sslmode=require`, `verify-ca`, or `verify-full`, and explicit weak modes are rejected. Do not print task environments or migration output containing credentials.
 
 ## Rollback
 

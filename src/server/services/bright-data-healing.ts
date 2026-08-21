@@ -1,19 +1,25 @@
 import path from "node:path";
 
 import { brightDataHealEnvelopeSchema } from "@/domain/incidents/contract";
-import { getServerEnv, PRODUCTION_COLLECTOR_ID } from "@/lib/env";
+import { getServerEnv } from "@/lib/env";
 
 const CLI_TIMEOUT_MS = 11 * 60 * 1_000;
 const MAX_OUTPUT_BYTES = 5 * 1024 * 1024;
 
+/**
+ * True only when the envelope's collector id matches the env-configured
+ * PulseRank collector exactly (disposition RETAIN_AND_REFACTOR: the healing
+ * plumbing is reused with the NEW collector identity; the retired UNBROKEN
+ * collector must never be invoked or accepted).
+ */
 export function hasStableProductionCollectorId(
   value: unknown,
-  configuredCollectorId = PRODUCTION_COLLECTOR_ID,
+  configuredCollectorId = getServerEnv().BRIGHTDATA_COLLECTOR_ID,
 ) {
   return (
     typeof value === "string" &&
-    configuredCollectorId === PRODUCTION_COLLECTOR_ID &&
-    value === PRODUCTION_COLLECTOR_ID
+    configuredCollectorId === getServerEnv().BRIGHTDATA_COLLECTOR_ID &&
+    value === configuredCollectorId
   );
 }
 
@@ -139,7 +145,7 @@ async function runBrightDataCli(args: string[]) {
   }
   return parsed.data;
 }
-export async function requestBrightDataHealing(prompt: string) {
+export async function requestBrightDataHealing(prompt: string, sourceUrl: string) {
   const env = getServerEnv();
   return runBrightDataCli([
     "scraper",
@@ -147,21 +153,21 @@ export async function requestBrightDataHealing(prompt: string) {
     env.BRIGHTDATA_COLLECTOR_ID,
     prompt,
     "--url",
-    env.SFMTA_SOURCE_URL,
+    sourceUrl,
     "--timeout",
     "600",
     "--json",
   ]);
 }
 
-export async function resolveBrightDataHealing(decision: "approve" | "reject") {
+export async function resolveBrightDataHealing(decision: "approve" | "reject", sourceUrl: string) {
   const env = getServerEnv();
   const args = [
     "scraper",
     "approve",
     env.BRIGHTDATA_COLLECTOR_ID,
     "--url",
-    env.SFMTA_SOURCE_URL,
+    sourceUrl,
     "--timeout",
     "600",
     "--json",

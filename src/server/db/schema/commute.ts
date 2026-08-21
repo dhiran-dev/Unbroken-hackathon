@@ -13,8 +13,22 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-import type { CommuteDay } from "@/domain/commute/schedule";
 import { user } from "./auth";
+
+/**
+ * Frozen mirror of the applied DB contract (disposition RETAIN). The domain
+ * module `@/domain/commute/schedule` was removed with the L1 cleanup batch, so
+ * the day union is inlined here verbatim to keep the migration-history mirror
+ * compiling without resurrecting the deleted runtime.
+ */
+type CommuteDay =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
 
 export const commuteSchedules = pgTable(
   "commute_schedules",

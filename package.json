@@ -21,14 +21,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
     "db:studio": "drizzle-kit studio",
-    "auth:bootstrap": "bun scripts/bootstrap-accounts.ts",
     "collect:run": "bun scripts/run-collection.ts",
-    "transit:refresh": "bun scripts/refresh-gtfs.ts",
-    "advisories:refresh": "bun scripts/refresh-accessibility-advisories.ts",
-    "relocations:refresh": "bun scripts/refresh-stop-relocations.ts",
-    "accessibility-guides:refresh": "bun scripts/refresh-stop-accessibility-guides.ts",
-    "transit:verify": "bun scripts/verify-transit-store.ts",
     "worker": "bun src/worker/index.ts",
+    "worker:pulse": "bun src/worker/pulse-worker.ts",
     "release:check": "bun scripts/release-check.ts"
   },
   "dependencies": {

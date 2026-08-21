@@ -6,10 +6,17 @@ import {
   type IncidentState,
 } from "@/domain/incidents/machine";
 
-export const BRIGHT_DATA_JUDGE_COLLECTOR_ID = "c_msyjsllt1r9ej5tdub" as const;
+/**
+ * Audit-only descriptors of the retired UNBROKEN judge evidence chain. The
+ * literal legacy collector identity and source URL live only in documentation
+ * (docs/, AGENTS.md); these placeholders are non-invocable markers so the
+ * quarantined evidence timeline stays honest without re-introducing the
+ * prohibited runtime references (release gate: legacy-runtime-references).
+ */
+export const BRIGHT_DATA_JUDGE_COLLECTOR_ID = "c_retired_legacy_audit_only" as const;
 export const BRIGHT_DATA_JUDGE_SOURCE_URL =
-  "https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod" as const;
-export const BRIGHT_DATA_JUDGE_CONTRACT_VERSION = "sfmta-elevator-v1" as const;
+  "https://retired.invalid/legacy-elevator-source" as const;
+export const BRIGHT_DATA_JUDGE_CONTRACT_VERSION = "legacy-elevator-v1" as const;
 
 export type JudgeFunctionKind = "advisory" | "interception" | "extractor";
 

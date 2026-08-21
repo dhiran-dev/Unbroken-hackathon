@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { getAppEnv } from "@/lib/env";
+import { getServerEnv } from "@/lib/env";
 import * as schema from "./schema";
 
 const globalForDatabase = globalThis as unknown as {
@@ -10,7 +10,7 @@ const globalForDatabase = globalThis as unknown as {
 
 const connection =
   globalForDatabase.unbrokenSql ??
-  postgres(getAppEnv().DATABASE_URL, {
+  postgres(getServerEnv().DATABASE_URL, {
     max: process.env.NODE_ENV === "production" ? 10 : 3,
     idle_timeout: 20,
     connect_timeout: 10,

@@ -25,7 +25,8 @@ export class BrightDataError extends Error {
 type BrightDataConfig = {
   BRIGHTDATA_API_TOKEN: ServerEnv["BRIGHTDATA_API_TOKEN"];
   BRIGHTDATA_COLLECTOR_ID: string;
-  SFMTA_SOURCE_URL: string;
+  /** Target page the collector scrapes; supplied by the caller (PulseRank binding). */
+  sourceUrl: string;
 };
 
 function delay(milliseconds: number) {
@@ -168,7 +169,7 @@ export async function triggerBrightDataCollection(config: BrightDataConfig) {
         Authorization: `Bearer ${config.BRIGHTDATA_API_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify([{ url: config.SFMTA_SOURCE_URL }]),
+      body: JSON.stringify([{ url: config.sourceUrl }]),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     }),
   );

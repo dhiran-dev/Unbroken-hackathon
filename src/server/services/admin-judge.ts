@@ -25,24 +25,24 @@ const ADMIN_SOURCE_DEFINITIONS = [
   {
     key: "accessibility_advisories",
     label: "Accessibility advisories",
-    sourceUrl: "https://www.sfmta.com/travel-transit-updates",
+    sourceUrl: "https://retired.invalid/legacy-advisory-source",
   },
   {
     key: "stop_relocations",
     label: "Stop relocations",
-    sourceUrl:
-      "https://www.sfmta.com/travel-updates/temporary-stop-relocations",
+    sourceUrl: "https://retired.invalid/legacy-relocation-source",
   },
   {
     key: "stop_accessibility",
     label: "Accessible-stop guidance",
-    sourceUrl:
-      "https://www.sfmta.com/getting-around/sfmta-accessibility/muni-access-guide/access-muni-metro/muni-metro-accessible-stops",
+    sourceUrl: "https://retired.invalid/legacy-guidance-source",
   },
 ] as const;
 
 const SYNTHETIC_TIMELINE_BASE = "2026-08-20T12:00:00.000Z";
-const SAFE_SOURCE_URL = /^https:\/\/(?:www\.sfmta\.com|511\.org)\//u;
+// Only non-invocable audit descriptors and the public 511 open-data page are
+// accepted as source URLs in judge evidence.
+const SAFE_SOURCE_URL = /^https:\/\/(?:retired\.invalid|511\.org)\//u;
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
@@ -129,7 +129,7 @@ export type AdminJudgeEvidence = {
   synthetic: true;
   sanitized: true;
   collector: {
-    name: "SFMTA elevator status trusted collector";
+    name: "Retired UNBROKEN elevator collector (audit)";
     collectorId: typeof BRIGHT_DATA_JUDGE_COLLECTOR_ID;
     sourceUrl: typeof BRIGHT_DATA_JUDGE_SOURCE_URL;
     identityStable: true;
@@ -520,11 +520,9 @@ function syntheticTimeline(at: Date): JudgeTimeline {
 
 function productionReaders(): AdminJudgeReaders {
   return {
-    readSourceSummary: async (at) => {
-      const { getAdminCoverage } =
-        await import("@/server/services/admin-coverage");
-      return getAdminCoverage(at);
-    },
+    // The legacy admin-coverage service was removed with the L1 cleanup batch;
+    // live source coverage is unavailable until the PulseRank reader lands.
+    readSourceSummary: async () => unavailableSourceSummary(),
     readIncidentEvidence: async () => {
       const [{ parseIncidentFilters, queryIncidents }, { incidentDetail }] =
         await Promise.all([
@@ -592,7 +590,7 @@ export function createAdminJudgeService(
         synthetic: true as const,
         sanitized: true as const,
         collector: {
-          name: "SFMTA elevator status trusted collector",
+          name: "Retired UNBROKEN elevator collector (audit)",
           collectorId: BRIGHT_DATA_JUDGE_COLLECTOR_ID,
           sourceUrl: BRIGHT_DATA_JUDGE_SOURCE_URL,
           identityStable: true as const,
