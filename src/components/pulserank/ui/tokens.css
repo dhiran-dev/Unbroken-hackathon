@@ -1,0 +1,73 @@
+/*
+ * PulseRank UI design tokens (A9a placeholder palette).
+ *
+ * Single source of truth for every primitive under src/components/pulserank/ui/.
+ * These values are PLACEHOLDERS chosen to sit on the dark near-black theme with
+ * a purple accent; final aesthetics arrive later from owner-provided mockups.
+ * A reskin should only ever edit this file — components reference tokens via
+ * var(--pr-*) and must not hardcode colors.
+ *
+ * Import model: each primitive imports "./tokens.css" once; bundlers dedupe the
+ * module graph so the sheet ships exactly once. Nothing here touches the global
+ * stylesheet or Tailwind config.
+ */
+
+:root {
+  /* Surfaces (near-black plum) */
+  --pr-surface-0: #050208;
+  --pr-surface-1: #0a0612;
+
+  /*
+   * Accent — purple family anchored on #a855f7.
+   * "strong"/"deep" bracket the base for hovers and emphasis; subtle/bg and
+   * border are low-alpha washes for chips and quiet fills.
+   */
+  --pr-accent-strong: #c084fc;
+  --pr-accent: #a855f7;
+  --pr-accent-deep: #7e22ce;
+  --pr-accent-subtle-bg: rgba(168, 85, 247, 0.12);
+  --pr-accent-border: rgba(168, 85, 247, 0.35);
+  --pr-accent-foreground: #faf5ff;
+
+  /* Semantic status */
+  --pr-success: #34d399;
+  --pr-success-bg: rgba(52, 211, 153, 0.12);
+  --pr-success-border: rgba(52, 211, 153, 0.38);
+
+  --pr-warn: #fbbf24;
+  --pr-warn-bg: rgba(251, 191, 36, 0.13);
+  --pr-warn-border: rgba(251, 191, 36, 0.42);
+
+  --pr-danger: #f87171;
+  --pr-danger-bg: rgba(248, 113, 113, 0.12);
+  --pr-danger-border: rgba(248, 113, 113, 0.4);
+
+  --pr-info: #93c5fd;
+  --pr-info-bg: rgba(147, 197, 253, 0.1);
+  --pr-info-border: rgba(147, 197, 253, 0.32);
+
+  /* Text */
+  --pr-text-primary: #f4f1fa;
+  --pr-text-muted: #9d94b3;
+
+  /*
+   * FieldState -> visual mapping. Colors stay DISTINCT per state and pair with
+   * distinct shapes in FieldStateBadge (dashed square / filled pill "!") /
+   * sharp rectangle "≠" / hollow pill), so states never rely on hue alone.
+   */
+  --pr-state-not-published-fg: var(--pr-text-muted);
+  --pr-state-not-published-bg: transparent;
+  --pr-state-not-published-border: rgba(157, 148, 179, 0.5);
+
+  --pr-state-unparseable-fg: var(--pr-warn);
+  --pr-state-unparseable-bg: var(--pr-warn-bg);
+  --pr-state-unparseable-border: var(--pr-warn-border);
+
+  --pr-state-conflicting-fg: var(--pr-danger);
+  --pr-state-conflicting-bg: var(--pr-danger-bg);
+  --pr-state-conflicting-border: var(--pr-danger-border);
+
+  --pr-state-not-applicable-fg: var(--pr-info);
+  --pr-state-not-applicable-bg: var(--pr-info-bg);
+  --pr-state-not-applicable-border: var(--pr-info-border);
+}
