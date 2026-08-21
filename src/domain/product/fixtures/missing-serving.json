@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/herbal-energy-tea",
+    "slug": "herbal-energy-tea",
+    "observedAt": "2026-08-21T10:38:00Z",
+    "pageFingerprint": "sha256:8f31b7d40a95c2670e483ba51296cf70"
+  },
+  "identity": {
+    "name": "Herbal Energy Tea",
+    "categoryLabel": "Tea",
+    "pageTitle": "Caffeine in Herbal Energy Tea"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 120,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "contains 120 mg of caffeine per container",
+      "candidates": [120]
+    },
+    "sourceLevel": "high",
+    "serving": {
+      "state": "not_published",
+      "value": null,
+      "unit": null,
+      "form": "unknown",
+      "normalizedMl": null,
+      "rawText": null
+    },
+    "caloriesKcal": {
+      "state": "not_published",
+      "value": null,
+      "min": null,
+      "max": null,
+      "qualifier": "unknown",
+      "rawText": null,
+      "candidates": []
+    },
+    "sugarG": {
+      "state": "not_published",
+      "value": null,
+      "min": null,
+      "max": null,
+      "qualifier": "unknown",
+      "rawText": null,
+      "candidates": []
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "present",
+    "text": "Filtered water, brewed green tea, cane sugar, guarana extract, ginseng, natural flavor",
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "ingredients"],
+    "sourceLinks": [],
+    "warnings": [
+      "total caffeine retained without per-serving normalization: serving size not published on page"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}
