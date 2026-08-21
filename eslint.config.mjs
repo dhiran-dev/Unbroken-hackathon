@@ -7,11 +7,13 @@ export default defineConfig([
   ...nextTs,
   globalIgnores([
     ".next/**",
+    ".worktrees/**",
     "coverage/**",
     "dist/**",
     "drizzle/meta/**",
     "next-env.d.ts",
     "playwright-report/**",
+    "sessions/**",
     "test-results/**",
   ]),
 ]);
