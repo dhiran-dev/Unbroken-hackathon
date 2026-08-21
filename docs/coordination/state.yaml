@@ -1,6 +1,6 @@
 project: pulserank
 active_checkpoint: 1
-active_gate: G1 # G0 partial: backup+tag+branch done; legacy worker stop pending Coolify access (orchestrator follow-up with owner)
+active_gate: G2 # collector viable; A1 retry running; contract freeze G3 pending A1+real output review
 started_at: 2026-08-21T18:15:00+05:30
 orchestrator: ox-alpha (Hermes desktop session)
 repo: https://github.com/dhiran-dev/Unbroken-hackathon.git
@@ -8,8 +8,8 @@ branch_integration: pulserank-rebuild
 branch_archive: archive/unbroken-final-before-pulserank
 tag_before_rebuild: unbroken-final-before-pulserank
 db_backup: backups/unbroken-before-pulserank-20260821-1808.dump
-collector_id: null # set by A2 after creation; must survive healing
-schema_version: draft
+collector_id: c_mt2yacvcyvyvim56d # created verified by A2; must survive healing
+schema_version: draft-v1 # A3 provisional contracts merged
 trusted_run_id: null
 three_enabled: false
 public_extended_fields: false
@@ -23,7 +23,7 @@ blocked:
   - source_images # audit_only until publication permission
   - non_caffeine_fields_until_permission
 waves:
-  wave1: [A0-repo-safety, A1-source-audit, A2-collector, A3-contract]
+  wave1: {A0: merged, A2: merged, A3: merged, A1: retry_in_progress}
   pending: [A4-database, A5-validation, A6-fixtures, A7-worker, A8-api, A9-design, A10-frontend, A11-local-state, A12-judge, A13-qa, A14-docs]
 mockups:
   style_source: example_mockups/ (dark product-studio, purple accent, approved by owner as visual language)
