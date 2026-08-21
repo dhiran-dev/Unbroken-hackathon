@@ -5,27 +5,24 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "UNBROKEN — Step-free Muni trips",
-    template: "%s — UNBROKEN",
+    default: "PulseRank — Know what moves you",
+    template: "%s — PulseRank",
   },
   description:
-    "Plan elevator-aware, step-free Muni Metro trips with verified accessibility information.",
-  applicationName: "UNBROKEN",
+    "Explore caffeine products through trusted source observations, explicit field states, and transparent rankings.",
+  applicationName: "PulseRank",
 };
 
 export const viewport: Viewport = {
-  colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fcfcfc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-  ],
+  colorScheme: "dark",
+  themeColor: "#050711",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html data-scroll-behavior="smooth" lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
           {children}
         </ThemeProvider>
       </body>

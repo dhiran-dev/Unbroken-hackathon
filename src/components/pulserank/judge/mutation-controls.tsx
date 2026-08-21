@@ -49,7 +49,7 @@ export function MutationControls({ kind, enabled, sourceUrl, defaultPrompt }: Mu
     <form action={action} className="rounded-md border border-[var(--pr-warn-border)] bg-[var(--pr-warn-bg)] p-3">
       <p className="mb-3 text-[13px] leading-relaxed text-[var(--pr-warn)]">
         Mutations are <strong>enabled</strong>. This runs against the live collector
-        {" "}<code className="font-mono">c_mt2yacvcyvyvim56d</code> and writes the envelope under{" "}
+        {" "}<code className="font-mono">c_mt33nlnkq376z132b</code> and writes the envelope under{" "}
         <code className="font-mono">artifacts/demo/</code>. The token is re-verified server-side.
       </p>
       <input type="hidden" name="sourceUrl" value={sourceUrl} />

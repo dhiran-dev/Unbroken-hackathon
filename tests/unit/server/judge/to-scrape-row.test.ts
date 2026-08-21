@@ -83,7 +83,7 @@ describe("toScrapeRow — post-heal record (72 mg)", () => {
   });
 
   it("records the real extraction provenance", () => {
-    expect(row.extraction.collectorId).toBe("c_mt2yacvcyvyvim56d");
+    expect(row.extraction.collectorId).toBe("c_mt33nlnkq376z132b");
     expect(row.extraction.templateFamily).toBe("caffeine-pdp");
     expect(row.extraction.parserVersion.length).toBeGreaterThan(0);
   });

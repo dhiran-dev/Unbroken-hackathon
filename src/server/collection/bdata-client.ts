@@ -10,9 +10,10 @@
  *
  * CLI shapes (verified against @brightdata/cli 0.3.2 dist):
  * - sample:    `scraper run <collector_id> [url] [--input-file <path>] --json`
- * - discovery: `discover <query> --json` — discover has NO --input-file
- *              option, so an input file is resolved locally to its first URL
- *              (one per line, or a JSON array of strings / {"url": ...}).
+ * - discovery: `scraper run <collector_id> <listing-url> --json` — the current
+ *              Caffeine Informer collector's discovery stage uses the same
+ *              consented collector identity; an input file is resolved locally
+ *              to its first URL.
  *
  * Safety properties:
  * - No network access and no env reads happen unless the caller invokes
@@ -64,7 +65,7 @@ export type BdataCollectInput = {
    * Local file of URLs. For `sample` it is passed to `--input-file` as-is
    * (one per line, or a JSON array of strings / {"url": ...} objects — the
    * CLI parses it). For `discovery` the client resolves the file locally to
-   * its FIRST usable URL, because `discover` has no --input-file option.
+   * its FIRST usable URL because the collector accepts one listing URL.
    */
   inputFile?: string | undefined;
   timeoutMs?: number | undefined;
@@ -275,10 +276,10 @@ function sampleArgv(input: BdataCollectInput, collectorId: string): string[] {
 }
 
 /**
- * Resolve the `<query>` positional for `discover`. An explicit `url` wins;
+ * Resolve the listing URL positional for the collector's discovery stage. An explicit `url` wins;
  * otherwise the first usable URL in `inputFile` is used (one URL per line
  * with `#` comments skipped, or a JSON array of strings / {"url": ...}
- * objects) — the discover subcommand has no --input-file option.
+ * objects) — the collector listing stage has no --input-file option.
  */
 function resolveDiscoveryQuery(input: BdataCollectInput): string {
   const explicit = input.url?.trim();
@@ -344,12 +345,14 @@ function resolveDiscoveryQuery(input: BdataCollectInput): string {
   );
 }
 
-function discoveryArgv(input: BdataCollectInput): string[] {
-  // `node <cli> discover <query> --json`
+function discoveryArgv(input: BdataCollectInput, collectorId: string): string[] {
+  // The v2 collector uses its listing URL as the discovery-stage input.
   return [
     nodeBinary(),
     cliEntrypoint(),
-    "discover",
+    "scraper",
+    "run",
+    collectorId,
     resolveDiscoveryQuery(input),
     "--json",
   ];
@@ -372,7 +375,9 @@ export async function collectViaBdata(
 
   const env = await brightDataEnv();
   const argv =
-    input.mode === "discovery" ? discoveryArgv(input) : sampleArgv(input, env.BRIGHTDATA_COLLECTOR_ID);
+    input.mode === "discovery"
+      ? discoveryArgv(input, env.BRIGHTDATA_COLLECTOR_ID)
+      : sampleArgv(input, env.BRIGHTDATA_COLLECTOR_ID);
 
   let cliOutput: { stdout: string; exitCode: number };
   try {

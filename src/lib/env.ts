@@ -5,7 +5,7 @@ import { z } from "zod";
  * The retired UNBROKEN collector identity lives only in docs/ and AGENTS.md
  * (audit history); it must never appear in runtime configuration.
  */
-export const PULSERANK_COLLECTOR_ID = "c_mt2yacvcyvyvim56d";
+export const PULSERANK_COLLECTOR_ID = "c_mt33nlnkq376z132b";
 
 const booleanFlag = z
   .enum(["true", "false"])

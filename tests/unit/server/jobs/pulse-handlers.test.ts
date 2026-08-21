@@ -311,6 +311,40 @@ describe("pulse.validate.run handler", () => {
     expect(patched?.status).toBe("validated");
     expect(patched?.errorCode).toBeNull();
   });
+
+  it("fails a run that contains a collector error row", async () => {
+    const repo = createInMemoryPulseRepo();
+    const { run, collector } = await seedRunWithRows(repo, []);
+    await repo.insertRawRecord({
+      collectionRunId: run.id,
+      collectorId: collector.id,
+      payload: {
+        error: "too many requests",
+        error_code: "rate_limit",
+        input: { url: "https://www.caffeineinformer.com/caffeine-content/example" },
+      },
+      mediaType: "application/json",
+      pageFingerprint: "error-record",
+      capturedAt: FIXED_NOW,
+    });
+    const handlers = makeHandlers(repo);
+
+    const result = await handlers["pulse.validate.run"]({
+      job: "pulse.validate.run",
+      payload: { runId: run.id },
+    });
+
+    expect(result.status === "ok" && result.details.validationOk).toBe(false);
+    const patched = await repo.getCollectionRun(run.id);
+    expect(patched?.status).toBe("validation_failed");
+    expect(patched?.report?.unparsableRecordIds).toHaveLength(1);
+    const findings = (patched?.report?.findings ?? []) as Array<{ check: string; severity: string }>;
+    expect(findings).toContainEqual({
+      check: "contract_parse",
+      severity: "fail",
+      detail: expect.stringContaining("could not be mapped"),
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -328,11 +362,37 @@ describe("pulse.promote.snapshot handler", () => {
       payload: { runId },
     });
     expect(ingested).toMatchObject({ status: "ok" });
+    const validated = await handlers["pulse.validate.run"]({
+      job: "pulse.validate.run",
+      payload: { runId },
+    });
+    expect(validated).toMatchObject({ status: "ok" });
+    expect(validated.status === "ok" && validated.details.validationOk).toBe(true);
     return handlers["pulse.promote.snapshot"]({
       job: "pulse.promote.snapshot",
       payload: { runId },
     });
   }
+
+  it("refuses to promote a run that has not passed validation", async () => {
+    const repo = createInMemoryPulseRepo();
+    const { run } = await seedRunWithRows(repo, [makeScrapeRow({ slug: "not-validated" })]);
+    const handlers = makeHandlers(repo);
+
+    const ingested = await handlers["pulse.ingest.run"]({
+      job: "pulse.ingest.run",
+      payload: { runId: run.id },
+    });
+    expect(ingested).toMatchObject({ status: "ok" });
+
+    const promoted = await handlers["pulse.promote.snapshot"]({
+      job: "pulse.promote.snapshot",
+      payload: { runId: run.id },
+    });
+    expect(promoted).toMatchObject({ status: "failed", errorCode: "run_not_validated" });
+    expect(repo.__debug.observations.size).toBe(1);
+    expect([...repo.__debug.observations.values()][0]?.status).toBe("candidate");
+  });
 
   it("moves the current-trusted pointer, supersedes the old record, and logs a caffeine change", async () => {
     const repo = createInMemoryPulseRepo();
@@ -492,6 +552,12 @@ describe("pulse.rebuild.leaderboards handler", () => {
       payload: { runId: run.id },
     });
     expect(ingested).toMatchObject({ status: "ok" });
+    const validated = await handlers["pulse.validate.run"]({
+      job: "pulse.validate.run",
+      payload: { runId: run.id },
+    });
+    expect(validated).toMatchObject({ status: "ok" });
+    expect(validated.status === "ok" && validated.details.validationOk).toBe(true);
     const promoted = await handlers["pulse.promote.snapshot"]({
       job: "pulse.promote.snapshot",
       payload: { runId: run.id },
@@ -746,7 +812,7 @@ describe("dispatch contract with wired handlers", () => {
 const BD_ENV = {
   DATABASE_URL: "postgres://pulse:pulse@localhost:5432/pulse_test",
   BRIGHTDATA_API_TOKEN: "token-test",
-  BRIGHTDATA_COLLECTOR_ID: "c_mt2yacvcyvyvim56d",
+  BRIGHTDATA_COLLECTOR_ID: "c_mt33nlnkq376z132b",
 };
 
 describe("bdata-client spawn contract", () => {
@@ -844,7 +910,7 @@ describe("bdata-client spawn contract", () => {
     ).rejects.toMatchObject({ code: "BDATA_CLI_FAILED" });
   });
 
-  it("resolves the discovery query from an input file (discover has no --input-file)", async () => {
+  it("resolves the discovery listing URL from an input file", async () => {
     for (const [key, value] of Object.entries(BD_ENV)) {
       savedEnv[key] = process.env[key];
       process.env[key] = value;
@@ -864,7 +930,9 @@ describe("bdata-client spawn contract", () => {
       const command = commands[0];
       expect(output.rows).toEqual([{ url: "x" }]);
       expect(command?.argv.slice(2)).toEqual([
-        "discover",
+        "scraper",
+        "run",
+        BD_ENV.BRIGHTDATA_COLLECTOR_ID,
         "https://www.caffeineinformer.com/first",
         "--json",
       ]);

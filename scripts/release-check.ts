@@ -64,7 +64,7 @@ export interface ReleaseReport {
 export const LEGACY_COLLECTOR_ID = "c_msyjsllt1r9ej5tdub";
 
 /** The only Bright Data collector permitted in PulseRank runtime code. */
-export const PULSERANK_COLLECTOR_ID = "c_mt2yacvcyvyvim56d";
+export const PULSERANK_COLLECTOR_ID = "c_mt33nlnkq376z132b";
 
 /** Prohibited Bright Data target (AGENTS.md government-source compliance). */
 const SFMTA_URL_PATTERN = /sfmta\.com/i;

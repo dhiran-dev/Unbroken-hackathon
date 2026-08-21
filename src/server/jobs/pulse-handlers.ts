@@ -70,6 +70,11 @@ import {
   type SourceRow,
 } from "@/server/ingestion/repo";
 import { validateRun, type ValidatableRow } from "@/server/ingestion/validate-run";
+import {
+  JUDGE_COLLECTOR_ID,
+  toScrapeRow,
+  type CollectorProductRecord,
+} from "@/server/judge/to-scrape-row";
 import type {
   PulseJobExecutionResult,
   PulseJobHandler,
@@ -193,6 +198,33 @@ type ParsedRunRows = {
   unparsableRecordIds: string[];
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * The v2 collector emits flat product records, while the database contract is
+ * deliberately stricter. Map only recognizable product rows; collector error
+ * objects remain unparseable evidence and can never become products.
+ */
+function mapCollectorPayload(
+  payload: unknown,
+  observedAt: Date,
+): unknown {
+  if (!isRecord(payload) || payload.schemaVersion === "1.0") return payload;
+  const hasProductIdentity =
+    typeof payload.product_name === "string" && payload.product_name.trim() !== "";
+  const hasProductUrl =
+    typeof payload.product_page_url === "string" ||
+    typeof payload.product_url === "string";
+  if (!hasProductIdentity && !hasProductUrl) return payload;
+  return toScrapeRow(payload as CollectorProductRecord, {
+    observedAt: observedAt.toISOString(),
+    collectorId: JUDGE_COLLECTOR_ID,
+    templateFamily: "caffeine-informer-v2",
+  });
+}
+
 /**
  * Lenient structural view for run-level validation. Rows that fail the strict
  * contract parse (wrong host, wrong schemaVersion, …) must STILL be inspectable
@@ -262,11 +294,12 @@ async function parseRunRows(
   const unparsableRecordIds: string[] = [];
 
   for (const record of rawRecords) {
-    const parsed = productScrapeRowV1Schema.safeParse(record.payload);
+    const mappedPayload = mapCollectorPayload(record.payload, record.capturedAt);
+    const parsed = productScrapeRowV1Schema.safeParse(mappedPayload);
     if (!parsed.success) {
       // Contract-invalid rows stay inspectable for run-level validation:
       // wrong host / schemaVersion are FINDINGS, not silent drops.
-      const inspectable = toValidatableRow(record.payload);
+      const inspectable = toValidatableRow(mappedPayload);
       if (inspectable !== null) {
         validatableRows.push(inspectable);
       } else {
@@ -366,6 +399,16 @@ export function createIngestRunHandler(
     const runId = parsedPayload.data.runId;
 
     return runtime.runTransaction(async (repo) => {
+      const run = await repo.getCollectionRun(runId);
+      if (run === null) {
+        return failedResult(
+          job,
+          "run_not_found",
+          `collection run ${runId} does not exist`,
+          { runId },
+        );
+      }
+
       const parsed = await parseRunRows(repo, runId);
       if (parsed === null) {
         return failedResult(
@@ -488,6 +531,7 @@ export function createValidateRunHandler(
       );
       const validation = validateRun(parsed.validatableRows, {
         previousRunCount: previousRowCount ?? undefined,
+        unparsableRecordCount: parsed.unparsableRecordIds.length,
       });
 
       const firstFail =
@@ -549,6 +593,24 @@ export function createPromoteSnapshotHandler(
     const runId = parsedPayload.data.runId;
 
     return runtime.runTransaction(async (repo) => {
+      const run = await repo.getCollectionRun(runId);
+      if (run === null) {
+        return failedResult(
+          job,
+          "run_not_found",
+          `collection run ${runId} does not exist`,
+          { runId },
+        );
+      }
+      if (run.status !== "validated") {
+        return failedResult(
+          job,
+          "run_not_validated",
+          `collection run ${runId} is ${run.status}; promotion requires a validated run`,
+          { runId, status: run.status },
+        );
+      }
+
       const parsed = await parseRunRows(repo, runId);
       if (parsed === null) {
         return failedResult(

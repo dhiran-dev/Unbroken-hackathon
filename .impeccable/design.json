@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-22T00:00:00.000Z",
+  "title": "Design System: PulseRank",
+  "extensions": {
+    "colorMeta": {
+      "void": { "role": "neutral", "displayName": "Void", "canonical": "#050711", "tonalRamp": ["#050711", "#080d18", "#0d1424", "#121b2e"] },
+      "primary-violet": { "role": "primary", "displayName": "Electric Violet", "canonical": "#8b5cf6", "tonalRamp": ["#2e1065", "#6d28d9", "#8b5cf6", "#c4b5fd"] },
+      "primary-action": { "role": "primary-action", "displayName": "Accessible Action Violet", "canonical": "#7c3aed", "tonalRamp": ["#2e1065", "#6d28d9", "#7c3aed", "#c4b5fd"] },
+      "cyan": { "role": "secondary", "displayName": "Signal Cyan", "canonical": "#22d3ee", "tonalRamp": ["#083344", "#0e7490", "#22d3ee", "#a5f3fc"] },
+      "success": { "role": "tertiary", "displayName": "Verified Green", "canonical": "#34d399", "tonalRamp": ["#064e3b", "#059669", "#34d399", "#a7f3d0"] },
+      "warning": { "role": "tertiary", "displayName": "Caution Amber", "canonical": "#fbbf24", "tonalRamp": ["#78350f", "#d97706", "#fbbf24", "#fde68a"] },
+      "danger": { "role": "tertiary", "displayName": "Conflict Rose", "canonical": "#fb7185", "tonalRamp": ["#881337", "#e11d48", "#fb7185", "#fecdd3"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Manrope Display", "purpose": "Home and route-level statements; keep it concise." },
+      "body": { "displayName": "Inter Body", "purpose": "Readable product copy, controls, and dense data." },
+      "label": { "displayName": "Inter Labels", "purpose": "State, qualifier, navigation, and metadata labels with tabular numerals." }
+    },
+    "shadows": [
+      { "name": "panel-lift", "value": "0 12px 32px rgba(0, 0, 0, 0.22)", "purpose": "Separate a drawer or elevated context panel from the canvas." },
+      { "name": "action-lift", "value": "0 8px 24px rgba(109, 40, 217, 0.28)", "purpose": "Give the primary action a restrained violet lift." },
+      { "name": "focus-lift", "value": "0 0 0 3px rgba(139, 92, 246, 0.28)", "purpose": "Supplement the visible keyboard focus outline." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "150–250ms control and panel state transitions." },
+      { "name": "ease-emphasis", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "One authored home reveal or drawer entrance; never essential content." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "640px" },
+      { "name": "tablet", "value": "900px" },
+      { "name": "wide", "value": "1280px" }
+    ],
+    "narrative": {
+      "northStar": "The Caffeine Observatory",
+      "rules": [
+        "Violet identifies action or selection.",
+        "A surface stays legible without glow or imagery.",
+        "Trust states are explicit and never color-only."
+      ],
+      "donts": [
+        "No fabricated branded packaging or product models.",
+        "No missing-to-zero visual shortcuts.",
+        "No essential text inside canvas or animation."
+      ]
+    }
+  }
+}

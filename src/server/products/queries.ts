@@ -30,6 +30,7 @@ import {
   pulseProductAliases,
   pulseProducts,
   pulseProductObservations,
+  pulseSources,
 } from "@/server/db/schema/pulse";
 import type { CanonicalCategory } from "@/server/ingestion/normalize";
 import type { TrustedProductRecord } from "@/server/ingestion/promote";
@@ -53,6 +54,7 @@ const payloadColumn = pulseProductObservations.normalized;
 function trustedOnlyCondition(): SQL {
   return and(
     eq(pulseProducts.currentTrustedObservationId, pulseProductObservations.id),
+    eq(pulseProducts.id, pulseProductObservations.productId),
     eq(pulseProductObservations.status, "trusted"),
   ) as SQL;
 }
@@ -364,13 +366,7 @@ export async function listProducts(
   const rows = (await db
     .select(trustedSelect)
     .from(pulseProducts)
-    .innerJoin(
-      pulseProductObservations,
-      and(
-        eq(pulseProducts.currentTrustedObservationId, pulseProductObservations.id),
-        eq(pulseProductObservations.status, "trusted"),
-      ),
-    )
+    .innerJoin(pulseProductObservations, trustedOnlyCondition())
     .where(and(...conditions))
     .orderBy(...sortClauses(sort))
     .limit(limit + 1)) as TrustedJoinRow[];
@@ -401,13 +397,7 @@ export async function getProductBySlug(
   const rows = (await db
     .select(trustedSelect)
     .from(pulseProducts)
-    .innerJoin(
-      pulseProductObservations,
-      and(
-        eq(pulseProducts.currentTrustedObservationId, pulseProductObservations.id),
-        eq(pulseProductObservations.status, "trusted"),
-      ),
-    )
+    .innerJoin(pulseProductObservations, trustedOnlyCondition())
     .where(and(trustedOnlyCondition(), eq(pulseProducts.slug, slug)))
     .limit(1)) as TrustedJoinRow[];
 
@@ -442,13 +432,7 @@ export async function listCategories(): Promise<CategoryCount[]> {
         sql<number>`count(distinct ${pulseProducts.id})::int`,
     })
     .from(pulseProducts)
-    .innerJoin(
-      pulseProductObservations,
-      and(
-        eq(pulseProducts.currentTrustedObservationId, pulseProductObservations.id),
-        eq(pulseProductObservations.status, "trusted"),
-      ),
-    )
+    .innerJoin(pulseProductObservations, trustedOnlyCondition())
     .groupBy(sql`${payloadColumn} ->> 'category'`)
     .orderBy(asc(sql`${payloadColumn} ->> 'category'`));
 
@@ -467,12 +451,20 @@ export type LeaderboardEntryDto = {
   metricValue: number;
   eligible: boolean;
   eligibilityFlags: string[];
+  product: {
+    slug: string;
+    name: string;
+    category: CanonicalCategory;
+  };
 };
 
 export type LeaderboardResult = {
   snapshotId: string;
   rebuiltAt: Date;
   boardKey: string;
+  trustedProductCount: number;
+  eligibleCount: number;
+  excludedCount: number;
   entries: LeaderboardEntryDto[];
 };
 
@@ -488,11 +480,13 @@ export type LeaderboardResult = {
 export async function getLeaderboard(
   boardKey: string,
   limit = 50,
+  category?: CanonicalCategory,
 ): Promise<LeaderboardResult | null> {
   const tagged = await db
     .select({
       id: pulseLeaderboardSnapshots.id,
       rebuiltAt: pulseLeaderboardSnapshots.rebuiltAt,
+      summary: pulseLeaderboardSnapshots.summary,
     })
     .from(pulseLeaderboardSnapshots)
     .where(sql`${pulseLeaderboardSnapshots.summary} ->> 'boardKey' = ${boardKey}`)
@@ -506,6 +500,7 @@ export async function getLeaderboard(
         .select({
           id: pulseLeaderboardSnapshots.id,
           rebuiltAt: pulseLeaderboardSnapshots.rebuiltAt,
+          summary: pulseLeaderboardSnapshots.summary,
         })
         .from(pulseLeaderboardSnapshots)
         .orderBy(desc(pulseLeaderboardSnapshots.rebuiltAt))
@@ -513,6 +508,15 @@ export async function getLeaderboard(
     )[0];
 
   if (!snapshot) return null;
+
+  const entryConditions: SQL[] = [
+    eq(pulseLeaderboardEntries.snapshotId, snapshot.id),
+    eq(pulseLeaderboardEntries.metricKey, boardKey),
+    trustedOnlyCondition(),
+  ];
+  if (category !== undefined) {
+    entryConditions.push(sql`${pulseProductObservations.normalized} ->> 'category' = ${category}`);
+  }
 
   const rows = await db
     .select({
@@ -522,14 +526,14 @@ export async function getLeaderboard(
       metricValue: pulseLeaderboardEntries.metricValue,
       eligible: pulseLeaderboardEntries.eligible,
       eligibilityFlags: pulseLeaderboardEntries.eligibilityFlags,
+      productSlug: pulseProducts.slug,
+      productName: pulseProducts.name,
+      productCategory: sql<string>`${pulseProductObservations.normalized} ->> 'category'`,
     })
     .from(pulseLeaderboardEntries)
-    .where(
-      and(
-        eq(pulseLeaderboardEntries.snapshotId, snapshot.id),
-        eq(pulseLeaderboardEntries.metricKey, boardKey),
-      ),
-    )
+    .innerJoin(pulseProducts, eq(pulseLeaderboardEntries.productId, pulseProducts.id))
+    .innerJoin(pulseProductObservations, trustedOnlyCondition())
+    .where(and(...entryConditions))
     .orderBy(asc(pulseLeaderboardEntries.rank))
     .limit(Math.min(Math.max(Math.trunc(limit), 1), 200));
 
@@ -537,6 +541,12 @@ export async function getLeaderboard(
     snapshotId: snapshot.id,
     rebuiltAt: snapshot.rebuiltAt,
     boardKey,
+    trustedProductCount: Number(snapshot.summary?.trustedProductCount ?? 0),
+    eligibleCount: rows.length,
+    excludedCount: Math.max(
+      Number(snapshot.summary?.trustedProductCount ?? 0) - rows.length,
+      0,
+    ),
     entries: rows.map((row) => ({
       rank: row.rank,
       productId: row.productId,
@@ -544,7 +554,55 @@ export async function getLeaderboard(
       metricValue: row.metricValue,
       eligible: row.eligible,
       eligibilityFlags: row.eligibilityFlags ?? [],
+      product: {
+        slug: row.productSlug,
+        name: row.productName,
+        category: (row.productCategory ?? "other") as CanonicalCategory,
+      },
     })),
+  };
+}
+
+// -- overview -----------------------------------------------------------------
+
+export type OverviewStats = {
+  trustedProductCount: number;
+  categoryCount: number;
+  fieldCoverage: {
+    caffeineObserved: number;
+    servingObserved: number;
+    exactCaffeine: number;
+    concentrationEligible: number;
+  };
+  featured: TrustedProductRow[];
+};
+
+/** Real trusted-catalog counters used by the home surface. */
+export async function getOverviewStats(): Promise<OverviewStats> {
+  const [countRow] = await db
+    .select({
+      total: sql<number>`count(distinct ${pulseProducts.id})::int`,
+      caffeineObserved: sql<number>`count(distinct ${pulseProducts.id}) filter (where ${payloadColumn} -> 'caffeineMg' ->> 'state' not in ('not_published', 'not_applicable'))::int`,
+      servingObserved: sql<number>`count(distinct ${pulseProducts.id}) filter (where ${payloadColumn} -> 'serving' ->> 'state' not in ('not_published', 'not_applicable'))::int`,
+      exactCaffeine: sql<number>`count(distinct ${pulseProducts.id}) filter (where ${payloadColumn} -> 'caffeineMg' ->> 'state' = 'present' and ${payloadColumn} -> 'caffeineMg' ->> 'qualifier' = 'exact')::int`,
+      concentrationEligible: sql<number>`count(distinct ${pulseProducts.id}) filter (where (${payloadColumn} -> 'concentration' ->> 'mgPer100Ml') is not null)::int`,
+    })
+    .from(pulseProducts)
+    .innerJoin(pulseProductObservations, trustedOnlyCondition());
+
+  const categories = await listCategories();
+  const featured = await listProducts({ sort: "caffeine-desc", limit: 6 });
+
+  return {
+    trustedProductCount: Number(countRow?.total ?? 0),
+    categoryCount: categories.length,
+    fieldCoverage: {
+      caffeineObserved: Number(countRow?.caffeineObserved ?? 0),
+      servingObserved: Number(countRow?.servingObserved ?? 0),
+      exactCaffeine: Number(countRow?.exactCaffeine ?? 0),
+      concentrationEligible: Number(countRow?.concentrationEligible ?? 0),
+    },
+    featured: featured.items,
   };
 }
 
@@ -681,6 +739,14 @@ export type LiveDataStats = {
   openIncidentCount: number;
   /** External ids of ACTIVE PulseRank collectors (legacy ids never register here). */
   collectorIds: string[];
+  activeCollectors: Array<{ externalId: string; source: string }>;
+  lastCollectionRun: {
+    status: string;
+    trigger: string;
+    rowCount: number | null;
+    errorCode: string | null;
+    at: string | null;
+  } | null;
 };
 
 /** Real operational counters for the live-data endpoint. */
@@ -711,8 +777,14 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
     .select({
       finishedAt: pulseCollectionRuns.finishedAt,
       startedAt: pulseCollectionRuns.startedAt,
+      status: pulseCollectionRuns.status,
+      trigger: pulseCollectionRuns.trigger,
+      rowCount: pulseCollectionRuns.rowCount,
+      errorCode: pulseCollectionRuns.errorCode,
+      externalId: pulseCollectors.externalId,
     })
     .from(pulseCollectionRuns)
+    .innerJoin(pulseCollectors, eq(pulseCollectionRuns.collectorId, pulseCollectors.id))
     .orderBy(
       desc(sql`coalesce(${pulseCollectionRuns.finishedAt}, ${pulseCollectionRuns.startedAt})`),
     )
@@ -726,8 +798,9 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
     .where(eq(pulseIncidents.status, "open"));
 
   const collectorRows = await db
-    .select({ externalId: pulseCollectors.externalId })
+    .select({ externalId: pulseCollectors.externalId, source: pulseSources.displayName })
     .from(pulseCollectors)
+    .innerJoin(pulseSources, eq(pulseCollectors.sourceId, pulseSources.id))
     .where(eq(pulseCollectors.active, true))
     .orderBy(asc(pulseCollectors.externalId));
 
@@ -737,6 +810,16 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
     lastCollectionRunAt: lastRunMoment ? lastRunMoment.toISOString() : null,
     openIncidentCount: Number(incidentRows[0]?.count ?? 0),
     collectorIds: collectorRows.map((row) => row.externalId),
+    activeCollectors: collectorRows.map((row) => ({ externalId: row.externalId, source: row.source })),
+    lastCollectionRun: lastRun
+      ? {
+          status: lastRun.status,
+          trigger: lastRun.trigger,
+          rowCount: lastRun.rowCount,
+          errorCode: lastRun.errorCode,
+          at: lastRunMoment ? lastRunMoment.toISOString() : null,
+        }
+      : null,
   };
 }
 

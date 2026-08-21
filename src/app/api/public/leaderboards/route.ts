@@ -8,6 +8,7 @@
  */
 
 import { PUBLIC_SCHEMA_VERSION } from "@/server/products/dto";
+import { CANONICAL_CATEGORIES } from "@/server/ingestion/normalize";
 import {
   badRequest,
   jsonPublic,
@@ -41,7 +42,19 @@ export async function GET(request: Request): Promise<Response> {
     limit = parsedLimit;
   }
 
-  const leaderboard = await getLeaderboard(board, limit);
+  const categoryRaw = parameters.getAll("category").at(-1)?.trim();
+  if (
+    categoryRaw !== undefined &&
+    !(CANONICAL_CATEGORIES as readonly string[]).includes(categoryRaw)
+  ) {
+    return badRequest(`category must be one of ${CANONICAL_CATEGORIES.join("|")}`);
+  }
+
+  const leaderboard = await getLeaderboard(
+    board,
+    limit,
+    categoryRaw as (typeof CANONICAL_CATEGORIES)[number] | undefined,
+  );
   if (!leaderboard) {
     return notFound(
       "NO_LEADERBOARD_SNAPSHOT",
@@ -54,6 +67,9 @@ export async function GET(request: Request): Promise<Response> {
     snapshotId: leaderboard.snapshotId,
     rebuiltAt: leaderboard.rebuiltAt.toISOString(),
     boardKey: leaderboard.boardKey,
+    trustedProductCount: leaderboard.trustedProductCount,
+    eligibleCount: leaderboard.eligibleCount,
+    excludedCount: leaderboard.excludedCount,
     entries: leaderboard.entries,
   });
 }

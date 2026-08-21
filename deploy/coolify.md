@@ -1,85 +1,68 @@
-# Manual Coolify deployment
+# Coolify deployment
 
-This deployment is performed by the owner through the Coolify interface. No Coolify API token is required by UNBROKEN and no deployment credential belongs in the application environment.
+PulseRank deploys from the canonical repository
+`https://github.com/dhiran-dev/Unbroken-hackathon.git`, branch `main`. The
+owner supplies the final HTTPS domain in Coolify; it is intentionally not
+invented in source control.
 
-## Before deployment
+## Environment boundary
 
-1. Confirm `main` is green in GitHub Actions.
-2. Choose the public application URL.
-3. Set `NEXT_PUBLIC_APP_URL`, `BETTER_AUTH_URL`, and `PRODUCTION_APP_URL` to that HTTPS origin.
-4. Generate a production-only `BETTER_AUTH_SECRET` with at least 32 random bytes.
-5. Add the PostgreSQL, Bright Data, and Fireworks variables from `.env.example`.
-6. Do not add `OWNER_PASSWORD` or `JUDGE_ADMIN_PASSWORD` to the long-lived web or worker environment after bootstrap.
+Use the variables in `.env.example`. Only `NEXT_PUBLIC_APP_URL` is a build
+variable. Database, Bright Data, Fireworks, incident, and feature-flag values
+are runtime-only. Never put tokens, database URLs, API headers, or production
+payloads in Docker build arguments or logs.
 
-### Build-time versus runtime variables
+Required runtime invariants:
 
-- Enable **Build Variable** only for `NEXT_PUBLIC_APP_URL`; Next.js intentionally
-  embeds this public origin into browser assets.
-- Keep `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Bright Data,
-  Fireworks, and bootstrap credentials runtime-only. The Dockerfile uses
-  unreachable, non-secret placeholders solely while Next.js discovers routes;
-  they are not copied into the runtime image environment.
-- Never paste a database URL, API token, or password into a Docker build
-  argument or deployment log.
+- `BRIGHTDATA_COLLECTOR_ID=c_mt33nlnkq376z132b`.
+- The source is Caffeine Informer; government-targeting Bright Data jobs stay
+  disabled.
+- `FIREWORKS_MODEL=accounts/fireworks/models/deepseek-v4-flash-0731`.
+- `FIREWORKS_REASONING_EFFORT=high`.
+- `PULSERANK_JUDGE_MUTATIONS_ENABLED=false` for demos.
+- `INCIDENT_ARTIFACTS_DIR` points to a private persistent volume.
 
 ## Web service
 
-- Repository: `https://github.com/dhiran-dev/Unbroken-hackathon.git`
-- Branch: `main`
 - Build pack: Dockerfile
+- Target: `runtime`
 - Port: `3000`
-- Health host: `127.0.0.1`
 - Health path: `/api/health/ready`
-- Health start period: `20` seconds
 - Start command: image default (`bun server.js`)
+- Domain: owner-selected HTTPS origin
 
 ## Worker service
 
-Use the same repository, branch, Dockerfile, image, and environment variables.
+Create a second Coolify service from the same commit and environment:
 
-- Docker build stage target: `worker`
-- Keep the start command and custom Docker options empty. The worker target
-  already starts `bun dist/worker.js`.
-- Leave the Coolify UI healthcheck disabled. The worker image defines a
-  lightweight process healthcheck for deployment readiness; ongoing worker
-  health is measured by its database heartbeat in the private Operations page.
-- Do not expose a public port.
-- Do not attach a domain.
-- The first heartbeat should appear within 30 seconds.
-- Attach a persistent volume at `/data/incidents` and set
-  `INCIDENT_ARTIFACTS_DIR=/data/incidents`. Healing previews and approval
-  envelopes are private evidence and must survive worker restarts.
+- Target: `worker`
+- No public port and no domain
+- Start command: image default (`bun dist/worker.js`)
+- Private persistent volume mounted at `/data/incidents`
+- `INCIDENT_ARTIFACTS_DIR=/data/incidents`
 
-## Private OTP service
+The worker’s collection flag is fail-closed. A collection run is an explicit
+operator action or scheduled job, and never auto-approves a Bright Data heal.
 
-Use `deploy/otp/compose.json` as a manual Docker Compose service and follow `deploy/otp/README.md` for the pinned build and verification workflow.
+## Release order
 
-- Attach one durable private volume through `OTP_STATE_DIR` for sources, candidate graphs, and the atomic `current` link.
-- Give the private build task server-only `DATABASE_URL` access to the active trusted transit snapshot. Never pass a 511 token, GTFS file, or caller-supplied hash to the graph build.
-- Do not attach a public domain or publish a host port. Join the web/worker consumers and `otp` service only to the internal network.
-- Keep the pinned image digest, read-only root and graph mount, 4 GiB container limit, 3 GiB Java heap, dropped capabilities, and no-new-privileges settings unchanged.
-- Run the candidate build with an explicit Muni service date and time. It must load and pass health, neutral-transit, and unknown-wheelchair probes before the `current` graph moves.
-- Restart the private OTP service after a candidate is promoted, then run the private verifier again before enabling citywide planning.
+1. Verify the commit on `main` with lint, typecheck, tests, Node-based Next
+   build, and `release:check`.
+2. Build the `ops` target and run `bun run db:migrate` once against the target
+   database.
+3. Start the web target and verify `/api/health/live` and
+   `/api/health/ready`.
+4. Start the worker target and verify its private heartbeat/operations view.
+5. Run a bounded Caffeine Informer collection only when the owner has enabled
+   the integration flag and accepted the source terms.
+6. Check `/live-data`, `/judge`, and the public home before sharing the URL.
 
-## First release order
-
-1. Apply the committed Drizzle migrations once.
-2. Bootstrap the owner and judge-admin accounts once.
-3. Remove bootstrap passwords from every long-lived environment.
-4. Start the web service and verify `/api/health/live` and `/api/health/ready`.
-5. Build, promote, and start the private OTP graph; verify its private health and sample candidate.
-6. Start the worker and verify its heartbeat in the private operations page.
-
-## Private migration and bootstrap target
-
-The Dockerfile also provides an `ops` target for one-off database work. It contains the checked-in Drizzle migrations and bootstrap script, but it is not a public service. Run these commands from a temporary Coolify task or release job with the production runtime environment attached:
-
-1. Build/select the Docker target `ops` and run `bun run db:migrate`.
-2. Set one-time `OWNER_*` and/or `JUDGE_ADMIN_*` variables and run `bun run auth:bootstrap`.
-3. Remove both bootstrap passwords from the task and every long-lived web/worker environment before starting services.
-
-The production environment must keep the exact `BRIGHTDATA_COLLECTOR_ID` PulseRank collector value from `.env.example` (`c_mt2yacvcyvyvim56d`). The retired UNBROKEN collector identity is audit history only and must never be configured. The exact existing PostgreSQL endpoint is temporarily owner-authorized without `sslmode`; this exception is restricted in code to that host, port, and database. Every other database URL must use `sslmode=require`, `verify-ca`, or `verify-full`, and explicit weak modes are rejected. Do not print task environments or migration output containing credentials.
+Do not copy raw collection payloads or incident artifacts into the image or
+Git. Existing collector records and snapshots remain quarantined audit
+history unless a fresh, valid run passes the deterministic pipeline.
 
 ## Rollback
 
-Redeploy the previous known-good Git commit. Database migrations are forward-only; do not manually delete tables or rewrite migration history.
+Redeploy the previous known-good commit. Database migrations are forward-only;
+do not delete the `pulse` schema, rewrite migration history, force-push, or
+route old records into the trusted pointer during rollback.

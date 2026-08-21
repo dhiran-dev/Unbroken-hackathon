@@ -90,6 +90,8 @@ export type PublicCaffeineDto = {
   max: number | null;
   /** Verbatim qualifier passthrough: exact | range | approximate | estimated | unknown. */
   qualifier: TrustedMetricPoint["qualifier"];
+  /** Extraction state is published so sparse/conflicting values remain explicit. */
+  state: TrustedMetricPoint["state"];
   /** Source-level band as published by the upstream source. */
   sourceLevel: TrustedProductRecord["sourceLevel"];
 };
@@ -98,6 +100,7 @@ export type PublicServingDto = {
   value: number | null;
   unit: TrustedProductRecord["serving"]["unit"];
   form: TrustedProductRecord["serving"]["form"];
+  state: TrustedProductRecord["serving"]["state"];
 };
 
 export type PublicConcentrationDto = {
@@ -142,6 +145,8 @@ export type PublicProductDto = {
    */
   image: string | null;
   sourceAttribution: typeof SOURCE_ATTRIBUTION;
+  /** Canonical source page for provenance; raw page text is never exposed. */
+  sourceUrl: string;
   /** Extended nutrition fields — present only when extended fields are enabled. */
   calories?: PublicCaloriesDto;
   sugar?: PublicSugarDto;
@@ -217,6 +222,7 @@ function mapCaffeine(payload: TrustedObservationPayload): PublicCaffeineDto {
     min: range ? point.min : null,
     max: range ? point.max : null,
     qualifier: point.qualifier,
+    state: point.state,
     sourceLevel: payload.sourceLevel,
   };
 }
@@ -227,6 +233,7 @@ function mapServing(payload: TrustedObservationPayload): PublicServingDto {
     value: isFiniteNumber(serving.value) ? serving.value : null,
     unit: serving.unit,
     form: serving.form,
+    state: serving.state,
   };
 }
 
@@ -339,6 +346,7 @@ export function toPublicProductDto(
     rankingEligibility: mapRankingEligibility(payload),
     image: mapImage(payload.media),
     sourceAttribution: SOURCE_ATTRIBUTION,
+    sourceUrl: payload.sourceUrl,
   };
 
   if (extendedFields) {

@@ -1,90 +1,67 @@
 import type { Metadata } from "next";
 
-import { PublicHeader } from "@/components/public-header";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { pulserankServerFlags } from "@/config/pulserank-flags";
+import { ArrowRight, Database, Eye, FlaskConical } from "lucide-react";
+
+import {
+  HeroCan,
+  ProductCard,
+  PublicHeader,
+  SectionHeading,
+  TrustCallout,
+  categoryLabel,
+} from "@/components/pulserank/public-ui";
+import { toPublicProductDto } from "@/server/products/dto";
+import { getOverviewStats } from "@/server/products/queries";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "PulseRank",
+  title: "Know what moves you",
   description:
-    "PulseRank: verified product-data pulse checks with a transparent trust pipeline.",
+    "Discover caffeine products through trusted source observations and explicit data states.",
 };
 
-/**
- * Root landing shell (disposition REWRITE). The legacy UNBROKEN journey
- * planner page was removed with the L1 cleanup batch; this is the neutral
- * PulseRank landing surface. Every PulseRank feature stays fail-closed behind
- * its flag until the rebuild explicitly enables it.
- */
-export default function HomePage() {
-  const appEnabled = pulserankServerFlags.appEnabled;
+export default async function HomePage() {
+  const stats = await getOverviewStats();
+  const featured = stats.featured.map((row) => toPublicProductDto(row));
+  const lead = featured[0];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <PublicHeader />
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-12 sm:px-6">
-        <section className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              PulseRank
-            </h1>
-            <Badge
-              className={
-                appEnabled
-                  ? undefined
-                  : "border-border/40 bg-muted text-muted-foreground"
-              }
-            >
-              {appEnabled ? "App enabled" : "App disabled"}
-            </Badge>
+    <div className="pr-app">
+      <PublicHeader active="home" />
+      <main className="pr-shell pr-main">
+        <section className="pr-home-hero">
+          <div>
+            <p className="pr-home-kicker"><span />The caffeine observatory</p>
+            <h1>Discover what <em>powers</em> your day.</h1>
+            <p className="pr-home-copy">
+              PulseRank turns source observations into a clear, navigable catalog—so you can see what is published, what is comparable, and where the data stops.
+            </p>
+            <div className="pr-home-actions">
+              <a className="pr-button pr-button-primary" href="/explore">Explore the catalog <ArrowRight size={15} aria-hidden="true" /></a>
+              <a className="pr-button pr-button-ghost" href="/live-data">View live data</a>
+            </div>
+            {lead ? <p className="pr-home-featured">Featured from the trusted snapshot: <a href={`/products/${lead.slug}`}>{lead.name}</a> · {categoryLabel(lead.category)}</p> : null}
           </div>
-          <p className="max-w-2xl text-muted-foreground">
-            Verified product-data pulse checks with an auditable
-            collection-to-leaderboard pipeline. Surfaces switch on through the
-            PULSERANK_* environment flags; nothing serves until it is
-            explicitly enabled.
-          </p>
+          <div className="pr-hero-visual"><HeroCan /></div>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Collection</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              {pulserankServerFlags.collectionEnabled
-                ? "Enabled — Bright Data sample runs may execute."
-                : "Disabled (PULSERANK_COLLECTION_ENABLED=false)."}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Discovery</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              {pulserankServerFlags.discoveryEnabled
-                ? "Enabled — discovery runs may execute."
-                : "Disabled (PULSERANK_DISCOVERY_ENABLED=false)."}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Judge mutations</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              {pulserankServerFlags.judgeMutationsEnabled
-                ? "Enabled — judge cockpit actions may mutate state."
-                : "Disabled (PULSERANK_JUDGE_MUTATIONS_ENABLED=false)."}
-            </CardContent>
-          </Card>
+        <section className="pr-hero-stats" aria-label="Trusted catalog statistics">
+          <div className="pr-hero-stat"><strong>{stats.trustedProductCount.toLocaleString()}</strong><span>Trusted products</span></div>
+          <div className="pr-hero-stat"><strong>{stats.categoryCount.toLocaleString()}</strong><span>Categories</span></div>
+          <div className="pr-hero-stat"><strong>{stats.fieldCoverage.caffeineObserved.toLocaleString()}</strong><span>Caffeine observed</span></div>
+          <div className="pr-hero-stat"><strong>{stats.fieldCoverage.concentrationEligible.toLocaleString()}</strong><span>Concentration-ready</span></div>
         </section>
 
-        <section className="rounded-xl border bg-muted/30 p-4 text-sm text-muted-foreground">
-          Health endpoints remain available at{" "}
-          <code className="rounded bg-muted px-1 py-0.5">/api/health/live</code>{" "}
-          and{" "}
-          <code className="rounded bg-muted px-1 py-0.5">/api/health/ready</code>.
+        <section className="pr-signal-grid" aria-label="PulseRank principles">
+          <article className="pr-signal-card"><Database size={18} aria-hidden="true" /><h3>One source, visible provenance.</h3><p>Every public record points back to Caffeine Informer and its observation time. No anonymous blend of sources.</p></article>
+          <article className="pr-signal-card"><Eye size={18} aria-hidden="true" /><h3>States stay states.</h3><p>Not published, conflicting, and needs-review fields remain explicit. A blank is never quietly turned into zero.</p></article>
+          <article className="pr-signal-card"><FlaskConical size={18} aria-hidden="true" /><h3>Rank what qualifies.</h3><p>Leaderboards use deterministic eligibility rules. Exact concentration only appears when exact caffeine and volume support it.</p></article>
+        </section>
+
+        <section className="pr-section">
+          <SectionHeading eyebrow="Latest trusted snapshot" title="What is moving right now" action={<a href="/explore">See all products <ArrowRight size={14} /></a>} />
+          {featured.length > 0 ? <div className="pr-product-grid">{featured.map((product) => <ProductCard key={product.slug} product={product} />)}</div> : <TrustCallout title="The public catalog is waiting for its first trusted snapshot" tone="alert">The most recent external attempts are visible in Live Data, but no row has passed promotion yet. Once a collector run succeeds, this section will populate from the database—not placeholder products.</TrustCallout>}
         </section>
       </main>
     </div>

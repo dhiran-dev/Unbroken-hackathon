@@ -1,6 +1,6 @@
 project: pulserank
-active_checkpoint: 1
-active_gate: G3-pending # ALL code merged & green (typecheck/lint/test/gate/build); awaiting owner discovery run -> then contract freeze review
+active_checkpoint: 2
+active_gate: G3-verified # Local implementation, typecheck/lint/test/release gate/build are green; the consented v2 live attempt failed closed at the provider rate limit, so no trusted run is recorded
 started_at: 2026-08-21T18:15:00+05:30
 orchestrator: ox-alpha (Hermes desktop session)
 repo: https://github.com/dhiran-dev/Unbroken-hackathon.git
@@ -8,8 +8,8 @@ branch_integration: pulserank-rebuild
 branch_archive: archive/unbroken-final-before-pulserank
 tag_before_rebuild: unbroken-final-before-pulserank
 db_backup: backups/unbroken-before-pulserank-20260821-1808.dump
-collector_id: c_mt2yacvcyvyvim56d # created verified by A2; must survive healing
-schema_version: draft-v1 # A3 provisional contracts merged
+collector_id: c_mt33nlnkq376z132b # active consented Caffeine Informer v2 collector; legacy ids remain audit-only
+schema_version: v1 # normalized PulseRank product contract
 trusted_run_id: null
 three_enabled: false
 public_extended_fields: false
@@ -28,5 +28,5 @@ waves:
 mockups:
   style_source: example_mockups/ (dark product-studio, purple accent, approved by owner as visual language)
   generator: orchestrator via Codex imagegen, one screen at a time, owner approves each
-  approved: []
-  pending: [home, explore, product-passport, leaderboards, compare, changes, my-pulse, live-data, judge]
+  approved: [home, explore, product-passport, leaderboards, compare, changes, my-pulse, live-data]
+  pending: [judge]

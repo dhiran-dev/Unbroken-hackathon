@@ -14,6 +14,7 @@
  * | schema_version         | fail     | any row with schemaVersion !== "1.0"      |
  * | duplicate_slug_rate    | fail     | duplicate slugs > 2% of the run           |
  * | invalid_caffeine_values| fail     | negative / non-finite caffeine readings   |
+ * | contract_parse         | fail     | any raw record cannot map to V1 contract  |
  * | row_contraction        | fail     | run shrank > 10% vs previous run count    |
  * | zero_value_spike       | warn     | > 30% zeros among present sugar/calories  |
  * | unknown_unit_spike     | warn     | > 20% unknown units among servings        |
@@ -54,6 +55,7 @@ export type RunFindingCheck =
   | "schema_version"
   | "duplicate_slug_rate"
   | "invalid_caffeine_values"
+  | "contract_parse"
   | "row_contraction"
   | "zero_value_spike"
   | "unknown_unit_spike";
@@ -108,6 +110,8 @@ export type ValidatableRow = {
 export type ValidateRunOptions = {
   /** Number of rows in the previously accepted run, when known. */
   previousRunCount?: number | undefined;
+  /** Raw records that could not be mapped to the V1 contract. */
+  unparsableRecordCount?: number | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -147,6 +151,16 @@ export function validateRun(
   options: ValidateRunOptions = {},
 ): RunValidationResult {
   const findings: RunFinding[] = [];
+
+  if ((options.unparsableRecordCount ?? 0) > 0) {
+    findings.push({
+      check: "contract_parse",
+      severity: "fail",
+      detail:
+        `${options.unparsableRecordCount} raw record(s) could not be mapped ` +
+        "to the V1 product contract; the run is not publishable",
+    });
+  }
 
   // -- expected host --------------------------------------------------------
   const wrongHostSlugs: string[] = [];

@@ -2,7 +2,7 @@
  * Judge cockpit — collector record → ProductScrapeRowV1 mapping (Agent A12).
  *
  * Maps one Bright Data Scraper Studio product record (the shape produced by
- * collector `c_mt2yacvcyvyvim56d`, see docs/handoffs/A2-collector.md) onto the
+ * the current v2 Caffeine Informer collector) onto the
  * PulseRank V1 scrape-row contract (src/domain/product/contracts).
  *
  * Mapping rules (all honest, none invented):
@@ -36,7 +36,7 @@ import type {
 import type { ProductScrapeRowV1 } from "@/domain/product/contracts/product-scrape-row";
 
 /** The PulseRank collector identity permitted in runtime code. */
-export const JUDGE_COLLECTOR_ID = "c_mt2yacvcyvyvim56d";
+export const JUDGE_COLLECTOR_ID = "c_mt33nlnkq376z132b";
 
 /**
  * Tolerance for the two published caffeine figures to count as agreeing.
@@ -52,11 +52,20 @@ export type CollectorProductRecord = {
   product_name?: unknown;
   brand?: unknown;
   beverage_type?: unknown;
+  category?: unknown;
   serving_size?: unknown;
   caffeine_mg_per_serving?: unknown;
   caffeine_mg_per_100ml?: unknown;
+  caffeine_raw_text?: unknown;
   caffeine_strength_level?: unknown;
+  calories_kcal?: unknown;
+  sugar_g?: unknown;
+  image_url?: unknown;
+  product_url?: unknown;
+  product_page_url?: unknown;
   input?: unknown;
+  error?: unknown;
+  error_code?: unknown;
 };
 
 export type ToScrapeRowOptions = {
@@ -177,6 +186,33 @@ function notPublishedNumber(): NumberObservation {
   };
 }
 
+function mapOptionalNumber(value: unknown): NumberObservation {
+  if (value === undefined || value === null || value === "") {
+    return notPublishedNumber();
+  }
+  const number = asFiniteNumber(value);
+  if (number === null || number < 0) {
+    return {
+      state: "unparseable",
+      value: null,
+      min: null,
+      max: null,
+      qualifier: "unknown",
+      rawText: String(value),
+      candidates: [],
+    };
+  }
+  return {
+    state: "present",
+    value: number,
+    min: null,
+    max: null,
+    qualifier: "exact",
+    rawText: String(value),
+    candidates: [number],
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Caffeine mapping with the two-figure consistency rule
 // ---------------------------------------------------------------------------
@@ -215,6 +251,7 @@ function mapCaffeine(
 ): { observation: NumberObservation; consistency: UnitConsistencyCheck } {
   const consistency = checkUnitConsistency(record, servingMl);
   const perServingMg = asFiniteNumber(record.caffeine_mg_per_serving);
+  const rawText = asString(record.caffeine_raw_text);
 
   // Not published at all — valid sparse field.
   if (
@@ -257,7 +294,7 @@ function mapCaffeine(
         min: null,
         max: null,
         qualifier: "unknown",
-        rawText: null,
+        rawText,
         candidates,
       },
       consistency,
@@ -272,7 +309,7 @@ function mapCaffeine(
       min: null,
       max: null,
       qualifier: "exact",
-      rawText: null,
+      rawText,
       candidates,
     },
     consistency,
@@ -295,11 +332,14 @@ export function toScrapeRow(
   const servingNormalizedMl = normalizedMlFor(serving);
   const { observation: caffeineMg, consistency } = mapCaffeine(record, servingNormalizedMl);
 
-  const url = asString(
-    (record.input !== null && typeof record.input === "object"
+  const inputUrl =
+    record.input !== null && typeof record.input === "object"
       ? (record.input as { url?: unknown }).url
-      : undefined) ?? undefined,
-  );
+      : undefined;
+  const url =
+    asString(record.product_page_url) ??
+    asString(record.product_url) ??
+    asString(inputUrl);
   const warnings: string[] = [];
   if (consistency.consistent === false) {
     warnings.push(
@@ -341,15 +381,15 @@ export function toScrapeRow(
     },
     identity: {
       name: asString(record.product_name) ?? "",
-      categoryLabel: asString(record.beverage_type),
+      categoryLabel: asString(record.category) ?? asString(record.beverage_type),
       pageTitle: null,
     },
     primary: {
       caffeineMg,
       sourceLevel: toSourceLevel(record.caffeine_strength_level),
       serving: servingObservation,
-      caloriesKcal: notPublishedNumber(),
-      sugarG: notPublishedNumber(),
+      caloriesKcal: mapOptionalNumber(record.calories_kcal),
+      sugarG: mapOptionalNumber(record.sugar_g),
     },
     variants: [],
     flavours: [],
@@ -359,12 +399,12 @@ export function toScrapeRow(
       appliesTo: null,
     },
     media: {
-      imageUrl: null,
+      imageUrl: asString(record.image_url),
       publicationState: "audit_only",
     },
     evidence: {
-      sectionsPresent: [],
-      sourceLinks: [],
+      sectionsPresent: ["product_identity", "caffeine", "serving"],
+      sourceLinks: url === null ? [] : [url],
       warnings,
     },
     extraction: {

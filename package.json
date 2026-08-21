@@ -1,5 +1,5 @@
 {
-  "name": "unbroken",
+  "name": "pulserank",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun --bun next dev",
-    "build": "bun --bun next build",
+    "build": "node node_modules/next/dist/bin/next build",
     "start": "bun --bun next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -22,6 +22,7 @@
     "db:check": "drizzle-kit check",
     "db:studio": "drizzle-kit studio",
     "collect:run": "bun scripts/run-collection.ts",
+    "collect:pulse": "bun scripts/run-pulserank-collection.ts",
     "worker": "bun src/worker/index.ts",
     "worker:pulse": "bun src/worker/pulse-worker.ts",
     "release:check": "bun scripts/release-check.ts"

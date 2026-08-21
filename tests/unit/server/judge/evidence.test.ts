@@ -162,6 +162,6 @@ describe("buildJudgeEvidence — missing artifacts degrade honestly", () => {
     expect(model.postHeal.promotion).toBeNull();
     expect(model.heal).toBeNull();
     expect(model.approve).toBeNull();
-    expect(model.collectorId).toBe("c_mt2yacvcyvyvim56d");
+    expect(model.collectorId).toBe("c_mt33nlnkq376z132b");
   });
 });

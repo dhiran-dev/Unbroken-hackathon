@@ -24,7 +24,7 @@ export default function JudgeLayout({ children }: Readonly<{ children: React.Rea
           </p>
           <h1 className="text-xl font-semibold sm:text-2xl">
             Bright Data healing evidence — collector{" "}
-            <span className="font-mono text-[var(--pr-accent-strong)]">c_mt2yacvcyvyvim56d</span>
+            <span className="font-mono text-[var(--pr-accent-strong)]">c_mt33nlnkq376z132b</span>
           </h1>
           <p className="max-w-3xl text-sm leading-relaxed text-[var(--pr-text-muted)]">
             Every value below is read from recorded CLI artifacts under{" "}
@@ -43,7 +43,7 @@ export default function JudgeLayout({ children }: Readonly<{ children: React.Rea
           Read-only by default · demo mutations write only under{" "}
           <code className="font-mono">artifacts/demo/</code> · recorded evidence under{" "}
           <code className="font-mono">artifacts/scraper/</code> is never modified · legacy
-          UNBROKEN admin routes are untouched.
+          the retired admin namespace is unavailable.
         </p>
       </footer>
     </div>
