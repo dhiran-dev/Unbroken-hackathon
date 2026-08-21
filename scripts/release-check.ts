@@ -194,6 +194,12 @@ export async function scanLegacyReferences(
   const title = "No prohibited legacy runtime references";
   const exclude = new Set([
     "scripts/release-check.ts", // self-exclusion: detection patterns live here
+    // src/server/jobs/pulse-jobs.ts holds LEGACY_JOB_DENYLIST: the auditable,
+    // fail-closed record of retired job names that must never run again. The
+    // literal historical names (e.g. the GTFS refresh job) are the point of
+    // that list; they are rejected, never invoked, so this audit surface is
+    // excluded from the runtime-reference scan.
+    "src/server/jobs/pulse-jobs.ts",
     ...(options.exclude ?? []),
   ]);
 

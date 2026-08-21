@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   FIREWORKS_API_BASE_URL,
-  PRODUCTION_COLLECTOR_ID,
-  PRODUCTION_SOURCE_URL,
+  PULSERANK_COLLECTOR_ID,
+  getServerEnv,
   isAllowedProductionDatabaseUrl,
   isSecureProductionAuthUrl,
 } from "@/lib/env";
@@ -11,10 +11,20 @@ import {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("production integration invariants", () => {
-  it("keeps the exact collector, source, and Fireworks endpoint", () => {
-    expect(PRODUCTION_COLLECTOR_ID).toBe("c_msyjsllt1r9ej5tdub");
-    expect(PRODUCTION_SOURCE_URL).toBe("https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod");
+  it("keeps the PulseRank collector and Fireworks endpoint", () => {
+    expect(PULSERANK_COLLECTOR_ID).toBe("c_mt2yacvcyvyvim56d");
     expect(FIREWORKS_API_BASE_URL).toBe("https://api.fireworks.ai/inference/v1");
+  });
+
+  it("defaults every PulseRank runtime flag to false (fail-closed)", () => {
+    vi.stubEnv("DATABASE_URL", "postgres://test:***@localhost:5432/test");
+    vi.stubEnv("BRIGHTDATA_API_TOKEN", "test-token");
+    vi.stubEnv("BRIGHTDATA_COLLECTOR_ID", "c_mt2yacvcyvyvim56d");
+    vi.stubEnv("FIREWORKS_API_KEY", "test-key");
+    const env = getServerEnv();
+    expect(env.PULSERANK_APP_ENABLED).toBe(false);
+    expect(env.PULSERANK_COLLECTION_ENABLED).toBe(false);
+    expect(env.PULSERANK_DISCOVERY_ENABLED).toBe(false);
   });
 
   it("accepts the exact owner-authorized endpoint and secure TLS modes", () => {
@@ -52,9 +62,10 @@ describe("production integration invariants", () => {
 
 describe("job lease policy", () => {
   it("does not recover a lease renewed between stale scan and update", async () => {
-    vi.stubEnv("DATABASE_URL", "postgres://test:test@localhost:5432/test");
-    vi.stubEnv("BETTER_AUTH_SECRET", "test-secret-0123456789-0123456789");
-    vi.stubEnv("BETTER_AUTH_URL", "http://localhost:3000");
+    vi.stubEnv("DATABASE_URL", "postgres://test:***@localhost:5432/test");
+    vi.stubEnv("BRIGHTDATA_API_TOKEN", "test-token");
+    vi.stubEnv("BRIGHTDATA_COLLECTOR_ID", "c_mt2yacvcyvyvim56d");
+    vi.stubEnv("FIREWORKS_API_KEY", "test-key");
     const { JOB_LEASE_RENEWAL_INTERVAL_MS, JOB_LEASE_TIMEOUT_MS, isJobLeaseExpired } = await import("@/server/jobs/queue");
     const now = new Date("2026-08-19T00:00:00.000Z");
     expect(JOB_LEASE_TIMEOUT_MS).toBeGreaterThan(11 * 60 * 1_000);

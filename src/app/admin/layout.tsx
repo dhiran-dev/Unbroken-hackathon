@@ -2,12 +2,18 @@ import { Clock3 } from "lucide-react";
 
 import { AdminNavigation } from "@/components/admin-navigation";
 import { Brand } from "@/components/brand";
-import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { requireOperatorCapability } from "@/server/auth/session";
+import { pulserankServerFlags } from "@/config/pulserank-flags";
 
-export default async function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const session = await requireOperatorCapability("operate");
+/**
+ * Admin shell (disposition RETAIN_AND_REFACTOR). The operator-auth gating and
+ * sign-out control went away with the deleted Better-Auth runtime; the shell
+ * now surfaces the PulseRank judge-mode state instead. Mutating endpoints stay
+ * fail-closed behind PULSERANK_JUDGE_MUTATIONS_ENABLED until the judge-mode
+ * actor model lands.
+ */
+export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const judgeMode = pulserankServerFlags.judgeMutationsEnabled;
 
   return (
     <div className="min-h-screen bg-muted/25 md:grid md:grid-cols-[232px_1fr]">
@@ -16,22 +22,20 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
           <Brand />
           <div className="flex items-center gap-1 md:hidden">
             <ThemeToggle />
-            <SignOutButton />
           </div>
         </div>
         <AdminNavigation />
         <div className="absolute inset-x-0 bottom-0 hidden border-t border-sidebar-border p-3 md:block">
           <div className="flex items-center gap-3 rounded-xl bg-sidebar-accent/70 p-2.5">
             <div className="grid size-8 shrink-0 place-items-center rounded-lg border border-sidebar-border bg-sidebar text-xs font-semibold uppercase">
-              {session.user.name.slice(0, 2)}
+              PR
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium">{session.user.name}</p>
+              <p className="truncate text-xs font-medium">Judge mode</p>
               <p className="truncate text-[11px] capitalize text-muted-foreground">
-                {session.user.role}
+                {judgeMode ? "mutations enabled" : "read-only"}
               </p>
             </div>
-            <SignOutButton />
           </div>
         </div>
       </aside>

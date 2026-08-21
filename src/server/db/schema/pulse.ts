@@ -7,7 +7,6 @@ import {
   integer,
   jsonb,
   pgSchema,
-  pgTable,
   text,
   timestamp,
   uniqueIndex,

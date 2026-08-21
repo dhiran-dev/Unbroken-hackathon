@@ -1,13 +1,17 @@
 import { z } from "zod";
 
-export const PRODUCTION_COLLECTOR_ID = "c_msyjsllt1r9ej5tdub";
-export const PRODUCTION_SOURCE_URL =
-  "https://www.sfmta.com/elevator-status/elevatorstatus.php?src=prod";
-export const TRANSIT_511_GTFS_URL = "https://api.511.org/transit/datafeeds";
+/**
+ * The only Bright Data collector permitted in PulseRank runtime code.
+ * The retired UNBROKEN collector identity lives only in docs/ and AGENTS.md
+ * (audit history); it must never appear in runtime configuration.
+ */
+export const PULSERANK_COLLECTOR_ID = "c_mt2yacvcyvyvim56d";
+
 const booleanFlag = z
   .enum(["true", "false"])
   .default("false")
   .transform((value) => value === "true");
+
 export const FIREWORKS_API_BASE_URL = "https://api.fireworks.ai/inference/v1";
 const SECURE_DATABASE_MODES = new Set(["require", "verify-ca", "verify-full"]);
 const OWNER_AUTHORIZED_LEGACY_DATABASE = {
@@ -16,51 +20,26 @@ const OWNER_AUTHORIZED_LEGACY_DATABASE = {
   pathname: "/unbroken_staging",
 } as const;
 
-const serverEnvBaseSchema = z.object({
+export const serverEnvSchema = z.object({
   DATABASE_URL: z.string().url().startsWith("postgres"),
-  BETTER_AUTH_SECRET: z.string().min(32),
-  BETTER_AUTH_URL: z.string().url(),
   BRIGHTDATA_API_TOKEN: z.string().min(1),
-  BRIGHTDATA_COLLECTOR_ID: z.literal(PRODUCTION_COLLECTOR_ID),
+  BRIGHTDATA_COLLECTOR_ID: z.literal(PULSERANK_COLLECTOR_ID),
   FIREWORKS_API_KEY: z.string().min(1),
   FIREWORKS_API_BASE_URL: z
     .literal(FIREWORKS_API_BASE_URL)
     .default(FIREWORKS_API_BASE_URL),
-  SFMTA_SOURCE_URL: z
-    .literal(PRODUCTION_SOURCE_URL)
-    .default(PRODUCTION_SOURCE_URL),
   FIREWORKS_MODEL: z
     .literal("accounts/fireworks/models/deepseek-v4-flash-0731")
     .default("accounts/fireworks/models/deepseek-v4-flash-0731"),
   FIREWORKS_REASONING_EFFORT: z.literal("high").default("high"),
   INCIDENT_ARTIFACTS_DIR: z.string().min(1).default("artifacts/incidents"),
-  CITYWIDE_DATA_ENABLED: booleanFlag,
-  TRANSIT_511_API_TOKEN: z.string().min(1).optional(),
-  TRANSIT_511_OPERATOR_ID: z.literal("SF").default("SF"),
-  TRANSIT_511_GTFS_URL: z
-    .literal(TRANSIT_511_GTFS_URL)
-    .default(TRANSIT_511_GTFS_URL),
-  TRANSIT_DATA_DIR: z.string().min(1).default("/data/transit"),
+  // PulseRank surfaces are inert unless explicitly enabled (fail-closed).
+  PULSERANK_APP_ENABLED: booleanFlag,
+  PULSERANK_COLLECTION_ENABLED: booleanFlag,
+  PULSERANK_DISCOVERY_ENABLED: booleanFlag,
 });
 
-const serverEnvSchema = serverEnvBaseSchema.superRefine((env, context) => {
-  if (env.CITYWIDE_DATA_ENABLED && !env.TRANSIT_511_API_TOKEN) {
-    context.addIssue({
-      code: "custom",
-      path: ["TRANSIT_511_API_TOKEN"],
-      message:
-        "TRANSIT_511_API_TOKEN is required when citywide data is enabled.",
-    });
-  }
-});
-
-const appEnvSchema = serverEnvBaseSchema.pick({
-  DATABASE_URL: true,
-  BETTER_AUTH_SECRET: true,
-  BETTER_AUTH_URL: true,
-});
-
-const publicEnvSchema = z.object({
+export const publicEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
 });
 
@@ -92,36 +71,24 @@ export function isSecureProductionAuthUrl(value: string) {
   }
 }
 
-function assertProductionTransport(
-  env: Pick<ServerEnv, "DATABASE_URL" | "BETTER_AUTH_URL">,
-) {
+function assertProductionTransport(env: Pick<ServerEnv, "DATABASE_URL">) {
   if (process.env.NODE_ENV !== "production") return;
   if (!isAllowedProductionDatabaseUrl(env.DATABASE_URL)) {
     throw new Error(
       "DATABASE_URL must use sslmode=require or stronger unless it is the exact owner-authorized legacy endpoint.",
     );
   }
-  if (!isSecureProductionAuthUrl(env.BETTER_AUTH_URL)) {
-    throw new Error("BETTER_AUTH_URL must use HTTPS in production.");
-  }
 }
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
-export type AppEnv = z.infer<typeof appEnvSchema>;
+export type PublicEnv = z.infer<typeof publicEnvSchema>;
 
 let cachedServerEnv: ServerEnv | undefined;
-let cachedAppEnv: AppEnv | undefined;
 
 export function getServerEnv(): ServerEnv {
   cachedServerEnv ??= serverEnvSchema.parse(process.env);
-  if (cachedServerEnv) assertProductionTransport(cachedServerEnv);
+  assertProductionTransport(cachedServerEnv);
   return cachedServerEnv;
-}
-
-export function getAppEnv(): AppEnv {
-  cachedAppEnv ??= appEnvSchema.parse(process.env);
-  if (cachedAppEnv) assertProductionTransport(cachedAppEnv);
-  return cachedAppEnv;
 }
 
 export const publicEnv = publicEnvSchema.parse({

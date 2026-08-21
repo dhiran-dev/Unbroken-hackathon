@@ -1,30 +1,41 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import {
   APPROVAL_CONFIRMATION,
   hasExactIncidentConfirmation,
-  incidentActionIdempotencyKey,
-  incidentActionRequestHash,
   incidentActionBodySchema,
   incidentActionSchema,
   REJECTION_CONFIRMATION,
 } from "@/domain/incidents/contract";
 import { IncidentStateError } from "@/domain/incidents/machine";
-import { getAppEnv } from "@/lib/env";
-import { getOperatorSession } from "@/server/auth/session";
-import { db } from "@/server/db/client";
-import { operatorActions } from "@/server/db/schema";
-import { enqueueIncidentJob } from "@/server/jobs/incident-jobs";
+import { pulserankServerFlags } from "@/config/pulserank-flags";
+import { publicEnv } from "@/lib/env";
+import { enqueuePulseJob } from "@/server/jobs/queue";
 import {
   acknowledgeIncident,
   IncidentNotFoundError,
   requireIncidentAction,
 } from "@/server/services/incidents";
 
+/**
+ * Incident-action endpoint (disposition RETAIN_AND_REFACTOR): kept as the
+ * pattern and re-pointed to PulseRank job names (`pulse.heal.preview`,
+ * `pulse.heal.verify`). The operator-session gate went away with the
+ * Better-Auth runtime, so mutations stay fail-closed behind
+ * PULSERANK_JUDGE_MUTATIONS_ENABLED + origin check until the judge-mode actor
+ * model lands. The legacy operator_actions audit reservation required a real
+ * user FK and is intentionally not written here; re-wiring audit attribution
+ * is a documented follow-up.
+ */
+
 const idSchema = z.string().uuid();
 const idempotencySchema = z.string().min(16).max(128);
+
+const PULSE_JOB_BY_ACTION = {
+  heal: "pulse.heal.preview",
+  verify: "pulse.heal.verify",
+} as const;
 
 export async function POST(
   request: Request,
@@ -32,12 +43,17 @@ export async function POST(
     params: Promise<{ incidentId: string; action: string }>;
   },
 ) {
-  const session = await getOperatorSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!pulserankServerFlags.judgeMutationsEnabled) {
+    return NextResponse.json(
+      {
+        error:
+          "Judge mode is disabled. Set PULSERANK_JUDGE_MUTATIONS_ENABLED=true to allow incident actions.",
+      },
+      { status: 503 },
+    );
   }
 
-  const expectedOrigin = new URL(getAppEnv().BETTER_AUTH_URL).origin;
+  const expectedOrigin = new URL(publicEnv.NEXT_PUBLIC_APP_URL).origin;
   if (request.headers.get("origin") !== expectedOrigin) {
     return NextResponse.json({ error: "Origin rejected" }, { status: 403 });
   }
@@ -99,131 +115,47 @@ export async function POST(
     );
   }
 
-  const requestHash = incidentActionRequestHash({
-    incidentId: incidentId.data,
-    action: action.data,
-    prompt: parsedBody.data.prompt ?? null,
-    confirmation: parsedBody.data.confirmation ?? null,
-  });
-  const auditIdempotencyKey = incidentActionIdempotencyKey(
-    incidentId.data,
-    idempotency.data,
-  );
-  let reservationId: string | undefined;
-
   try {
-    const [reservation] = await db
-      .insert(operatorActions)
-      .values({
-        actorUserId: session.user.id,
-        action: `incident.${action.data}`,
-        targetType: "incident",
-        targetId: incidentId.data,
-        idempotencyKey: auditIdempotencyKey,
-        requestHash,
-        outcome: "pending",
-        metadata: {
-          incidentId: incidentId.data,
-          humanInitiated: true,
-          pending: true,
-        },
-      })
-      .onConflictDoNothing({ target: operatorActions.idempotencyKey })
-      .returning({ id: operatorActions.id });
-
-    if (!reservation) {
-      const [existingAction] = await db
-        .select({
-          requestHash: operatorActions.requestHash,
-          targetId: operatorActions.targetId,
-          outcome: operatorActions.outcome,
-        })
-        .from(operatorActions)
-        .where(eq(operatorActions.idempotencyKey, auditIdempotencyKey))
-        .limit(1);
-      if (!existingAction) {
-        throw new Error("Could not resolve the incident Idempotency-Key.");
-      }
-      if (existingAction.requestHash !== requestHash) {
-        return NextResponse.json(
-          { error: "The Idempotency-Key was already used for a different incident action." },
-          { status: 409 },
-        );
-      }
-      if (existingAction.outcome === "pending") {
-        return NextResponse.json(
-          { error: "An incident action with this Idempotency-Key is already in progress." },
-          { status: 409 },
-        );
-      }
-      return NextResponse.json(
-        {
-          replayed: true,
-          outcome: existingAction.outcome,
-          targetId: existingAction.targetId,
-        },
-        { status: existingAction.outcome === "queued" ? 202 : existingAction.outcome === "completed" ? 200 : 409 },
-      );
-    }
-    reservationId = reservation.id;
-
-    let targetId = incidentId.data;
-    let outcome = "completed";
-    let responseStatus = 200;
-    let responseBody: Record<string, unknown>;
-
     if (action.data === "acknowledge") {
+      // Incident events carry a free-form actor label (no user FK), so the
+      // system actor is recorded until judge-mode identity lands.
       const incident = await acknowledgeIncident(
         incidentId.data,
-        session.user.id,
+        "system:pulse-judge-mode",
       );
-      responseBody = { incident };
-    } else {
-      await requireIncidentAction(incidentId.data, action.data);
-      const job = await enqueueIncidentJob({
-        action: action.data,
+      return NextResponse.json({ incident }, { status: 200 });
+    }
+
+    await requireIncidentAction(incidentId.data, action.data);
+    const pulseName: string | undefined =
+      action.data === "heal" || action.data === "verify"
+        ? PULSE_JOB_BY_ACTION[action.data]
+        : undefined;
+    if (!pulseName) {
+      return NextResponse.json(
+        { error: "This incident action is not available in judge mode yet." },
+        { status: 503 },
+      );
+    }
+    const job = await enqueuePulseJob({
+      name: pulseName,
+      payload: {
         incidentId: incidentId.data,
-        actorUserId: session.user.id,
-        prompt: parsedBody.data.prompt,
-        confirmation: parsedBody.data.confirmation,
-        idempotencyKey: idempotency.data,
-      });
-      targetId = job.id;
-      outcome = "queued";
-      responseStatus = 202;
-      responseBody = { job };
+        prompt: parsedBody.data.prompt ?? null,
+        confirmation: parsedBody.data.confirmation ?? null,
+      },
+      idempotencyKey: `${pulseName}:${incidentId.data}:${idempotency.data}`,
+    });
+
+    if (!job) {
+      return NextResponse.json(
+        { error: "This Idempotency-Key was already used for this action." },
+        { status: 409 },
+      );
     }
 
-    await db
-      .update(operatorActions)
-      .set({
-        targetType: action.data === "acknowledge" ? "incident" : "job",
-        targetId,
-        outcome,
-        metadata: {
-          incidentId: incidentId.data,
-          humanInitiated: true,
-        },
-      })
-      .where(eq(operatorActions.id, reservation.id));
-
-    return NextResponse.json(responseBody, { status: responseStatus });
-
+    return NextResponse.json({ job }, { status: 202 });
   } catch (error) {
-    if (reservationId) {
-      await db
-        .update(operatorActions)
-        .set({
-          outcome: "failed",
-          metadata: {
-            incidentId: incidentId.data,
-            humanInitiated: true,
-            error:
-              error instanceof Error ? error.message.slice(0, 300) : "unknown",
-          },
-        })
-        .where(eq(operatorActions.id, reservationId));
-    }
     if (error instanceof IncidentNotFoundError) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }

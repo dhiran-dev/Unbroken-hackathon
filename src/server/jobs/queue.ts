@@ -1,34 +1,26 @@
-import { and, eq, inArray, lte, notInArray, sql as drizzleSql } from "drizzle-orm";
+import { and, eq, lte, sql as drizzleSql } from "drizzle-orm";
 
-import { getServerEnv } from "@/lib/env";
+import {
+  isLegacyDeniedJobName,
+  isPulseJobName,
+  dispatch,
+} from "@/server/jobs/pulse-jobs";
 
 import { db, sql } from "@/server/db/client";
-import { collectionRuns, jobs } from "@/server/db/schema";
-import {
-  CollectionOverlapError,
-  expireRawPayloadBodies,
-  runCollection,
-} from "@/server/services/collection";
-import { expireIncidentArtifacts } from "@/server/services/incident-artifacts";
-import { runConfiguredAccessibilityAdvisoryRefresh } from "@/server/transit/run-accessibility-advisory-refresh";
-import { runConfiguredStopAccessibilityGuideRefresh } from "@/server/transit/run-stop-accessibility-guide-refresh";
-import { runConfiguredStopRelocationRefresh } from "@/server/transit/run-stop-relocation-refresh";
-import {
-  isIncidentJob,
-  MUTATING_INCIDENT_JOB_TYPES,
-  processIncidentJob,
-  reconcileAbandonedIncidentJob,
-} from "./incident-jobs";
+import { jobs } from "@/server/db/schema";
 
-const COLLECTION_JOB = "collect_sfmta_elevators";
-const ACCESSIBILITY_ADVISORY_JOB = "refresh_accessibility_advisories";
-const STOP_ACCESSIBILITY_GUIDE_JOB = "refresh_stop_accessibility_guides";
-const STOP_RELOCATION_JOB = "refresh_stop_relocations";
-const RETENTION_JOB = "expire_raw_payloads";
+/**
+ * PulseRank-only job-queue primitives (disposition RETAIN_AND_REFACTOR, plan
+ * 5.2): locking, leases, retries, and idempotency are carried over from the
+ * legacy queue; every legacy job type (elevator collection, GTFS/advisory/
+ * relocation/guide refresh) and the transit refresh dispatch were removed with
+ * the L1 cleanup batch. The only accepted job names are exact members of
+ * `PULSE_JOB_NAMES`, dispatched fail-closed through `@/server/jobs/pulse-jobs`.
+ */
+
 export const JOB_LEASE_TIMEOUT_MS = 15 * 60 * 1_000;
 export const JOB_LEASE_RENEWAL_INTERVAL_MS = 30 * 1_000;
-const COLLECTION_ENQUEUE_LOCK_KEY = 7_431_926_118;
-const OVERLAP_DEFER_MS = 15 * 1_000;
+const PULSE_ENQUEUE_LOCK_KEY = 7_431_926_118;
 
 export function isJobLeaseExpired(
   lockedAt: Date | null,
@@ -37,8 +29,6 @@ export function isJobLeaseExpired(
 ) {
   return Boolean(lockedAt && now.getTime() - lockedAt.getTime() >= timeoutMs);
 }
-
-type JobTrigger = "scheduled" | "manual" | "retry";
 
 export type ClaimedJob = {
   id: string;
@@ -49,46 +39,14 @@ export type ClaimedJob = {
   locked_by: string;
 };
 
-function accessibilityAdvisoryBucket(now: Date) {
-  const bucket = new Date(now);
-  bucket.setUTCMinutes(0, 0, 0);
-  return bucket;
-}
-
-function stopRelocationBucket(now: Date) {
-  const bucket = new Date(now);
-  bucket.setUTCSeconds(0, 0);
-  bucket.setUTCMinutes(Math.floor(bucket.getUTCMinutes() / 30) * 30);
-  return bucket;
-}
-
-function collectionBucket(now: Date) {
-  const bucket = new Date(now);
-  bucket.setUTCSeconds(0, 0);
-  bucket.setUTCMinutes(Math.floor(bucket.getUTCMinutes() / 5) * 5);
-  return bucket;
-}
-
-async function recoverAbandonedWork(now: Date) {
+/**
+ * Requeue running jobs whose worker lease expired. Maintenance primitive for
+ * the PulseRank scheduler/worker loop (TODO A-series wiring); not invoked by
+ * the skeleton poller yet.
+ */
+export async function recoverAbandonedWork(now = new Date()) {
   const staleBefore = new Date(now.getTime() - JOB_LEASE_TIMEOUT_MS);
   const staleLease = and(eq(jobs.status, "running"), lte(jobs.lockedAt, staleBefore));
-  const abandonedMutatingJobs = await db
-    .update(jobs)
-    .set({
-      status: "failed",
-      finishedAt: now,
-      lockedAt: null,
-      lockedBy: null,
-      lastError: "MUTATING_JOB_ABANDONED: worker lease expired before completion.",
-      updatedAt: now,
-    })
-    .where(and(staleLease, inArray(jobs.type, [...MUTATING_INCIDENT_JOB_TYPES])))
-    .returning({ id: jobs.id, type: jobs.type, payload: jobs.payload });
-
-  // Reconcile only rows atomically claimed by the stale predicate above.
-  for (const job of abandonedMutatingJobs) {
-    await reconcileAbandonedIncidentJob(job, now);
-  }
 
   await db
     .update(jobs)
@@ -100,140 +58,47 @@ async function recoverAbandonedWork(now: Date) {
       lastError: "Worker lease expired while this job was running.",
       updatedAt: now,
     })
-    .where(and(staleLease, notInArray(jobs.type, [...MUTATING_INCIDENT_JOB_TYPES])));
-
-  await db
-    .update(collectionRuns)
-    .set({
-      status: "failed",
-      classification: "ambiguous_contract_failure",
-      finishedAt: now,
-      errorCode: "COLLECTION_ABANDONED",
-      errorSummary: "The worker ended before this collection reached a trust decision.",
-      reasonCodes: ["COLLECTION_ABANDONED"],
-    })
-    .where(
-      and(
-        inArray(collectionRuns.status, ["collecting", "validating"]),
-        lte(collectionRuns.startedAt, staleBefore),
-      ),
-    );
-}
-export async function enqueueScheduledJobs(now = new Date()) {
-  await recoverAbandonedWork(now);
-  const bucket = collectionBucket(now);
-  const advisoryBucket = accessibilityAdvisoryBucket(now);
-  const relocationBucket = stopRelocationBucket(now);
-  const citywideEnabled = getServerEnv().CITYWIDE_DATA_ENABLED;
-  const day = now.toISOString().slice(0, 10);
-  const accessibilityGuideBucket = new Date(`${day}T08:00:00.000Z`);
-
-  await db.transaction(async (transaction) => {
-    await transaction.execute(drizzleSql`select pg_advisory_xact_lock(${COLLECTION_ENQUEUE_LOCK_KEY})`);
-    await transaction
-      .insert(jobs)
-      .values([
-        {
-          type: COLLECTION_JOB,
-          payload: { trigger: "scheduled", bucket: bucket.toISOString() },
-          idempotencyKey: `collect:scheduled:${bucket.toISOString()}`,
-          scheduledFor: bucket,
-        },
-        ...(citywideEnabled
-          ? [
-              {
-                type: ACCESSIBILITY_ADVISORY_JOB,
-                payload: { bucket: advisoryBucket.toISOString() },
-                idempotencyKey: `advisories:scheduled:${advisoryBucket.toISOString()}`,
-                scheduledFor: advisoryBucket,
-                maxAttempts: 3,
-              },
-              {
-                type: STOP_RELOCATION_JOB,
-                payload: { bucket: relocationBucket.toISOString() },
-                idempotencyKey: `relocations:scheduled:${relocationBucket.toISOString()}`,
-                scheduledFor: relocationBucket,
-                maxAttempts: 3,
-              },
-              {
-                type: STOP_ACCESSIBILITY_GUIDE_JOB,
-                payload: { bucket: accessibilityGuideBucket.toISOString() },
-                idempotencyKey: `accessibility-guides:scheduled:${accessibilityGuideBucket.toISOString()}`,
-                scheduledFor: accessibilityGuideBucket,
-                maxAttempts: 3,
-              },
-            ]
-          : []),
-        {
-          type: RETENTION_JOB,
-          payload: { day },
-          idempotencyKey: `retention:${day}`,
-          scheduledFor: new Date(`${day}T08:00:00.000Z`),
-          maxAttempts: 3,
-        },
-      ])
-      .onConflictDoNothing({ target: jobs.idempotencyKey });
-  });
-}
-export async function hasActiveCollection(now = new Date()) {
-  await recoverAbandonedWork(now);
-
-  const [activeJob] = await db
-    .select({ id: jobs.id })
-    .from(jobs)
-    .where(
-      and(eq(jobs.type, COLLECTION_JOB), inArray(jobs.status, ["queued", "running"])),
-    )
-    .limit(1);
-  if (activeJob) return true;
-
-  const [activeRun] = await db
-    .select({ id: collectionRuns.id })
-    .from(collectionRuns)
-    .where(inArray(collectionRuns.status, ["collecting", "validating"]))
-    .limit(1);
-  return Boolean(activeRun);
+    .where(staleLease);
 }
 
-export async function enqueueManualCollection(idempotencyKey: string) {
-  const key = `collect:manual:${idempotencyKey}`;
+/**
+ * Fail-closed enqueue. Only exact PulseRank job names are accepted; legacy
+ * denylisted or unknown names are rejected without touching the database.
+ */
+export async function enqueuePulseJob(input: {
+  name: string;
+  payload?: Record<string, unknown>;
+  idempotencyKey: string;
+  scheduledFor?: Date;
+  maxAttempts?: number;
+}) {
+  if (!isPulseJobName(input.name)) {
+    throw new Error(`Unsupported job name: ${input.name}`);
+  }
+  if (isLegacyDeniedJobName(input.name)) {
+    throw new Error(`Legacy job names can never be enqueued: ${input.name}`);
+  }
+
   const now = new Date();
-  await recoverAbandonedWork(now);
-
   return db.transaction(async (transaction) => {
-    await transaction.execute(drizzleSql`select pg_advisory_xact_lock(${COLLECTION_ENQUEUE_LOCK_KEY})`);
-    const [existing] = await transaction
-      .select({ id: jobs.id, status: jobs.status })
-      .from(jobs)
-      .where(eq(jobs.idempotencyKey, key))
-      .limit(1);
-    if (existing) return existing;
-
-    const [activeJob] = await transaction
-      .select({ id: jobs.id })
-      .from(jobs)
-      .where(and(eq(jobs.type, COLLECTION_JOB), inArray(jobs.status, ["queued", "running"])))
-      .limit(1);
-    const [activeRun] = await transaction
-      .select({ id: collectionRuns.id })
-      .from(collectionRuns)
-      .where(inArray(collectionRuns.status, ["collecting", "validating"]))
-      .limit(1);
-    if (activeJob || activeRun) throw new CollectionOverlapError();
-
+    await transaction.execute(
+      drizzleSql`select pg_advisory_xact_lock(${PULSE_ENQUEUE_LOCK_KEY})`,
+    );
     const [job] = await transaction
       .insert(jobs)
       .values({
-        type: COLLECTION_JOB,
-        payload: { trigger: "manual" },
-        idempotencyKey: key,
-        scheduledFor: now,
+        type: input.name,
+        payload: input.payload ?? {},
+        idempotencyKey: input.idempotencyKey,
+        scheduledFor: input.scheduledFor ?? now,
+        maxAttempts: input.maxAttempts ?? 3,
       })
+      .onConflictDoNothing({ target: jobs.idempotencyKey })
       .returning({ id: jobs.id, status: jobs.status });
-    if (!job) throw new Error("Could not enqueue the collection job.");
-    return job;
+    return job ?? null;
   });
 }
+
 export async function claimNextJob(workerId: string) {
   const [job] = await sql<ClaimedJob[]>`
     with candidate as (
@@ -307,61 +172,27 @@ async function markFailed(job: ClaimedJob, error: unknown) {
   return Boolean(updated);
 }
 
-async function deferJob(job: ClaimedJob, error: CollectionOverlapError) {
-  const now = new Date();
-  await db
-    .update(jobs)
-    .set({
-      status: "queued",
-      scheduledFor: new Date(now.getTime() + OVERLAP_DEFER_MS),
-      finishedAt: null,
-      lockedAt: null,
-      lockedBy: null,
-      lastError: error.message,
-      updatedAt: now,
-    })
-    .where(and(eq(jobs.id, job.id), eq(jobs.status, "running"), eq(jobs.lockedBy, job.locked_by)));
-}
+/**
+ * Process one claimed job through the fail-closed PulseRank dispatcher.
+ *
+ * - Rejected names (legacy denylisted / unknown / malformed) never execute and
+ *   settle as failed with the rejection reason.
+ * - `not_implemented` stub results count as succeeded work: the dispatcher
+ *   accepted the job; the pipeline binding lands with later agents.
+ * - `handler_error` results settle as failures so normal retry semantics apply.
+ */
 export async function processJob(job: ClaimedJob) {
   try {
-    if (job.type === COLLECTION_JOB) {
-      const requestedTrigger = job.payload.trigger;
-      const trigger: JobTrigger =
-        requestedTrigger === "manual"
-          ? "manual"
-          : job.attempts > 1
-            ? "retry"
-            : "scheduled";
-      await runCollection(trigger);
-    } else if (job.type === ACCESSIBILITY_ADVISORY_JOB) {
-      const result = await runConfiguredAccessibilityAdvisoryRefresh();
-      if (result.status === "rejected" || result.status === "unavailable") {
-        throw new Error("Accessibility advisory refresh was not accepted.");
-      }
-    } else if (job.type === STOP_RELOCATION_JOB) {
-      const result = await runConfiguredStopRelocationRefresh();
-      if (result.status === "rejected" || result.status === "unavailable") {
-        throw new Error("Stop relocation refresh was not accepted.");
-      }
-    } else if (job.type === STOP_ACCESSIBILITY_GUIDE_JOB) {
-      const result = await runConfiguredStopAccessibilityGuideRefresh();
-      if (result.status === "rejected" || result.status === "unavailable") {
-        throw new Error("Accessible-stop guidance refresh was not accepted.");
-      }
-    } else if (job.type === RETENTION_JOB) {
-      await Promise.all([expireRawPayloadBodies(), expireIncidentArtifacts()]);
-    } else if (isIncidentJob(job.type)) {
-      await processIncidentJob(job);
-    } else {
-      throw new Error(`Unsupported job type: ${job.type}`);
+    const result = await dispatch({ name: job.type, payload: job.payload });
+    if (!result.accepted) {
+      throw new Error(`JOB_REJECTED: ${result.reason} (${job.type})`);
+    }
+    if (result.result.status === "handler_error") {
+      throw new Error(result.result.message || "PulseRank handler failed.");
     }
     if (!(await markSucceeded(job))) throw new Error("JOB_LEASE_LOST");
   } catch (error) {
-    if (error instanceof CollectionOverlapError) {
-      await deferJob(job, error);
-    } else {
-      await markFailed(job, error);
-    }
+    await markFailed(job, error);
     throw error;
   }
 }
