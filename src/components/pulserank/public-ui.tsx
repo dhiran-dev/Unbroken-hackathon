@@ -307,7 +307,7 @@ export function ScatterPlot({ products }: { products: PublicProductDto[] }) {
         {points.map((product) => {
           const x = 48 + ((product.serving.value ?? 0) / maxServing) * 632;
           const y = 198 - ((product.caffeine.mg ?? 0) / maxCaffeine) * 170;
-          return <a href={`/products/${product.slug}`} key={product.slug}><title>{product.name}: {caffeineText(product.caffeine)}, {servingText(product)}</title><circle cx={x} cy={y} r="5" /></a>;
+          return <a href={`/products/${product.slug}`} key={product.slug}><title>{`${product.name}: ${caffeineText(product.caffeine)}, ${servingText(product)}`}</title><circle cx={x} cy={y} r="5" /></a>;
         })}
       </svg>
     </section>
