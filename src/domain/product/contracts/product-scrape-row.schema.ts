@@ -38,7 +38,8 @@ export const numberObservationSchema = z
     max: nonNegativeNumberOrNull,
     qualifier: z.enum(["exact", "range", "approximate", "estimated", "unknown"]),
     rawText: z.string().nullable(),
-    candidates: z.array(nonNegativeNumberOrNull),
+    // Plan §8.3: candidates is number[] — parsed numeric readings, never null.
+    candidates: z.array(z.number().min(0)),
   })
   .refine(
     (observation) => observation.min === null || observation.max === null || observation.min <= observation.max,
