@@ -1,0 +1,403 @@
+{
+  "source_id": "caffeine-informer",
+  "base_url": "https://www.caffeineinformer.com/",
+  "generated": "2026-08-21",
+  "method": "URLs discovered via https://www.caffeineinformer.com/caffeine-content-sitemap (1,383 URLs) and the caffeine database index page; every URL below returned HTTP 200 to `curl -s -o /dev/null -w '%{http_code}'` on 2026-08-21.",
+  "url_count": 30,
+  "archetypes_sought": [
+    "standard-volume-drink",
+    "metric-serving",
+    "imperial-serving",
+    "zero-caffeine-explicit",
+    "zero-sugar-explicit",
+    "missing-calories",
+    "missing-sugar",
+    "per-mint-item",
+    "range-caffeine",
+    "estimated-caffeine",
+    "multi-size-variant",
+    "regional-variant",
+    "flavour-list",
+    "struck-through-flavour",
+    "sparse-legacy-record"
+  ],
+  "archetypes_not_found": [],
+  "urls": [
+    {
+      "id": "CI-001",
+      "url": "https://www.caffeineinformer.com/caffeine-content/sting",
+      "slug": "sting",
+      "archetypes": [
+        "standard-volume-drink",
+        "metric-serving",
+        "regional-variant",
+        "multi-size-variant"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-002",
+      "url": "https://www.caffeineinformer.com/caffeine-content/red-bull",
+      "slug": "red-bull",
+      "archetypes": [
+        "imperial-serving",
+        "multi-size-variant",
+        "variant-table"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-003",
+      "url": "https://www.caffeineinformer.com/caffeine-content/lucozade",
+      "slug": "lucozade",
+      "archetypes": [
+        "metric-serving",
+        "regional-variant",
+        "estimated-caffeine",
+        "flavour-list"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-004",
+      "url": "https://www.caffeineinformer.com/caffeine-content/irn-bru-32-energy-drink",
+      "slug": "irn-bru-32-energy-drink",
+      "archetypes": [
+        "metric-serving",
+        "regional-variant"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-005",
+      "url": "https://www.caffeineinformer.com/caffeine-content/coffee-brewed",
+      "slug": "coffee-brewed",
+      "archetypes": [
+        "imperial-serving",
+        "range-caffeine"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-006",
+      "url": "https://www.caffeineinformer.com/caffeine-content/green-tea",
+      "slug": "green-tea",
+      "archetypes": [
+        "range-caffeine",
+        "zero-calories-explicit",
+        "zero-sugar-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-007",
+      "url": "https://www.caffeineinformer.com/caffeine-content/matcha-green-tea",
+      "slug": "matcha-green-tea",
+      "archetypes": [
+        "range-caffeine"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-008",
+      "url": "https://www.caffeineinformer.com/caffeine-content/arizona-iced-tea",
+      "slug": "arizona-iced-tea",
+      "archetypes": [
+        "range-caffeine",
+        "imperial-serving"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-009",
+      "url": "https://www.caffeineinformer.com/caffeine-content/herbal-tea",
+      "slug": "herbal-tea",
+      "archetypes": [
+        "zero-caffeine-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-010",
+      "url": "https://www.caffeineinformer.com/caffeine-content/decaffeinated-tea",
+      "slug": "decaffeinated-tea",
+      "archetypes": [
+        "near-zero-caffeine",
+        "zero-calories-explicit",
+        "zero-sugar-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-011",
+      "url": "https://www.caffeineinformer.com/caffeine-content/red-bull-total-zero",
+      "slug": "red-bull-total-zero",
+      "archetypes": [
+        "zero-sugar-explicit",
+        "zero-calories-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-012",
+      "url": "https://www.caffeineinformer.com/caffeine-content/sugar-free-red-bull",
+      "slug": "sugar-free-red-bull",
+      "archetypes": [
+        "zero-sugar-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-013",
+      "url": "https://www.caffeineinformer.com/caffeine-content/monster-absolutely-zero-energy-drink",
+      "slug": "monster-absolutely-zero-energy-drink",
+      "archetypes": [
+        "zero-sugar-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-014",
+      "url": "https://www.caffeineinformer.com/caffeine-content/rockstar-sugar-free",
+      "slug": "rockstar-sugar-free",
+      "archetypes": [
+        "zero-sugar-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-015",
+      "url": "https://www.caffeineinformer.com/caffeine-content/bang-energy-drink",
+      "slug": "bang-energy-drink",
+      "archetypes": [
+        "flavour-list",
+        "zero-sugar-explicit",
+        "zero-calories-explicit",
+        "variant-flavour"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-016",
+      "url": "https://www.caffeineinformer.com/caffeine-content/red-bull-editions",
+      "slug": "red-bull-editions",
+      "archetypes": [
+        "struck-through-flavour",
+        "flavour-list",
+        "multi-size-variant",
+        "regional-variant"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-017",
+      "url": "https://www.caffeineinformer.com/caffeine-content/bawls",
+      "slug": "bawls",
+      "archetypes": [
+        "struck-through-flavour",
+        "flavour-list",
+        "multi-size-variant"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-018",
+      "url": "https://www.caffeineinformer.com/caffeine-content/viter-mints",
+      "slug": "viter-mints",
+      "archetypes": [
+        "per-mint-item",
+        "missing-calories",
+        "missing-sugar",
+        "flavour-list"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-019",
+      "url": "https://www.caffeineinformer.com/caffeine-content/foosh-energy-mints",
+      "slug": "foosh-energy-mints",
+      "archetypes": [
+        "per-mint-item",
+        "missing-calories",
+        "missing-sugar"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-020",
+      "url": "https://www.caffeineinformer.com/caffeine-content/bawls-mints",
+      "slug": "bawls-mints",
+      "archetypes": [
+        "per-mint-item",
+        "missing-calories",
+        "missing-sugar"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-021",
+      "url": "https://www.caffeineinformer.com/caffeine-content/hero-energy-mints",
+      "slug": "hero-energy-mints",
+      "archetypes": [
+        "per-mint-item",
+        "missing-calories",
+        "missing-sugar"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-022",
+      "url": "https://www.caffeineinformer.com/caffeine-content/black-black-gum",
+      "slug": "black-black-gum",
+      "archetypes": [
+        "per-piece-item",
+        "missing-calories",
+        "missing-sugar"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-023",
+      "url": "https://www.caffeineinformer.com/caffeine-content/crystal-light-energy-candy",
+      "slug": "crystal-light-energy-candy",
+      "archetypes": [
+        "per-piece-item",
+        "missing-calories",
+        "missing-sugar"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-024",
+      "url": "https://www.caffeineinformer.com/caffeine-content/monster",
+      "slug": "monster",
+      "archetypes": [
+        "multi-size-variant",
+        "regional-variant",
+        "variant-table"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-025",
+      "url": "https://www.caffeineinformer.com/caffeine-content/java-monster",
+      "slug": "java-monster",
+      "archetypes": [
+        "hybrid-line-variant",
+        "imperial-serving"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-026",
+      "url": "https://www.caffeineinformer.com/caffeine-content/espresso-monster",
+      "slug": "espresso-monster",
+      "archetypes": [
+        "hybrid-line-variant",
+        "imperial-serving"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-027",
+      "url": "https://www.caffeineinformer.com/caffeine-content/5-hour-energy",
+      "slug": "5-hour-energy",
+      "archetypes": [
+        "shot-serving",
+        "zero-sugar-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-028",
+      "url": "https://www.caffeineinformer.com/caffeine-content/zipfizz-energy-drink-mix",
+      "slug": "zipfizz-energy-drink-mix",
+      "archetypes": [
+        "powder-mix-serving",
+        "zero-sugar-explicit"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-029",
+      "url": "https://www.caffeineinformer.com/caffeine-content/heat-esp-herbal-energy-drink",
+      "slug": "heat-esp-herbal-energy-drink",
+      "archetypes": [
+        "unknown-caffeine",
+        "sparse-legacy-record",
+        "missing-data-conflict"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    },
+    {
+      "id": "CI-030",
+      "url": "https://www.caffeineinformer.com/caffeine-content/zombie-blood-energy-potion",
+      "slug": "zombie-blood-energy-potion",
+      "archetypes": [
+        "sparse-legacy-record",
+        "unusual-serving-format"
+      ],
+      "http_status": 200,
+      "verified": true,
+      "verified_on": "2026-08-21"
+    }
+  ]
+}
