@@ -24,7 +24,7 @@ export const serverEnvSchema = z.object({
   DATABASE_URL: z.string().url().startsWith("postgres"),
   BRIGHTDATA_API_TOKEN: z.string().min(1),
   BRIGHTDATA_COLLECTOR_ID: z.literal(PULSERANK_COLLECTOR_ID),
-  FIREWORKS_API_KEY: z.string().min(1),
+  FIREWORKS_API_KEY: z.string().min(1).optional(),
   FIREWORKS_API_BASE_URL: z
     .literal(FIREWORKS_API_BASE_URL)
     .default(FIREWORKS_API_BASE_URL),

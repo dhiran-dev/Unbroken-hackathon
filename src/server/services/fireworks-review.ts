@@ -35,6 +35,13 @@ export async function requestFireworksReview(
   fetchImplementation: typeof fetch = fetch,
 ) {
   const env = getServerEnv();
+  if (!env.FIREWORKS_API_KEY) {
+    // Advisory-only review: PulseRank builds and deterministic gates run without it.
+    return {
+      review: null,
+      skipped: "FIREWORKS_API_KEY not configured — advisory LLM review disabled",
+    } as const;
+  }
   const endpoint = `${env.FIREWORKS_API_BASE_URL.replace(/\/$/, "")}/chat/completions`;
   const response = await fetchImplementation(
     endpoint,
