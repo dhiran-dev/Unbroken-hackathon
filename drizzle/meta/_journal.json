@@ -36,6 +36,13 @@
       "when": 1787237530732,
       "tag": "0004_commute_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787323575381,
+      "tag": "0005_pulserank_pulse_schema",
+      "breakpoints": true
     }
   ]
 }
