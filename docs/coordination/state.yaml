@@ -1,6 +1,6 @@
 project: pulserank
 active_checkpoint: 1
-active_gate: G2b # discovery-50 pending; contract draft-v1 in use by wave-2 (freeze at G3)
+active_gate: G3-pending # ALL code merged & green (typecheck/lint/test/gate/build); awaiting owner discovery run -> then contract freeze review
 started_at: 2026-08-21T18:15:00+05:30
 orchestrator: ox-alpha (Hermes desktop session)
 repo: https://github.com/dhiran-dev/Unbroken-hackathon.git
