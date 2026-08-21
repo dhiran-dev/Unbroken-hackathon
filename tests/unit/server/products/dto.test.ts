@@ -256,12 +256,12 @@ describe("toPublicProductDto — concentration needs EXACT caffeine + ml volume"
     expect(dto.concentration.mgPer100Ml).toBeNull();
   });
 
-  it("survives a missing or null stored concentration block", () => {
+  it("derives concentration when a legacy row lacks its stored block", () => {
     const payload = buildPayload(standardFull);
     payload.concentration = null as unknown as TrustedObservationPayload["concentration"];
     const dto = toPublicProductDto(trustedRow(payload));
 
-    expect(dto.concentration.mgPer100Ml).toBeNull();
+    expect(dto.concentration.mgPer100Ml).toBeCloseTo(32, 5);
   });
 });
 
@@ -320,6 +320,17 @@ describe("toPublicProductDto — images follow the publication policy", () => {
   it("suppresses blocked media", () => {
     const dto = toPublicProductDto(
       trustedRow(buildPayload(standardFull, { imageUrl: url, publicationState: "blocked" })),
+    );
+
+    expect(dto.image).toBeNull();
+  });
+
+  it("treats a legacy trusted payload without media as image-less", () => {
+    const payload = buildPayload(standardFull) as unknown as Record<string, unknown>;
+    delete payload.media;
+
+    const dto = toPublicProductDto(
+      trustedRow(payload as unknown as TrustedObservationPayload),
     );
 
     expect(dto.image).toBeNull();

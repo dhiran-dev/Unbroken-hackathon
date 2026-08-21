@@ -697,7 +697,14 @@ export function createPromoteSnapshotHandler(
         // against the previous trusted record for change events.
         await repo.updateObservation(observation.id, {
           status: "trusted",
-          normalized: decision.record as JsonObject,
+          // Keep the public-facing derived blocks beside the trusted record.
+          // Media is deliberately audit-only until an explicit publication
+          // policy changes; raw image URLs remain in the quarantined evidence.
+          normalized: {
+            ...decision.record,
+            concentration: candidate.concentration,
+            media: { imageUrl: null, publicationState: "audit_only" },
+          } as JsonObject,
         });
         await repo.supersedeOtherTrustedObservations(product.id, observation.id);
         await repo.updateProduct(product.id, {

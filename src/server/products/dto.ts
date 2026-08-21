@@ -55,8 +55,10 @@ export type TrustedMediaBlock = {
  * state).
  */
 export type TrustedObservationPayload = TrustedProductRecord & {
-  concentration: ConcentrationResult;
-  media: TrustedMediaBlock;
+  /** Optional for legacy trusted rows written before derived blocks existed. */
+  concentration?: ConcentrationResult | null;
+  /** Optional for legacy trusted rows; absent media is never publishable. */
+  media?: TrustedMediaBlock | null;
 };
 
 /** One trusted product row as handed from `queries.ts` to the mappers. */
@@ -164,7 +166,7 @@ export type ToPublicProductDtoOptions = {
 // Mapping helpers
 // ---------------------------------------------------------------------------
 
-function isFiniteNumber(value: number | null): value is number {
+function isFiniteNumber(value: number | null | undefined): value is number {
   return value !== null && Number.isFinite(value);
 }
 
@@ -290,8 +292,28 @@ function mapRankingEligibility(
   return { totalCaffeine, concentration: concentrationEligible(caffeine, serving), reasons };
 }
 
-function mapImage(media: TrustedMediaBlock): string | null {
-  return media.publicationState === "allowed" ? media.imageUrl : null;
+function mapImage(media: TrustedMediaBlock | null | undefined): string | null {
+  return media?.publicationState === "allowed" ? media.imageUrl : null;
+}
+
+/**
+ * Read the stored concentration when present, but repair legacy rows that
+ * predate the derived block from the same exact caffeine + ml inputs. The
+ * eligibility check remains the authority, so sparse/range/conflicting rows
+ * can never gain a concentration number through this fallback.
+ */
+function mapConcentration(payload: TrustedObservationPayload): number | null {
+  if (!concentrationEligible(payload.caffeineMg, payload.serving)) return null;
+
+  const stored = payload.concentration?.mgPer100Ml;
+  if (isFiniteNumber(stored)) return stored;
+
+  const caffeine = payload.caffeineMg.value;
+  const servingMl = payload.serving.normalizedMl;
+  if (!isFiniteNumber(caffeine) || !isFiniteNumber(servingMl) || servingMl <= 0) {
+    return null;
+  }
+  return Math.round((caffeine / servingMl) * 1000) / 10;
 }
 
 function resolveObservedAt(row: TrustedProductRow): string {
@@ -322,12 +344,6 @@ export function toPublicProductDto(
   const extendedFields =
     options.extendedFields ?? pulserankServerFlags.publicExtendedFields;
 
-  // The stored concentration block is honored only when eligibility holds;
-  // otherwise it suppresses to null regardless of what was persisted. Null-
-  // safe on purpose: a writer that persisted `concentration: null` (or omitted
-  // it entirely) must never throw here.
-  const storedMgPer100Ml = payload.concentration?.mgPer100Ml ?? null;
-
   const dto: PublicProductDto = {
     slug: row.product.slug,
     name: row.product.name,
@@ -335,12 +351,7 @@ export function toPublicProductDto(
     caffeine: mapCaffeine(payload),
     serving: mapServing(payload),
     concentration: {
-      mgPer100Ml:
-        concentrationEligible(payload.caffeineMg, payload.serving) &&
-        storedMgPer100Ml !== null &&
-        Number.isFinite(storedMgPer100Ml)
-          ? storedMgPer100Ml
-          : null,
+      mgPer100Ml: mapConcentration(payload),
     },
     observedAt: resolveObservedAt(row),
     rankingEligibility: mapRankingEligibility(payload),
