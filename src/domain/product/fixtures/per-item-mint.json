@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/caffeinated-mints",
+    "slug": "caffeinated-mints",
+    "observedAt": "2026-08-21T09:50:00Z",
+    "pageFingerprint": "sha256:aa17f4c2b6d3905180e4c7f21b62da55"
+  },
+  "identity": {
+    "name": "Caffeinated Mints",
+    "categoryLabel": "Caffeine Candies & Mints",
+    "pageTitle": "Caffeine in Caffeinated Mints"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 40,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "40 mg per mint",
+      "candidates": [40]
+    },
+    "sourceLevel": "high",
+    "serving": {
+      "state": "present",
+      "value": 1,
+      "unit": "mint",
+      "form": "item",
+      "normalizedMl": null,
+      "rawText": "per mint"
+    },
+    "caloriesKcal": {
+      "state": "not_published",
+      "value": null,
+      "min": null,
+      "max": null,
+      "qualifier": "unknown",
+      "rawText": null,
+      "candidates": []
+    },
+    "sugarG": {
+      "state": "not_published",
+      "value": null,
+      "min": null,
+      "max": null,
+      "qualifier": "unknown",
+      "rawText": null,
+      "candidates": []
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "present",
+    "text": "Sorbitol, caffeine, natural peppermint flavor, magnesium stearate",
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "serving-size"],
+    "sourceLinks": [],
+    "warnings": [
+      "per-item unit preserved: serving counted in mints, not converted to ml"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

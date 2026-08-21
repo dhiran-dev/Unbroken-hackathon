@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/vault-grape",
+    "slug": "vault-grape",
+    "observedAt": "2026-08-21T09:35:00Z",
+    "pageFingerprint": "sha256:2c6a41de9b0733f8a5d1c9e2046bb712"
+  },
+  "identity": {
+    "name": "Vault Grape",
+    "categoryLabel": null,
+    "pageTitle": "Caffeine in Vault Grape"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 72,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "72 mg per 20 oz bottle",
+      "candidates": [72]
+    },
+    "sourceLevel": "moderate",
+    "serving": {
+      "state": "not_published",
+      "value": null,
+      "unit": null,
+      "form": "unknown",
+      "normalizedMl": null,
+      "rawText": null
+    },
+    "caloriesKcal": {
+      "state": "not_published",
+      "value": null,
+      "min": null,
+      "max": null,
+      "qualifier": "unknown",
+      "rawText": null,
+      "candidates": []
+    },
+    "sugarG": {
+      "state": "unparseable",
+      "value": null,
+      "min": null,
+      "max": null,
+      "qualifier": "unknown",
+      "rawText": "n/a",
+      "candidates": []
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "not_published",
+    "text": null,
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table"],
+    "sourceLinks": [],
+    "warnings": [
+      "calories section absent from page",
+      "sugar table cell unparseable"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

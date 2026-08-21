@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/red-bull",
+    "slug": "red-bull",
+    "observedAt": "2026-08-21T09:30:00Z",
+    "pageFingerprint": "sha256:9f2b7c4d8e1a5306b7c2f1d4a8e90317"
+  },
+  "identity": {
+    "name": "Red Bull",
+    "categoryLabel": "Energy Drinks",
+    "pageTitle": "Caffeine in Red Bull"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 80,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "80 mg per can",
+      "candidates": [80]
+    },
+    "sourceLevel": "moderate",
+    "serving": {
+      "state": "present",
+      "value": 250,
+      "unit": "ml",
+      "form": "drink",
+      "normalizedMl": 250,
+      "rawText": "8.46 fl oz (250 ml) can"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 110,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "110 calories",
+      "candidates": [110]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 27,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "27 g sugar",
+      "candidates": [27]
+    }
+  },
+  "variants": [
+    {
+      "name": "Red Bull Sugarfree",
+      "caffeineMg": {
+        "state": "present",
+        "value": 80,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "80 mg per can",
+        "candidates": [80]
+      },
+      "serving": {
+        "state": "present",
+        "value": 250,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 250,
+        "rawText": "8.46 fl oz (250 ml) can"
+      },
+      "caloriesKcal": {
+        "state": "present",
+        "value": 10,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "10 calories",
+        "candidates": [10]
+      },
+      "sugarG": {
+        "state": "present",
+        "value": 0,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "0 g sugar",
+        "candidates": [0]
+      },
+      "region": null,
+      "availability": "listed",
+      "rawText": "Red Bull Sugarfree: 80 mg per can, 10 calories"
+    }
+  ],
+  "flavours": [
+    {
+      "name": "Original",
+      "availability": "listed",
+      "caffeineRelation": "same_as_primary",
+      "caffeineMg": {
+        "state": "present",
+        "value": 80,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "80 mg per can",
+        "candidates": [80]
+      },
+      "serving": {
+        "state": "present",
+        "value": 250,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 250,
+        "rawText": "8.46 fl oz (250 ml) can"
+      },
+      "evidence": "normal_text",
+      "rawText": null
+    }
+  ],
+  "ingredients": {
+    "state": "present",
+    "text": "Carbonated water, sucrose, glucose, citric acid, taurine, sodium bicarbonate, caffeine, niacinamide",
+    "appliesTo": "original"
+  },
+  "media": {
+    "imageUrl": "https://www.caffeineinformer.com/images/content/red-bull-can.jpg",
+    "publicationState": "allowed"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "serving-size", "ingredients", "sugar-calories"],
+    "sourceLinks": ["https://www.caffeineinformer.com/the-caffeine-database"],
+    "warnings": []
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

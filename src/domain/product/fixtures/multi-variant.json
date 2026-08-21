@@ -1,0 +1,199 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/monster-energy",
+    "slug": "monster-energy",
+    "observedAt": "2026-08-21T10:05:00Z",
+    "pageFingerprint": "sha256:4a8c02d9e15b7733f6029ac84d17be66"
+  },
+  "identity": {
+    "name": "Monster Energy",
+    "categoryLabel": "Energy Drinks",
+    "pageTitle": "Caffeine in Monster Energy"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 160,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "160 mg per 16 fl oz can",
+      "candidates": [160]
+    },
+    "sourceLevel": "high",
+    "serving": {
+      "state": "present",
+      "value": 473,
+      "unit": "can",
+      "form": "drink",
+      "normalizedMl": 473,
+      "rawText": "16 fl oz (473 ml) can"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 210,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "210 calories",
+      "candidates": [210]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 54,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "54 g sugar",
+      "candidates": [54]
+    }
+  },
+  "variants": [
+    {
+      "name": "Monster Energy Original",
+      "caffeineMg": {
+        "state": "present",
+        "value": 160,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "160 mg per can",
+        "candidates": [160]
+      },
+      "serving": {
+        "state": "present",
+        "value": 473,
+        "unit": "can",
+        "form": "drink",
+        "normalizedMl": 473,
+        "rawText": "16 fl oz can"
+      },
+      "caloriesKcal": {
+        "state": "present",
+        "value": 210,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "210 calories",
+        "candidates": [210]
+      },
+      "sugarG": {
+        "state": "present",
+        "value": 54,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "54 g sugar",
+        "candidates": [54]
+      },
+      "region": null,
+      "availability": "listed",
+      "rawText": null
+    },
+    {
+      "name": "Monster Lo-Carb",
+      "caffeineMg": {
+        "state": "present",
+        "value": 160,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "160 mg per can",
+        "candidates": [160]
+      },
+      "serving": {
+        "state": "present",
+        "value": 473,
+        "unit": "can",
+        "form": "drink",
+        "normalizedMl": 473,
+        "rawText": "16 fl oz can"
+      },
+      "caloriesKcal": {
+        "state": "present",
+        "value": 30,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "30 calories",
+        "candidates": [30]
+      },
+      "sugarG": {
+        "state": "present",
+        "value": 6,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "6 g sugar",
+        "candidates": [6]
+      },
+      "region": null,
+      "availability": "appears_inactive",
+      "rawText": "no longer shown on brand site; still listed here"
+    },
+    {
+      "name": "Monster Java Mean Bean",
+      "caffeineMg": {
+        "state": "present",
+        "value": 180,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "180 mg per can",
+        "candidates": [180]
+      },
+      "serving": {
+        "state": "present",
+        "value": 443,
+        "unit": "can",
+        "form": "drink",
+        "normalizedMl": 443,
+        "rawText": "15 fl oz can"
+      },
+      "caloriesKcal": {
+        "state": "present",
+        "value": 200,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "200 calories",
+        "candidates": [200]
+      },
+      "sugarG": {
+        "state": "present",
+        "value": 45,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "45 g sugar",
+        "candidates": [45]
+      },
+      "region": "us",
+      "availability": "explicitly_discontinued",
+      "rawText": "discontinued by manufacturer"
+    }
+  ],
+  "flavours": [],
+  "ingredients": {
+    "state": "present",
+    "text": "Carbonated water, sucrose, glucose, citric acid, taurine, panax ginseng extract, caffeine",
+    "appliesTo": "original"
+  },
+  "media": {
+    "imageUrl": "https://www.caffeineinformer.com/images/content/monster-energy-can.jpg",
+    "publicationState": "allowed"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "variant-list", "ingredients"],
+    "sourceLinks": ["https://www.caffeineinformer.com/the-caffeine-database"],
+    "warnings": []
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}
