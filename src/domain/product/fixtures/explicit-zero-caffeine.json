@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/caffeine-free-root-beer",
+    "slug": "caffeine-free-root-beer",
+    "observedAt": "2026-08-21T09:40:00Z",
+    "pageFingerprint": "sha256:71e3b9a0c4d2825f6091ae37cc50bd44"
+  },
+  "identity": {
+    "name": "Caffeine-Free Root Beer",
+    "categoryLabel": "Soda",
+    "pageTitle": "Caffeine in Caffeine-Free Root Beer"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 0,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "Caffeine-free",
+      "candidates": [0]
+    },
+    "sourceLevel": "caffeine_free",
+    "serving": {
+      "state": "present",
+      "value": 355,
+      "unit": "ml",
+      "form": "drink",
+      "normalizedMl": 355,
+      "rawText": "12 fl oz (355 ml) can"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 150,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "150 calories",
+      "candidates": [150]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 39,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "39 g sugar",
+      "candidates": [39]
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "present",
+    "text": "Carbonated water, high fructose corn syrup, caramel color, natural and artificial flavors",
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": "https://www.caffeineinformer.com/images/content/caffeine-free-root-beer.jpg",
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "serving-size"],
+    "sourceLinks": ["https://www.caffeineinformer.com/the-caffeine-database"],
+    "warnings": []
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

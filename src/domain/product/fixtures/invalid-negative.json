@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/broken-parser-row",
+    "slug": "broken-parser-row",
+    "observedAt": "2026-08-21T10:12:00Z",
+    "pageFingerprint": "sha256:f01d2ab34c5677889900aabbcdeeff12"
+  },
+  "identity": {
+    "name": "Broken Parser Row",
+    "categoryLabel": "Energy Drinks",
+    "pageTitle": "Caffeine in Broken Parser Row"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": -5,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "-5 mg per can",
+      "candidates": [-5]
+    },
+    "sourceLevel": "low",
+    "serving": {
+      "state": "present",
+      "value": 250,
+      "unit": "ml",
+      "form": "drink",
+      "normalizedMl": 250,
+      "rawText": "250 ml can"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 100,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "100 calories",
+      "candidates": [100]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 20,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "20 g sugar",
+      "candidates": [20]
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "not_published",
+    "text": null,
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table"],
+    "sourceLinks": [],
+    "warnings": [
+      "fixture intentionally invalid: negative caffeine value must fail validation"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

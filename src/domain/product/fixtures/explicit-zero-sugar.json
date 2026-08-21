@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/sugar-free-energy",
+    "slug": "sugar-free-energy",
+    "observedAt": "2026-08-21T09:45:00Z",
+    "pageFingerprint": "sha256:d40881fa62ce5719b03ac6e25f19cd88"
+  },
+  "identity": {
+    "name": "Sugar-Free Energy",
+    "categoryLabel": "Energy Drinks",
+    "pageTitle": "Caffeine in Sugar-Free Energy"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 180,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "180 mg per 16 fl oz can",
+      "candidates": [180]
+    },
+    "sourceLevel": "high",
+    "serving": {
+      "state": "present",
+      "value": 473,
+      "unit": "ml",
+      "form": "drink",
+      "normalizedMl": 473,
+      "rawText": "16 fl oz (473 ml) can"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 15,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "15 calories",
+      "candidates": [15]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 0,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "0 g sugar",
+      "candidates": [0]
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "present",
+    "text": "Carbonated water, citric acid, erythritol, taurine, caffeine, sucralose, B vitamins",
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "serving-size", "sugar-calories"],
+    "sourceLinks": [],
+    "warnings": []
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/energy-shot-plus",
+    "slug": "energy-shot-plus",
+    "observedAt": "2026-08-21T10:10:00Z",
+    "pageFingerprint": "sha256:e77b23c904ad51176082bf9513a70c88"
+  },
+  "identity": {
+    "name": "Energy Shot Plus",
+    "categoryLabel": "Energy Shots",
+    "pageTitle": "Caffeine in Energy Shot Plus"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "conflicting",
+      "value": null,
+      "min": null,
+      "max": null,
+      "qualifier": "unknown",
+      "rawText": "table lists 80 mg; body text claims 120 mg",
+      "candidates": [80, 120]
+    },
+    "sourceLevel": "unknown",
+    "serving": {
+      "state": "present",
+      "value": 60,
+      "unit": "shot",
+      "form": "concentrate",
+      "normalizedMl": 60,
+      "rawText": "2 fl oz (60 ml) shot"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 10,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "10 calories",
+      "candidates": [10]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 0,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "0 g sugar",
+      "candidates": [0]
+    }
+  },
+  "variants": [
+    {
+      "name": "Energy Shot Plus Concentrate",
+      "caffeineMg": {
+        "state": "present",
+        "value": 120,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "120 mg per shot",
+        "candidates": [120]
+      },
+      "serving": {
+        "state": "present",
+        "value": 60,
+        "unit": "shot",
+        "form": "concentrate",
+        "normalizedMl": 60,
+        "rawText": "2 fl oz (60 ml) shot"
+      },
+      "caloriesKcal": {
+        "state": "present",
+        "value": 10,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "10 calories",
+        "candidates": [10]
+      },
+      "sugarG": {
+        "state": "present",
+        "value": 0,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "0 g sugar",
+        "candidates": [0]
+      },
+      "region": null,
+      "availability": "listed",
+      "rawText": "body text: packs 120 mg of caffeine per shot"
+    }
+  ],
+  "flavours": [
+    {
+      "name": "Berry Blast",
+      "availability": "explicitly_discontinued",
+      "caffeineRelation": "different",
+      "caffeineMg": {
+        "state": "present",
+        "value": 90,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "90 mg per shot",
+        "candidates": [90]
+      },
+      "serving": {
+        "state": "present",
+        "value": 60,
+        "unit": "shot",
+        "form": "concentrate",
+        "normalizedMl": 60,
+        "rawText": "2 fl oz (60 ml) shot"
+      },
+      "evidence": "strikethrough",
+      "rawText": "Berry Blast (struck through on page)"
+    }
+  ],
+  "ingredients": {
+    "state": "unparseable",
+    "text": null,
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "blocked"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "variant-list"],
+    "sourceLinks": [],
+    "warnings": [
+      "primary caffeineMg conflicting: table says 80 mg but body text claims 120 mg; row left unranked until resolved",
+      "ingredient list failed to parse"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

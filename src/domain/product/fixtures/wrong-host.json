@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.example-coffee-blog.com/caffeine-content/coffee",
+    "slug": "coffee",
+    "observedAt": "2026-08-21T10:14:00Z",
+    "pageFingerprint": "sha256:9876543210fedcba9988776655443322"
+  },
+  "identity": {
+    "name": "Coffee",
+    "categoryLabel": "Coffee",
+    "pageTitle": "Caffeine in Coffee"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 95,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "95 mg per cup",
+      "candidates": [95]
+    },
+    "sourceLevel": "high",
+    "serving": {
+      "state": "present",
+      "value": 240,
+      "unit": "cup",
+      "form": "drink",
+      "normalizedMl": 240,
+      "rawText": "8 fl oz cup"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 2,
+      "min": null,
+      "max": null,
+      "qualifier": "approximate",
+      "rawText": "~2 calories",
+      "candidates": [2]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 0,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "0 g sugar",
+      "candidates": [0]
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "not_applicable",
+    "text": null,
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table"],
+    "sourceLinks": [],
+    "warnings": [
+      "fixture intentionally invalid: source.url is off-site and must fail validation"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

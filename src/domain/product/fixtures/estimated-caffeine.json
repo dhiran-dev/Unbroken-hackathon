@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/espresso-single",
+    "slug": "espresso-single",
+    "observedAt": "2026-08-21T10:00:00Z",
+    "pageFingerprint": "sha256:3fe05c71ba948822d6147fc05a73be99"
+  },
+  "identity": {
+    "name": "Espresso (single shot)",
+    "categoryLabel": "Coffee",
+    "pageTitle": "Caffeine in Espresso"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 95,
+      "min": null,
+      "max": null,
+      "qualifier": "estimated",
+      "rawText": "~95 mg per shot (estimated)",
+      "candidates": [95]
+    },
+    "sourceLevel": "high",
+    "serving": {
+      "state": "present",
+      "value": 30,
+      "unit": "shot",
+      "form": "drink",
+      "normalizedMl": 30,
+      "rawText": "1 fl oz (30 ml) shot"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 3,
+      "min": null,
+      "max": null,
+      "qualifier": "approximate",
+      "rawText": "~3 calories",
+      "candidates": [3]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 0,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "0 g sugar",
+      "candidates": [0]
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "not_applicable",
+    "text": null,
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "serving-size"],
+    "sourceLinks": [],
+    "warnings": [
+      "caffeine value is an estimate published by the source; qualifier kept as estimated"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}
