@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/summit-rush-energy-drink",
+    "slug": "summit-rush-energy-drink",
+    "observedAt": "2026-08-21T10:26:00Z",
+    "pageFingerprint": "sha256:71b3c95e02fa64d7c8129be4503f7a62"
+  },
+  "identity": {
+    "name": "Summit Rush Energy Drink",
+    "categoryLabel": "Energy Drinks",
+    "pageTitle": "Caffeine in Summit Rush Energy Drink"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 160,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "160 mg per 16 fl oz can",
+      "candidates": [160]
+    },
+    "sourceLevel": "high",
+    "serving": {
+      "state": "present",
+      "value": 473,
+      "unit": "ml",
+      "form": "drink",
+      "normalizedMl": 473,
+      "rawText": "16 fl oz (473 ml) can"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 210,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "210 calories",
+      "candidates": [210]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 54,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "54 g sugar",
+      "candidates": [54]
+    }
+  },
+  "variants": [],
+  "flavours": [
+    {
+      "name": "Original Citrus",
+      "availability": "listed",
+      "caffeineRelation": "same_as_primary",
+      "caffeineMg": {
+        "state": "present",
+        "value": 160,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "160 mg per 16 fl oz can",
+        "candidates": [160]
+      },
+      "serving": {
+        "state": "present",
+        "value": 473,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 473,
+        "rawText": "16 fl oz (473 ml) can"
+      },
+      "evidence": "normal_text",
+      "rawText": null
+    },
+    {
+      "name": "Blue Raspberry",
+      "availability": "listed",
+      "caffeineRelation": "different",
+      "caffeineMg": {
+        "state": "present",
+        "value": 120,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "120 mg per 12 fl oz can",
+        "candidates": [120]
+      },
+      "serving": {
+        "state": "present",
+        "value": 355,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 355,
+        "rawText": "12 fl oz (355 ml) can"
+      },
+      "evidence": "explicit_text",
+      "rawText": "Blue Raspberry comes in a smaller 12 fl oz can with 120 mg of caffeine"
+    },
+    {
+      "name": "Mango Peach",
+      "availability": "appears_inactive",
+      "caffeineRelation": "same_as_primary",
+      "caffeineMg": {
+        "state": "present",
+        "value": 160,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "160 mg per 16 fl oz can",
+        "candidates": [160]
+      },
+      "serving": {
+        "state": "present",
+        "value": 473,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 473,
+        "rawText": "16 fl oz (473 ml) can"
+      },
+      "evidence": "strikethrough",
+      "rawText": "Mango Peach (struck through on page)"
+    },
+    {
+      "name": "Original Cranberry",
+      "availability": "explicitly_discontinued",
+      "caffeineRelation": "same_as_primary",
+      "caffeineMg": {
+        "state": "present",
+        "value": 160,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "160 mg per 16 fl oz can",
+        "candidates": [160]
+      },
+      "serving": {
+        "state": "present",
+        "value": 473,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 473,
+        "rawText": "16 fl oz (473 ml) can"
+      },
+      "evidence": "explicit_text",
+      "rawText": "Original Cranberry was discontinued in early 2024"
+    }
+  ],
+  "ingredients": {
+    "state": "present",
+    "text": "Carbonated water, sucrose, glucose, citric acid, taurine, caffeine, panax ginseng extract, B vitamins",
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": "https://www.caffeineinformer.com/images/content/summit-rush-can.jpg",
+    "publicationState": "allowed"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "flavour-list", "serving-size", "sugar-calories"],
+    "sourceLinks": ["https://www.caffeineinformer.com/the-caffeine-database"],
+    "warnings": [
+      "mixed availability in flavour list: one flavour struck through on page, one marked discontinued in text"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

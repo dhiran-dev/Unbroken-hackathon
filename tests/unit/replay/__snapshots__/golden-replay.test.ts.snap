@@ -1,0 +1,646 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > conflicting-variant.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [
+      {
+        "availability": "explicitly_discontinued",
+        "evidence": "strikethrough",
+        "name": "Berry Blast",
+      },
+    ],
+    "primaryCaffeine": {
+      "qualifier": "unknown",
+      "state": "conflicting",
+      "value": null,
+    },
+    "publicationState": "blocked",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "energy-shot-plus",
+    "variants": 1,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > estimated-caffeine.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "estimated",
+      "state": "present",
+      "value": 95,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "espresso-single",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > explicit-zero-caffeine.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 0,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "caffeine-free-root-beer",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > explicit-zero-sugar.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 180,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "sugar-free-energy",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > flavour-list.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [
+      {
+        "availability": "listed",
+        "evidence": "normal_text",
+        "name": "Original Citrus",
+      },
+      {
+        "availability": "listed",
+        "evidence": "explicit_text",
+        "name": "Blue Raspberry",
+      },
+      {
+        "availability": "appears_inactive",
+        "evidence": "strikethrough",
+        "name": "Mango Peach",
+      },
+      {
+        "availability": "explicitly_discontinued",
+        "evidence": "explicit_text",
+        "name": "Original Cranberry",
+      },
+    ],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 160,
+    },
+    "publicationState": "allowed",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "summit-rush-energy-drink",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > invalid-negative.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": null,
+  "haltedAt": "contract",
+  "ok": false,
+  "stages": [
+    {
+      "findings": [
+        {
+          "code": "schema_invalid",
+          "message": "Too small: expected number to be >=0",
+          "path": "primary.caffeineMg.value",
+          "severity": "error",
+        },
+        {
+          "code": "schema_invalid",
+          "message": "Too small: expected number to be >=0",
+          "path": "primary.caffeineMg.candidates.0",
+          "severity": "error",
+        },
+      ],
+      "ok": false,
+      "stage": "contract",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > missing-serving.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 120,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "not_published",
+    "slug": "herbal-energy-tea",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > multi-variant.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 160,
+    },
+    "publicationState": "allowed",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "monster-energy",
+    "variants": 3,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > per-item-candy.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 45,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "caffeinated-candy",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > per-item-mint.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 40,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "caffeinated-mints",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > range-caffeine.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "range",
+      "state": "present",
+      "value": null,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "brewed-coffee",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > standard-full.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [
+      {
+        "availability": "listed",
+        "evidence": "normal_text",
+        "name": "Original",
+      },
+    ],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 80,
+    },
+    "publicationState": "allowed",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "red-bull",
+    "variants": 1,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > standard-sparse.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 72,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "not_published",
+    "slug": "vault-grape",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > struck-through-flavours.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": {
+    "flavours": [
+      {
+        "availability": "listed",
+        "evidence": "normal_text",
+        "name": "Classic Lemonade",
+      },
+      {
+        "availability": "appears_inactive",
+        "evidence": "strikethrough",
+        "name": "Orange Mango",
+      },
+      {
+        "availability": "appears_inactive",
+        "evidence": "strikethrough",
+        "name": "Watermelon Lime",
+      },
+    ],
+    "primaryCaffeine": {
+      "qualifier": "exact",
+      "state": "present",
+      "value": 90,
+    },
+    "publicationState": "audit_only",
+    "schemaVersion": "1.0",
+    "servingState": "present",
+    "slug": "turbo-citrus-soda",
+    "variants": 0,
+  },
+  "haltedAt": null,
+  "ok": true,
+  "stages": [
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "contract",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "normalize",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "validate",
+    },
+    {
+      "findings": [],
+      "ok": true,
+      "stage": "promote",
+    },
+  ],
+}
+`;
+
+exports[`golden replay harness (A6) > golden stage-output snapshots (__snapshots__) > wrong-host.json stage verdicts match the golden snapshot 1`] = `
+{
+  "finalRowShape": null,
+  "haltedAt": "contract",
+  "ok": false,
+  "stages": [
+    {
+      "findings": [
+        {
+          "code": "schema_invalid",
+          "message": "source.url must point at caffeineinformer.com",
+          "path": "source.url",
+          "severity": "error",
+        },
+      ],
+      "ok": false,
+      "stage": "contract",
+    },
+  ],
+}
+`;

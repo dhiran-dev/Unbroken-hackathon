@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/caffeinated-candy",
+    "slug": "caffeinated-candy",
+    "observedAt": "2026-08-21T10:20:00Z",
+    "pageFingerprint": "sha256:4c7e19a2d8b3506f1e9c2a47b5d88036"
+  },
+  "identity": {
+    "name": "Caffeinated Candy",
+    "categoryLabel": "Caffeine Candies & Mints",
+    "pageTitle": "Caffeine in Caffeinated Candy"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 45,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "45 mg per piece",
+      "candidates": [45]
+    },
+    "sourceLevel": "moderate",
+    "serving": {
+      "state": "present",
+      "value": 1,
+      "unit": "candy",
+      "form": "item",
+      "normalizedMl": null,
+      "rawText": "per piece"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 60,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "60 calories per piece",
+      "candidates": [60]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 8,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "8 g sugar per piece",
+      "candidates": [8]
+    }
+  },
+  "variants": [],
+  "flavours": [],
+  "ingredients": {
+    "state": "present",
+    "text": "Sugar, glucose syrup, caffeine, citric acid, natural flavor, artificial color",
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "serving-size", "sugar-calories"],
+    "sourceLinks": [],
+    "warnings": [
+      "per-item unit preserved: serving counted in candy pieces, not converted to ml"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}

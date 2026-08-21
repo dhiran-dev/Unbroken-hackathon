@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "sourceId": "caffeine-informer",
+    "url": "https://www.caffeineinformer.com/caffeine-content/turbo-citrus-soda",
+    "slug": "turbo-citrus-soda",
+    "observedAt": "2026-08-21T10:32:00Z",
+    "pageFingerprint": "sha256:2d9a5c81e4f7b306d1c8a9257e04bf33"
+  },
+  "identity": {
+    "name": "Turbo Citrus Soda",
+    "categoryLabel": "Energy Drinks",
+    "pageTitle": "Caffeine in Turbo Citrus Soda"
+  },
+  "primary": {
+    "caffeineMg": {
+      "state": "present",
+      "value": 90,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "90 mg per 12 fl oz can",
+      "candidates": [90]
+    },
+    "sourceLevel": "moderate",
+    "serving": {
+      "state": "present",
+      "value": 355,
+      "unit": "ml",
+      "form": "drink",
+      "normalizedMl": 355,
+      "rawText": "12 fl oz (355 ml) can"
+    },
+    "caloriesKcal": {
+      "state": "present",
+      "value": 140,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "140 calories",
+      "candidates": [140]
+    },
+    "sugarG": {
+      "state": "present",
+      "value": 38,
+      "min": null,
+      "max": null,
+      "qualifier": "exact",
+      "rawText": "38 g sugar",
+      "candidates": [38]
+    }
+  },
+  "variants": [],
+  "flavours": [
+    {
+      "name": "Classic Lemonade",
+      "availability": "listed",
+      "caffeineRelation": "same_as_primary",
+      "caffeineMg": {
+        "state": "present",
+        "value": 90,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "90 mg per 12 fl oz can",
+        "candidates": [90]
+      },
+      "serving": {
+        "state": "present",
+        "value": 355,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 355,
+        "rawText": "12 fl oz (355 ml) can"
+      },
+      "evidence": "normal_text",
+      "rawText": null
+    },
+    {
+      "name": "Orange Mango",
+      "availability": "appears_inactive",
+      "caffeineRelation": "same_as_primary",
+      "caffeineMg": {
+        "state": "present",
+        "value": 90,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "90 mg per 12 fl oz can",
+        "candidates": [90]
+      },
+      "serving": {
+        "state": "present",
+        "value": 355,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 355,
+        "rawText": "12 fl oz (355 ml) can"
+      },
+      "evidence": "strikethrough",
+      "rawText": "Orange Mango (struck through on page)"
+    },
+    {
+      "name": "Watermelon Lime",
+      "availability": "appears_inactive",
+      "caffeineRelation": "same_as_primary",
+      "caffeineMg": {
+        "state": "present",
+        "value": 90,
+        "min": null,
+        "max": null,
+        "qualifier": "exact",
+        "rawText": "90 mg per 12 fl oz can",
+        "candidates": [90]
+      },
+      "serving": {
+        "state": "present",
+        "value": 355,
+        "unit": "ml",
+        "form": "drink",
+        "normalizedMl": 355,
+        "rawText": "12 fl oz (355 ml) can"
+      },
+      "evidence": "strikethrough",
+      "rawText": "Watermelon Lime (struck through on page)"
+    }
+  ],
+  "ingredients": {
+    "state": "present",
+    "text": "Carbonated water, high fructose corn syrup, citric acid, caffeine, sodium benzoate, gum arabic",
+    "appliesTo": null
+  },
+  "media": {
+    "imageUrl": null,
+    "publicationState": "audit_only"
+  },
+  "evidence": {
+    "sectionsPresent": ["caffeine-table", "flavour-list"],
+    "sourceLinks": [],
+    "warnings": [
+      "two of three flavours rendered struck through on the page and recorded as appears_inactive"
+    ]
+  },
+  "extraction": {
+    "collectorId": "c_pulserank_ci_v1_provisional",
+    "collectionId": "local-dry-run-2026-08-21",
+    "templateFamily": "caffeine-content-pdp",
+    "parserVersion": "0.1.0-provisional"
+  }
+}
