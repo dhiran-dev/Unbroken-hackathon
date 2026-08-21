@@ -1,0 +1,6 @@
+# PulseRank components (scaffold)
+
+Placeholder directory for PulseRank product UI components (Agent A0 freeze).
+Checkpoint 1 HTML/CSS components land here; optional Checkpoint 2 Three.js
+stages are gated behind `NEXT_PUBLIC_PULSERANK_3D_*` flags in
+`src/config/pulserank-flags.ts`.

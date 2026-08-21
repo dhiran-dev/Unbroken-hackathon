@@ -1,0 +1,434 @@
+path,disposition,rationale,references_legacy_collector_id
+.agents/skills/code-review/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/code-review/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/codebase-design/DEEPENING.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/codebase-design/DESIGN-IT-TWICE.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/codebase-design/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/codebase-design/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/diagnosing-bugs/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/diagnosing-bugs/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/diagnosing-bugs/scripts/hitl-loop.template.sh,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/domain-modeling/ADR-FORMAT.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/domain-modeling/CONTEXT-FORMAT.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/domain-modeling/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/domain-modeling/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/implement/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/implement/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/setup-matt-pocock-skills/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/setup-matt-pocock-skills/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/setup-matt-pocock-skills/domain.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/setup-matt-pocock-skills/issue-tracker-github.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/setup-matt-pocock-skills/issue-tracker-gitlab.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/setup-matt-pocock-skills/issue-tracker-local.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/setup-matt-pocock-skills/triage-labels.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/tdd/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/tdd/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/tdd/mocking.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/tdd/tests.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/to-spec/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/to-spec/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/to-tickets/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/to-tickets/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/wayfinder/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/wayfinder/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/wizard/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/wizard/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/wizard/template.sh,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/writing-for-agents/SKILL-MECHANICS.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/writing-for-agents/SKILL.md,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.agents/skills/writing-for-agents/agents/openai.yaml,RETAIN,Generic agent skill library (code-review/tdd/etc.); domain-neutral tooling,no
+.dockerignore,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+.env.example,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+.github/dependabot.yml,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+.github/workflows/ci.yml,REWRITE,Plan 5.3: pipeline shell retained; legacy gates (incl. legacy collector ID scan target) replaced with PulseRank checks,yes
+.gitignore,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+AGENTS.md,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+CONTEXT.md,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+CONTRIBUTING.md,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+Dockerfile,RETAIN_AND_REFACTOR,Plan 5.1: Bun/Next foundation retained; remove old env placeholder/health assumptions when PulseRank env contract lands,no
+LICENSE,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+README.md,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+SECURITY.md,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+THIRD_PARTY_NOTICES.md,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+artifacts/examples/README.md,DELETE_FROM_ACTIVE_TREE,Old elevator demo/healing envelopes are UNBROKEN synthetic fixtures (plan 5.4/5.7); recoverable via Git history,no
+artifacts/examples/healing/preview-review.json,DELETE_FROM_ACTIVE_TREE,Old elevator demo/healing envelopes are UNBROKEN synthetic fixtures (plan 5.4/5.7); recoverable via Git history,no
+artifacts/examples/healthy-collection/accepted-summary.json,DELETE_FROM_ACTIVE_TREE,Old elevator demo/healing envelopes are UNBROKEN synthetic fixtures (plan 5.4/5.7); recoverable via Git history,no
+artifacts/examples/layout-drift/detection.json,DELETE_FROM_ACTIVE_TREE,Old elevator demo/healing envelopes are UNBROKEN synthetic fixtures (plan 5.4/5.7); recoverable via Git history,no
+bun.lock,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+components.json,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+deploy/coolify.md,REWRITE,"Plan 5.3: platform instructions retained, product-specific sections (worker, env, health) rewritten for PulseRank",yes
+deploy/otp/.gitignore,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/README.md,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/build-graph.sh,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/compose.json,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/contract.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/deployment-files.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/fixtures/health-ready.json,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/fixtures/health-unready.json,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/fixtures/plan-walk-only.json,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/fixtures/plan-wheelchair-unknown.json,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/fixtures/plan-with-transit.json,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/gtfs-export-cli.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/gtfs-export.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/gtfs-stream-export.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/lifecycle.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/manifest-writer.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/otp-config.json,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+deploy/otp/verify-cli.ts,DELETE_FROM_ACTIVE_TREE,OpenTripPlanner integration exists only for UNBROKEN journey planning (plan 5.4),no
+docs/adr/0001-open-trip-planner-for-candidates.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/adr/0002-source-trust-precedes-publication.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/adr/0003-atomic-rider-admission.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/adr/0004-maplibre-carto-unclustered-stops.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/adr/0005-deterministic-journey-language.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/agents/domain.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/agents/issue-tracker.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/architecture/healing-safety.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,yes
+docs/architecture/public-accessibility.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/architecture/trusted-collection.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,yes
+docs/design/t3-code-reference.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/engineering/README.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/engineering/interfaces.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/engineering/sources.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,yes
+docs/engineering/ticket-catalog.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/product/sf-citywide-spec.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/runbooks/deployment.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+docs/runbooks/healing.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,yes
+docs/runbooks/incident-response.md,DELETE_FROM_ACTIVE_TREE,UNBROKEN ADRs/specs/runbooks/architecture docs must not mix into PulseRank docs (plan 5.7); preserved via Git history and later consolidated in docs/legacy/unbroken-transition.md,no
+drizzle.config.ts,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+drizzle/0000_foundation.sql,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/0001_better-auth-issuer.sql,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/0002_citywide_transit.sql,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/0003_rider_accounts.sql,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/0004_commute_notifications.sql,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/meta/0000_snapshot.json,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/meta/0001_snapshot.json,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/meta/0002_snapshot.json,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/meta/0003_snapshot.json,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/meta/0004_snapshot.json,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+drizzle/meta/_journal.json,RETAIN,Applied migration history is part of the DB contract; retain permanently (plan 6). Never edit or delete,no
+eslint.config.mjs,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+next-env.d.ts,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+next.config.ts,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+package.json,REWRITE,Plan 5.3: product-facing root docs/metadata rewritten as PulseRank-authoritative (content preserved in Git history),no
+playwright.config.ts,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+postcss.config.mjs,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+scripts/bootstrap-accounts.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/expire-signup-reservations.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/poll-realtime.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/refresh-accessibility-advisories.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/refresh-gtfs.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/refresh-stop-accessibility-guides.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/refresh-stop-relocations.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/release-check.ts,REWRITE,Plan 5.3: rewritten for PulseRank release gates / new collector runner. Must not reference legacy collector ID c_msyjsllt1r9ej5tdub,yes
+scripts/run-collection.ts,REWRITE,Plan 5.3: rewritten for PulseRank release gates / new collector runner. Must not reference legacy collector ID c_msyjsllt1r9ej5tdub,no
+scripts/seed-transit-landmarks.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/verify-realtime-store.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+scripts/verify-transit-store.ts,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only scripts: auth bootstrap, rider signup quota, GTFS-RT polling, transit refresh/verify (plan 5.4)",no
+skills-lock.json,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+src/app/admin/coverage/page.tsx,DELETE_FROM_ACTIVE_TREE,Old coverage dashboard exists only for UNBROKEN transit coverage metrics (plan 5.4),no
+src/app/admin/history/page.tsx,REWRITE,Visible product dashboards redesigned over pulse.* data (plan 5.2: redesign all visible pages); judge page becomes PulseRank Judge Cockpit,no
+src/app/admin/incidents/[incidentId]/page.tsx,REWRITE,Visible product dashboards redesigned over pulse.* data (plan 5.2: redesign all visible pages); judge page becomes PulseRank Judge Cockpit,no
+src/app/admin/incidents/page.tsx,REWRITE,Visible product dashboards redesigned over pulse.* data (plan 5.2: redesign all visible pages); judge page becomes PulseRank Judge Cockpit,no
+src/app/admin/judge/page.tsx,REWRITE,Visible product dashboards redesigned over pulse.* data (plan 5.2: redesign all visible pages); judge page becomes PulseRank Judge Cockpit,no
+src/app/admin/layout.tsx,RETAIN_AND_REFACTOR,Neutral two-column admin shell kept; swap Brand/nav components and replace operator-auth gating with PulseRank judge-mode gate,no
+src/app/admin/operations/page.tsx,REWRITE,Visible product dashboards redesigned over pulse.* data (plan 5.2: redesign all visible pages); judge page becomes PulseRank Judge Cockpit,no
+src/app/admin/page.tsx,REWRITE,Visible product dashboards redesigned over pulse.* data (plan 5.2: redesign all visible pages); judge page becomes PulseRank Judge Cockpit,no
+src/app/admin/runs/[runId]/page.tsx,REWRITE,Visible product dashboards redesigned over pulse.* data (plan 5.2: redesign all visible pages); judge page becomes PulseRank Judge Cockpit,no
+src/app/api/admin/exports/audit/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/admin/exports/equipment/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/admin/exports/incidents/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/admin/exports/runs/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/admin/incidents/[incidentId]/[action]/route.ts,RETAIN_AND_REFACTOR,Run-trigger and incident-action endpoints kept as patterns; re-pointed to pulse.* job/incident tables with PulseRank job names,no
+src/app/api/admin/runs/route.ts,RETAIN_AND_REFACTOR,Run-trigger and incident-action endpoints kept as patterns; re-pointed to pulse.* job/incident tables with PulseRank job names,no
+src/app/api/auth/[...all]/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/health/live/route.ts,RETAIN_AND_REFACTOR,"Plan 5.1/5.2: generic health endpoint pattern retained; payload rewritten (service name 'unbroken-web', DB probe re-pointed)",no
+src/app/api/health/ready/route.ts,RETAIN_AND_REFACTOR,"Plan 5.1/5.2: generic health endpoint pattern retained; payload rewritten (service name 'unbroken-web', DB probe re-pointed)",no
+src/app/api/me/commutes/[slot]/preview/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/me/commutes/[slot]/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/me/commutes/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/me/email-history/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/accessibility/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/journeys/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/live/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/map/stops.geojson/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/places/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/routes/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/signup-availability/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/api/public/status/route.ts,DELETE_FROM_ACTIVE_TREE,Transit/commute/rider/auth APIs removed from runtime (plan 5.4/5.5/5.6); export routes rebuilt fresh over pulse.* (generic export helper retained in services/admin-export.ts),no
+src/app/coverage/page.tsx,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only surfaces: old coverage dashboard, login, rider flows, elevator/citywide status (plan 5.4 + 5.5 auth removal)",no
+src/app/globals.css,RETAIN_AND_REFACTOR,Tailwind v4 design tokens are product-neutral; visual audit only,no
+src/app/layout.tsx,REWRITE,Plan 5.3: root app shell and landing page rewritten cleanly as PulseRank,no
+src/app/login/page.tsx,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only surfaces: old coverage dashboard, login, rider flows, elevator/citywide status (plan 5.4 + 5.5 auth removal)",no
+src/app/page.tsx,REWRITE,Plan 5.3: root app shell and landing page rewritten cleanly as PulseRank,no
+src/app/rider/sign-in/page.tsx,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only surfaces: old coverage dashboard, login, rider flows, elevator/citywide status (plan 5.4 + 5.5 auth removal)",no
+src/app/rider/trips/page.tsx,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only surfaces: old coverage dashboard, login, rider flows, elevator/citywide status (plan 5.4 + 5.5 auth removal)",no
+src/app/status/legacy-status-page.tsx,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only surfaces: old coverage dashboard, login, rider flows, elevator/citywide status (plan 5.4 + 5.5 auth removal)",no
+src/app/status/page.tsx,DELETE_FROM_ACTIVE_TREE,"UNBROKEN-only surfaces: old coverage dashboard, login, rider flows, elevator/citywide status (plan 5.4 + 5.5 auth removal)",no
+src/components/admin-list-tools.tsx,RETAIN_AND_REFACTOR,"Generic admin table/nav/action mechanics kept; nav entries, run trigger target, and incident terminology replaced with PulseRank equivalents",no
+src/components/admin-navigation.tsx,RETAIN_AND_REFACTOR,"Generic admin table/nav/action mechanics kept; nav entries, run trigger target, and incident terminology replaced with PulseRank equivalents",no
+src/components/brand.tsx,REWRITE,UNBROKEN wordmark and public nav chrome rewritten as PulseRank branding/navigation,no
+src/components/citywide-journey-form.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/citywide-journey-result.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/incident-actions.tsx,RETAIN_AND_REFACTOR,"Generic admin table/nav/action mechanics kept; nav entries, run trigger target, and incident terminology replaced with PulseRank equivalents",no
+src/components/journey-form.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/login-form.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/map/citywide-stop-map-shell.tsx,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/map/citywide-stop-map.tsx,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/map/journey-map-config.ts,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/map/journey-map-overlay.ts,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/map/lazy-citywide-stop-map.tsx,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/map/stop-map-config.ts,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/map/stop-map-geojson.ts,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/map/use-prefers-reduced-motion.ts,DELETE_FROM_ACTIVE_TREE,MapLibre transit map stack exists only for UNBROKEN (plan 5.4),no
+src/components/public-citywide-status.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/public-header.tsx,REWRITE,UNBROKEN wordmark and public nav chrome rewritten as PulseRank branding/navigation,no
+src/components/public-refresh-button.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/rider-google-sign-in.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/rider-my-trips.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/run-now-button.tsx,RETAIN_AND_REFACTOR,"Generic admin table/nav/action mechanics kept; nav entries, run trigger target, and incident terminology replaced with PulseRank equivalents",no
+src/components/sign-out-button.tsx,DELETE_FROM_ACTIVE_TREE,Journey/citywide/rider/auth UI exists only for UNBROKEN (plan 5.4/5.5),no
+src/components/theme-provider.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/theme-toggle.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/ui/badge.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/ui/button.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/ui/card.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/ui/input.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/ui/label.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/components/ui/select.tsx,RETAIN,Plan 5.1: generic UI primitives retained after visual audit; no transit semantics,no
+src/domain/accessibility/model.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/accessibility/planner.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/accessibility/topology.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/auth/admission.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/collection/catalog.ts,DELETE_FROM_ACTIVE_TREE,SFMTA station catalog and sfmta-elevators-v1 scraper contract are government-source-specific; PulseRank scraper contract is new (frozen separately),no
+src/domain/collection/contract.ts,DELETE_FROM_ACTIVE_TREE,SFMTA station catalog and sfmta-elevators-v1 scraper contract are government-source-specific; PulseRank scraper contract is new (frozen separately),no
+src/domain/collection/identity.ts,RETAIN_AND_REFACTOR,Generic identity hashing/normalization and collection time-window helpers; rename equipment/Pacific-TZ assumptions during PulseRank reuse,no
+src/domain/collection/time.ts,RETAIN_AND_REFACTOR,Generic identity hashing/normalization and collection time-window helpers; rename equipment/Pacific-TZ assumptions during PulseRank reuse,no
+src/domain/collection/validation.ts,DELETE_FROM_ACTIVE_TREE,SFMTA station catalog and sfmta-elevators-v1 scraper contract are government-source-specific; PulseRank scraper contract is new (frozen separately),no
+src/domain/commute/account-page.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/commute/schedule.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/commute/service.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/incidents/contract.ts,RETAIN_AND_REFACTOR,Plan 5.2: incident lifecycle/state machine kept; elevator/transit terminology and entity contracts replaced,no
+src/domain/incidents/machine.ts,RETAIN_AND_REFACTOR,Plan 5.2: incident lifecycle/state machine kept; elevator/transit terminology and entity contracts replaced,no
+src/domain/journey/accessibility-evidence.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/journey/citywide-journey-form.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/journey/journey-planner.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/journey/journey-result.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/journey/journey.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/journey/route-engine.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/judge/model.ts,RETAIN_AND_REFACTOR,Judge evidence/timeline/redaction pattern kept for Judge Cockpit; MUST replace BRIGHT_DATA_JUDGE_COLLECTOR_ID (c_msyjsllt1r9ej5tdub) and SFMTA source URL,yes
+src/domain/notifications/due-schedules.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/notifications/journey-changes.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/notifications/outbox.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/accessibility-advisories.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/catalog.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/coverage.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/gtfs-validation.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/live-vehicles.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/realtime.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/stop-accessibility-guides.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/stop-map.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/domain/transit/stop-relocations.ts,DELETE_FROM_ACTIVE_TREE,Transit/journey/accessibility/commute/notification/rider-admission domain models exist only for UNBROKEN (plan 5.4),no
+src/emails/commute-email.ts,DELETE_FROM_ACTIVE_TREE,Transit-specific commute email template removed (plan 5.6: no emails in initial PulseRank),no
+src/lib/auth-client.ts,DELETE_FROM_ACTIVE_TREE,Better Auth client and rider signup-quota helper removed from runtime (plan 5.5); auth DB tables and migrations untouched,no
+src/lib/env.ts,RETAIN_AND_REFACTOR,"env.ts: strip legacy collector/SFMTA/511/auth/Resend requirements and add PULSERANK_* vars (A0 scope; NOT edited in this freeze commit). format/operator-labels: generic run-status labels kept, transit trigger labels replaced",yes
+src/lib/format.ts,RETAIN_AND_REFACTOR,"env.ts: strip legacy collector/SFMTA/511/auth/Resend requirements and add PULSERANK_* vars (A0 scope; NOT edited in this freeze commit). format/operator-labels: generic run-status labels kept, transit trigger labels replaced",no
+src/lib/operator-labels.ts,RETAIN_AND_REFACTOR,"env.ts: strip legacy collector/SFMTA/511/auth/Resend requirements and add PULSERANK_* vars (A0 scope; NOT edited in this freeze commit). format/operator-labels: generic run-status labels kept, transit trigger labels replaced",no
+src/lib/public-signup-availability.ts,DELETE_FROM_ACTIVE_TREE,Better Auth client and rider signup-quota helper removed from runtime (plan 5.5); auth DB tables and migrations untouched,no
+src/lib/utils.ts,RETAIN,Generic cn/class merge helper,no
+src/server/auth/access.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/auth/admission-hooks.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/auth/admission.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/auth/index.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/auth/policy.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/auth/roles.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/auth/session.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/citywide-status/public-citywide-status.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/citywide-status/status-runtime.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/commutes/email-history.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/commutes/email-message-builder.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/commutes/email-preview.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/commutes/runtime.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/commutes/service.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/db/client.ts,RETAIN,"Postgres client and legacy schema mirrors of the applied DB contract; retained frozen so drizzle-kit/migration history stays intact (plan 5.1/7.7). PulseRank tables go in NEW schema files, not here",no
+src/server/db/schema/auth.ts,RETAIN,"Postgres client and legacy schema mirrors of the applied DB contract; retained frozen so drizzle-kit/migration history stays intact (plan 5.1/7.7). PulseRank tables go in NEW schema files, not here",no
+src/server/db/schema/commute.ts,RETAIN,"Postgres client and legacy schema mirrors of the applied DB contract; retained frozen so drizzle-kit/migration history stays intact (plan 5.1/7.7). PulseRank tables go in NEW schema files, not here",no
+src/server/db/schema/core.ts,RETAIN,"Postgres client and legacy schema mirrors of the applied DB contract; retained frozen so drizzle-kit/migration history stays intact (plan 5.1/7.7). PulseRank tables go in NEW schema files, not here",no
+src/server/db/schema/index.ts,RETAIN_AND_REFACTOR,Aggregates legacy schema files; later adds pulse schema export alongside legacy exports (legacy exports must keep compiling until cleanup),no
+src/server/db/schema/transit.ts,RETAIN,"Postgres client and legacy schema mirrors of the applied DB contract; retained frozen so drizzle-kit/migration history stays intact (plan 5.1/7.7). PulseRank tables go in NEW schema files, not here",no
+src/server/jobs/incident-jobs.ts,DELETE_FROM_ACTIVE_TREE,Legacy incident job-type module (job names + dispatch wiring); lifecycle logic survives in services/incident-workflow.ts. Replaced by pulse.* job definitions,no
+src/server/jobs/queue.ts,RETAIN_AND_REFACTOR,"Plan 5.2: job queue primitives (locking, leases, retries, idempotency) kept; every legacy job type and the transit refresh dispatch removed; PulseRank-only job names with fail-closed dispatch",no
+src/server/journey/accessibility-elevator-read.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/journey/accessibility-evidence-production.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/journey/accessibility-evidence-resolvers.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/journey/accessibility-evidence-runtime.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/journey/accessibility-evidence-source.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/journey/journey-runtime.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/journey/otp-client.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/journey/route-engine.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/notifications/jobs.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/notifications/outbox-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/notifications/recipient-resolver.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/notifications/resend.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/services/admin-coverage.ts,DELETE_FROM_ACTIVE_TREE,Serves deleted public accessibility/signup and coverage-dashboard surfaces only (plan 5.4/5.5),no
+src/server/services/admin-data.ts,RETAIN_AND_REFACTOR,Generic list/filter/pagination/CSV-export and judge-cockpit data helpers kept; queries re-pointed from legacy tables to pulse.*,no
+src/server/services/admin-export.ts,RETAIN_AND_REFACTOR,Generic list/filter/pagination/CSV-export and judge-cockpit data helpers kept; queries re-pointed from legacy tables to pulse.*,no
+src/server/services/admin-judge.ts,RETAIN_AND_REFACTOR,Generic list/filter/pagination/CSV-export and judge-cockpit data helpers kept; queries re-pointed from legacy tables to pulse.*,no
+src/server/services/bright-data-healing.ts,RETAIN_AND_REFACTOR,Bright Data API client + heal-envelope CLI plumbing reused with the NEW PulseRank collector ID from env; healing demo is a PulseRank feature. Must never invoke legacy collector c_msyjsllt1r9ej5tdub,no
+src/server/services/bright-data.ts,RETAIN_AND_REFACTOR,Bright Data API client + heal-envelope CLI plumbing reused with the NEW PulseRank collector ID from env; healing demo is a PulseRank feature. Must never invoke legacy collector c_msyjsllt1r9ej5tdub,no
+src/server/services/collection.ts,RETAIN_AND_REFACTOR,Plan 5.2: source-run persistence + snapshot promotion transaction pattern kept; re-pointed to pulse schema with the new collector and product contract,no
+src/server/services/fireworks-review.ts,RETAIN_AND_REFACTOR,"Advisory LLM review per AGENTS.md (Fireworks, strict structured output); entity assumptions replaced for PulseRank incidents",no
+src/server/services/incident-artifacts.ts,RETAIN_AND_REFACTOR,"Plan 5.2: incident lifecycle services kept; elevator/transit detection semantics, artifact layout, and table targets replaced",no
+src/server/services/incident-detection.ts,RETAIN_AND_REFACTOR,"Plan 5.2: incident lifecycle services kept; elevator/transit detection semantics, artifact layout, and table targets replaced",no
+src/server/services/incident-workflow.ts,RETAIN_AND_REFACTOR,"Plan 5.2: incident lifecycle services kept; elevator/transit detection semantics, artifact layout, and table targets replaced",no
+src/server/services/incidents.ts,RETAIN_AND_REFACTOR,"Plan 5.2: incident lifecycle services kept; elevator/transit detection semantics, artifact layout, and table targets replaced",no
+src/server/services/public-accessibility.ts,DELETE_FROM_ACTIVE_TREE,Serves deleted public accessibility/signup and coverage-dashboard surfaces only (plan 5.4/5.5),no
+src/server/services/public-signup-availability.ts,DELETE_FROM_ACTIVE_TREE,Serves deleted public accessibility/signup and coverage-dashboard surfaces only (plan 5.4/5.5),no
+src/server/transit/accessibility-advisories.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/accessibility-advisory-collector.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/accessibility-advisory-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/catalog.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/coverage.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/gtfs-archive.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/gtfs-refresh.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/gtfs-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/landmark-seed-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/landmark-seed.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/live-vehicles.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/muni-gtfs.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/realtime-runtime.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/realtime-source.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/realtime-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/realtime-validation.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/realtime.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/run-accessibility-advisory-refresh.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/run-stop-accessibility-guide-refresh.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/run-stop-relocation-refresh.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-accessibility-guide-collector.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-accessibility-guide-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-accessibility-guides.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-map-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-map.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-relocation-collector.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-relocation-store.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/server/transit/stop-relocations.ts,DELETE_FROM_ACTIVE_TREE,Transit/GTFS/journey/citywide/commute/notification/Better-Auth server runtime exists only for UNBROKEN (plan 5.4/5.5/5.6); auth tables untouched,no
+src/worker/index.ts,REWRITE,"Plan 5.3 + A0 scope: legacy transit job dispatch rewritten as PulseRank-only worker (pulse.* job names, fail-closed on unknown/legacy jobs). File kept until replacement lands; must not be run",no
+tests/e2e/accessibility.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/admin-coverage.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/citywide-journey-result.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/citywide-map-overlay.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/citywide-place-selection.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/citywide-status.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/citywide-stop-map.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/public.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/rider-google-sign-in.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/rider-my-trips.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/e2e/rider-signup-availability.spec.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/accessibility-advisories.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/accessibility-evidence.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/auth-admission.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/minimal-gtfs.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/route-engine.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/stop-accessibility-guides.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/stop-relocations.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/transit-catalog.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/support/transit-realtime.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-elevator-read.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence-corrections.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence-events.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence-malformed.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence-resolvers.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence-safety.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence-source.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence-topology.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/accessibility-evidence.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/admin-coverage-page.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/admin-coverage.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/admin-data.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/admin-judge-page.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",yes
+tests/unit/admin-judge.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/auth-admission-hooks.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/auth-admission.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/auth-migration.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/auth-policy.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/auth-roles.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/auth-session.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/bright-data-dataset.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",yes
+tests/unit/bright-data-judge.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",yes
+tests/unit/citywide-journey-form.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/citywide-journey-map-config.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/citywide-journey-map-overlay.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/citywide-stop-map-normalizer.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/citywide-stop-map-shell.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/collection-validation.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-account-page.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-email-history.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-email-message-builder.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-email-preview.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-email.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-migration.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-notification-routes.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-routes.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-schedule-store.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-schedule.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/commute-service.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/due-schedules.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/email-history-route-matrix.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/incident-safety.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",yes
+tests/unit/integration-safety.test.ts,RETAIN_AND_REFACTOR,Env/DB safety gates kept; assertions updated from legacy collector/SFMTA constants to PulseRank env contract,yes
+tests/unit/journey-changes.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/journey-planner.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/journey-public.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/journey-result.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/journey-result.test.tsx,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/notification-jobs.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/notification-outbox.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/notification-recipient.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/notification-send.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/notification-store.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/otp-build-lifecycle.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/otp-build-operator-seam.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/otp-client.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/otp-deployment-files.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/otp-deployment.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/otp-gtfs-export.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/otp-verification-failures.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-citywide-status.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-journeys-route.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-live-route.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-live-vehicles.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-places-route.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-planner.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-signup-admission-availability.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-signup-availability.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-status-route.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/public-stops-geojson-route.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/resend-provider.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/route-engine.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/stop-map-config.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-accessibility-advisories.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-catalog.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-coverage.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-gtfs-archive.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-gtfs-refresh.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-gtfs-validation.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-landmark-seed.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-muni-gtfs.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-budget.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-current-vehicles.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-decoder.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-invalid-entities.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-revalidation.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-safety.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-source.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-static-binding.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-stop-relationship.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-transport.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime-vehicles-alerts.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-realtime.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-stop-accessibility-guides-contract.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-stop-accessibility-guides.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-stop-map.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-stop-relocation-collector.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tests/unit/transit-stop-relocations.test.ts,DELETE_FROM_ACTIVE_TREE,"Unit/e2e/support suites target deleted transit, journey, commute, rider, notification, map, and auth runtime (plan 5.4); replaced by PulseRank suites",no
+tsconfig.json,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
+vitest.config.ts,RETAIN,Domain-neutral tooling/config; no transit or collection semantics,no
