@@ -35,6 +35,7 @@ import type {
 } from "@/domain/product/contracts/observations";
 import type { ProductScrapeRowV1 } from "@/domain/product/contracts/product-scrape-row";
 import type { TaxonomyEntry } from "@/server/ingestion/taxonomy";
+import { authorizeProductImage } from "@/server/products/image-policy";
 
 /** The PulseRank collector identity permitted in runtime code. */
 export const JUDGE_COLLECTOR_ID = "c_mt33nlnkq376z132b";
@@ -413,10 +414,7 @@ export function toScrapeRow(
       text: null,
       appliesTo: null,
     },
-    media: {
-      imageUrl: asString(record.image_url),
-      publicationState: "audit_only",
-    },
+    media: authorizeProductImage(record.image_url),
     evidence: {
       sectionsPresent: ["product_identity", "caffeine", "serving"],
       sourceLinks: [

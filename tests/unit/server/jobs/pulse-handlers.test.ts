@@ -110,6 +110,7 @@ type RowOverrides = CaffeineSpec & {
   observedAt?: string;
   caffeine?: CaffeineSpec;
   servingMl?: number | null;
+  media?: ProductScrapeRowV1["media"];
 };
 
 /** A minimal contract-valid V1 scrape row with unique slug/fingerprint. */
@@ -138,7 +139,7 @@ function makeScrapeRow(overrides: RowOverrides = {}): ProductScrapeRowV1 {
     variants: [],
     flavours: [],
     ingredients: { state: "not_published", text: null, appliesTo: null },
-    media: { imageUrl: null, publicationState: "audit_only" },
+    media: overrides.media ?? { imageUrl: null, publicationState: "audit_only" },
     evidence: { sectionsPresent: [], sourceLinks: [], warnings: [] },
     extraction: {
       collectorId: "c_test_collector",
@@ -467,6 +468,28 @@ describe("pulse.promote.snapshot handler", () => {
     expect(promoted).toMatchObject({ status: "failed", errorCode: "run_not_validated" });
     expect(repo.__debug.observations.size).toBe(1);
     expect([...repo.__debug.observations.values()][0]?.status).toBe("candidate");
+  });
+
+  it("keeps an authorized product image beside the promoted trusted record", async () => {
+    const repo = createInMemoryPulseRepo();
+    const imageUrl = "https://www.caffeineinformer.com/images/content/promotion-image.jpg";
+    const { run } = await seedRunWithRows(repo, [
+      makeScrapeRow({
+        slug: "image-product",
+        media: { imageUrl, publicationState: "allowed" },
+      }),
+    ]);
+    const handlers = makeHandlers(repo);
+
+    const promoted = await ingestAndPromote(repo, run.id, handlers);
+    expect(promoted).toMatchObject({ status: "ok" });
+    const trusted = [...repo.__debug.observations.values()].find(
+      (observation) => observation.status === "trusted",
+    );
+    expect(trusted?.normalized.media).toEqual({
+      imageUrl,
+      publicationState: "allowed",
+    });
   });
 
   it("moves the current-trusted pointer, supersedes the old record, and logs a caffeine change", async () => {

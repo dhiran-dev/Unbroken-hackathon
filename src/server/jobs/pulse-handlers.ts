@@ -994,12 +994,12 @@ export function createPromoteSnapshotHandler(
         await repo.updateObservation(observation.id, {
           status: "trusted",
           // Keep the public-facing derived blocks beside the trusted record.
-          // Media is deliberately audit-only until an explicit publication
-          // policy changes; raw image URLs remain in the quarantined evidence.
+          // Media has already passed the source-host HTTPS publication policy;
+          // the public DTO independently enforces the stored state.
           normalized: {
             ...decision.record,
             concentration: candidate.concentration,
-            media: { imageUrl: null, publicationState: "audit_only" },
+            media: candidate.media,
           } as JsonObject,
         });
         await repo.supersedeOtherTrustedObservations(product.id, observation.id);

@@ -29,6 +29,10 @@ import type {
   ServingObservation,
 } from "@/domain/product/contracts/observations";
 import type { ProductScrapeRowV1 } from "@/domain/product/contracts/product-scrape-row";
+import {
+  normalizeProductMedia,
+  type ProductMedia,
+} from "@/server/products/image-policy";
 
 // ---------------------------------------------------------------------------
 // Canonical categories
@@ -194,6 +198,7 @@ export type NormalizedCandidate = {
   concentration: ConcentrationResult;
   variants: NormalizedVariant[];
   flavours: NormalizedFlavour[];
+  media: ProductMedia;
 };
 
 // ---------------------------------------------------------------------------
@@ -328,5 +333,6 @@ export function normalizeRow(row: ProductScrapeRowV1): NormalizedCandidate {
     concentration: computeConcentration(caffeineMg, serving),
     variants: row.variants.map(normalizeVariant),
     flavours: row.flavours.map(normalizeFlavour),
+    media: normalizeProductMedia(row.media),
   };
 }

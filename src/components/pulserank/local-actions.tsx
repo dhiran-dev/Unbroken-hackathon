@@ -35,9 +35,11 @@ function toSavedRef(product: PublicProductDto): SavedProductRef | null {
 export function LocalProductActionsClient({
   product,
   compact = false,
+  showMyDay = true,
 }: {
   product: PublicProductDto;
   compact?: boolean;
+  showMyDay?: boolean;
 }) {
   const savedRef = useMemo(() => toSavedRef(product), [product]);
   const [saved, setSaved] = useState(false);
@@ -102,7 +104,7 @@ export function LocalProductActionsClient({
           <GitCompareArrows size={15} aria-hidden="true" />
           {!compact ? (compared ? "In compare" : "Compare") : null}
         </button>
-        {!compact ? <button type="button" className="pr-button pr-button-ghost" onClick={() => void addToDay()}><Plus size={15} aria-hidden="true" /> My Day</button> : null}
+        {!compact && showMyDay ? <button type="button" className="pr-button pr-button-ghost" onClick={() => void addToDay()}><Plus size={15} aria-hidden="true" /> My Day</button> : null}
       </div>
       {message ? <span className="pr-action-message">{message}</span> : null}
     </div>

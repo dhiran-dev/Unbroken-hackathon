@@ -1,28 +1,24 @@
 import type { Metadata } from "next";
 
-import {
-  CANONICAL_CATEGORIES,
-} from "@/server/ingestion/normalize";
+import { ExploreWorkspace } from "@/components/pulserank/explore/explore-workspace";
+import { isExactPlotProduct } from "@/components/pulserank/explore/explore-model";
+import { PublicHeader } from "@/components/pulserank/public-ui";
 import { toPublicProductDto } from "@/server/products/dto";
-import { listCategories, listProducts, getProductBySlug } from "@/server/products/queries";
-import { parseProductListQuery } from "@/server/products/request-params";
 import {
-  EmptyState,
-  ProductCard,
-  PublicHeader,
-  ScatterPlot,
-  SearchForm,
-  categoryLabel,
-  caffeineText,
-  servingText,
-} from "@/components/pulserank/public-ui";
-import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
+  getProductBySlug,
+  listCategories,
+  listProducts,
+} from "@/server/products/queries";
+import { parseProductListQuery } from "@/server/products/request-params";
+
+import styles from "./explore.module.css";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Explore",
-  description: "Filter and compare trusted caffeine product observations.",
+  description:
+    "Search, filter, and inspect trusted caffeine observations without losing their serving or source context.",
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -31,47 +27,70 @@ function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export default async function ExplorePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const raw = await searchParams;
-  const params = new URLSearchParams();
+  const parameters = new URLSearchParams();
   for (const [key, value] of Object.entries(raw)) {
     const item = first(value);
-    if (item !== undefined) params.set(key, item);
+    if (item !== undefined) parameters.set(key, item);
   }
-  const parsed = parseProductListQuery(params);
-  const filters = parsed.ok ? parsed.value : {};
-  const [result, categories] = await Promise.all([
-    listProducts({ ...filters, limit: 48 }),
-    listCategories(),
-  ]);
-  const products = result.items.map((row) => toPublicProductDto(row));
+
+  const parsed = parseProductListQuery(parameters);
+  const filters = parsed.ok
+    ? { ...parsed.value, cursor: null, limit: 24 }
+    : { limit: 24 as const };
   const selectedSlug = first(raw.selected);
-  const selectedRow = selectedSlug ? await getProductBySlug(selectedSlug) : null;
-  const selected = selectedRow ? toPublicProductDto(selectedRow) : null;
+
+  const [result, categories, selectedRow] = await Promise.all([
+    listProducts(filters),
+    listCategories(),
+    selectedSlug ? getProductBySlug(selectedSlug) : Promise.resolve(null),
+  ]);
+
+  const products = result.items.map((row) => toPublicProductDto(row));
+  const requestedSelection = selectedRow ? toPublicProductDto(selectedRow) : null;
+  const initialSelected =
+    requestedSelection ??
+    products.find((product) => isExactPlotProduct(product, "total")) ??
+    products[0] ??
+    null;
+  const workspaceKey = JSON.stringify({
+    filters: result.activeFacets,
+    selected: initialSelected?.slug ?? null,
+  });
 
   return (
-    <div className="pr-app">
+    <div className={`${styles.exploreRoot} pr-app`}>
+      <span
+        aria-hidden="true"
+        className={styles.directionContract}
+        data-form-seed="pulserank-explore-observatory-v1"
+        dangerouslySetInnerHTML={{
+          __html: `<!--
+            THESIS: Explore is a caffeine observatory, not a generic card catalog.
+            OWN-WORLD: Near-black fields, blue hairlines, violet action, category signals, and procedural specimens.
+            STORY: Filter trusted products, read exact normalized measurements, inspect qualifiers, then save or compare.
+            FIRST VIEWPORT: Source-backed facets left, dominant exact-value plot center, evidence inspector right; search is the primary entry action.
+            FORM: Three-zone operate workspace; form 1; seed pulserank-explore-observatory-v1.
+            FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+          -->`,
+        }}
+      />
       <PublicHeader active="/explore" />
-      <main className="pr-shell pr-main">
-        <div className="pr-page-heading"><p className="pr-eyebrow">Catalog / trusted snapshot</p><h1>Explore the signal.</h1><p className="pr-page-description">Search the published catalog, narrow it by category and serving, then inspect the exact fields that qualify a product for comparison.</p></div>
-        <div className="pr-explore-toolbar">
-          <aside className="pr-filter-panel"><h2>Filter the catalog</h2><form action="/explore" method="get">
-            <div className="pr-filter-group"><label htmlFor="filter-category">Category</label><select id="filter-category" name="category" defaultValue={filters.category ?? ""}><option value="">All categories</option>{CANONICAL_CATEGORIES.map((category) => <option key={category} value={category}>{categoryLabel(category)}</option>)}</select></div>
-            <div className="pr-filter-group"><label>Caffeine range (mg)</label><div className="pr-filter-inline"><input name="caffeineMinMg" type="number" min="0" placeholder="Min" defaultValue={filters.caffeineMinMg ?? ""} /><input name="caffeineMaxMg" type="number" min="0" placeholder="Max" defaultValue={filters.caffeineMaxMg ?? ""} /></div></div>
-            <div className="pr-filter-group"><label htmlFor="filter-serving">Serving type</label><select id="filter-serving" name="servingForm" defaultValue={filters.servingForm ?? ""}><option value="">All forms</option>{["drink", "concentrate", "mix", "food", "supplement", "item", "unknown"].map((form) => <option key={form} value={form}>{form}</option>)}</select></div>
-            <div className="pr-filter-group"><label className="pr-filter-check"><input type="checkbox" name="exactOnly" value="true" defaultChecked={filters.exactOnly === true} /> Exact caffeine only</label></div>
-            <button type="submit" className="pr-button pr-button-primary">Apply filters</button>{parsed.ok ? null : <p className="pr-action-message">One filter was invalid; showing the trusted catalog.</p>}
-          </form></aside>
-          <section>
-            <OptionalVisualStage page="explore" variant="explore" className="pr-explore-stage" />
-            <SearchForm initialValue={filters.search ?? ""} />
-            <div className="pr-results-meta"><span><strong>{products.length}</strong> products in this page</span><span>{categories.length} active categories</span></div>
-            <ScatterPlot products={products} />
-            {selected ? <div className="pr-selected-drawer"><strong>Selected: {selected.name}</strong> · {caffeineText(selected.caffeine)} · {servingText(selected)} · <a href={`/products/${selected.slug}`}>Open passport</a></div> : null}
-            {products.length > 0 ? <div className="pr-product-grid">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div> : <EmptyState />}
-          </section>
-        </div>
-      </main>
+      <ExploreWorkspace
+        key={workspaceKey}
+        categories={categories}
+        initialError={parsed.ok ? null : parsed.error}
+        initialFilters={result.activeFacets}
+        initialNextCursor={result.nextCursor}
+        initialProducts={products}
+        initialSelected={initialSelected}
+        initialTotalCount={result.totalCount}
+      />
     </div>
   );
 }

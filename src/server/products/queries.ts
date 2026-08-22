@@ -39,6 +39,7 @@ import {
   pulseLeaderboardEntries,
   pulseLeaderboardSnapshots,
   pulseProductAliases,
+  pulseProductMediaPublications,
   pulseProducts,
   pulseProductObservations,
   pulseSources,
@@ -88,6 +89,7 @@ type TrustedJoinRow = {
   observedAt: Date;
   status: string;
   normalized: unknown;
+  publishedImageUrl: string | null;
 };
 
 const trustedSelect = {
@@ -99,9 +101,11 @@ const trustedSelect = {
   observedAt: pulseProductObservations.observedAt,
   status: pulseProductObservations.status,
   normalized: pulseProductObservations.normalized,
+  publishedImageUrl: pulseProductMediaPublications.imageUrl,
 };
 
 function toTrustedProductRow(row: TrustedJoinRow): TrustedProductRow {
+  const normalized = row.normalized as TrustedObservationPayload;
   return {
     product: {
       slug: row.slug,
@@ -113,8 +117,27 @@ function toTrustedProductRow(row: TrustedJoinRow): TrustedProductRow {
       observedAt: row.observedAt,
       status: row.status,
     },
-    payload: row.normalized as TrustedObservationPayload,
+    payload:
+      row.publishedImageUrl === null
+        ? normalized
+        : {
+            ...normalized,
+            media: {
+              imageUrl: row.publishedImageUrl,
+              publicationState: "allowed",
+            },
+          },
   };
+}
+
+function withPublishedMedia() {
+  return and(
+    eq(
+      pulseProductMediaPublications.productObservationId,
+      pulseProductObservations.id,
+    ),
+    eq(pulseProductMediaPublications.publicationState, "allowed"),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -437,6 +460,7 @@ export async function listProducts(
       .select(trustedSelect)
       .from(pulseProducts)
       .innerJoin(pulseProductObservations, trustedOnlyCondition())
+      .leftJoin(pulseProductMediaPublications, withPublishedMedia())
       .where(and(...conditions))
       .orderBy(...sortClauses(sort))
       .limit(limit + 1) as Promise<TrustedJoinRow[]>,
@@ -497,6 +521,7 @@ export async function getProductBySlug(
     .select(trustedSelect)
     .from(pulseProducts)
     .innerJoin(pulseProductObservations, trustedOnlyCondition())
+    .leftJoin(pulseProductMediaPublications, withPublishedMedia())
     .where(and(trustedOnlyCondition(), eq(pulseProducts.slug, slug)))
     .limit(1)) as TrustedJoinRow[];
 

@@ -96,6 +96,10 @@ describe("normalizeRow — full fixtures", () => {
     });
     expect(candidate.variants).toHaveLength(1);
     expect(candidate.flavours).toHaveLength(1);
+    expect(candidate.media).toEqual({
+      imageUrl: "https://www.caffeineinformer.com/images/content/red-bull-can.jpg",
+      publicationState: "allowed",
+    });
   });
 
   it("keeps sparse fields as valid data (standard-sparse)", () => {

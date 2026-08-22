@@ -12,9 +12,26 @@ Status: **audit_only** (default for this source).
 
 ## Images
 
-- **Images from this source are `audit_only` by default.** Product photos and site artwork are copyrighted by
-  Caffeine Informer and/or the brands depicted. Do not hotlink, copy into public assets, or render them in
-  demos. Store fetched images only in quarantined/ignored audit storage, referenced by hash for drift checks.
+- **Images from this source are `audit_only` by default.** PulseRank has an explicit owner-approved exception
+  for product image URLs that pass the `caffeine-informer-product-image-v1` boundary: the URL must use HTTPS
+  and the exact host `www.caffeineinformer.com`. Root-domain, subdomain, non-HTTPS, malformed, and missing URLs
+  remain blocked or audit-only and are not reflected into public responses.
+- Legacy image authorization is recorded in append-only `pulse.product_media_publications` rows that link one
+  exact raw record to the current trusted observation. This publication record does not modify the raw landing
+  row or the immutable trusted observation. Future validated observations may expose media only after the same
+  policy check during mapping and normalization.
+- Explore serves an authorized image through a local, slug-addressed renderer. The renderer repeats the exact
+  URL policy check before fetching, validates every redirect destination before following it, accepts only
+  supported raster media, and returns a transparent WebP. Its response does not disclose credentials, raw
+  records, or the upstream URL used for that render. See
+  [Product image edge matting](product-image-edge-matting.md) for the algorithm, limits, cache behavior, and
+  verification steps.
+- The transparency matte removes only light, neutral pixels connected to the source image edge. Disconnected
+  white package labels, typography, and product details remain opaque; this is a presentation derivative, not
+  a modification of the immutable source observation or its media-publication authorization.
+- The public interface uses deterministic procedural artwork when a product has no allowed image or the allowed
+  image cannot be fetched or transformed. Product understanding and evidence must remain available in text
+  without the image.
 
 ## Text
 
@@ -35,4 +52,5 @@ Status: **audit_only** (default for this source).
 ## Promotion path
 
 - audit_only -> approved_public requires: (1) explicit human approval, (2) per-record citation, (3) qualifier
-  preservation, (4) removal of all source images.
+  preservation, and (4) removal of copied source prose. Source media stays non-public unless it has its own
+  explicit approval and exact allowlist authorization record as described above.

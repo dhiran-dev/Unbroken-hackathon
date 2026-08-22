@@ -11,6 +11,13 @@ export async function GET() {
     const { sql } = await import("@/server/db/client");
     await sql`select 1 as ready`;
     const latencyMs = Math.round(performance.now() - startedAt);
+    const { warmExploreProductImage } = await import(
+      "@/server/products/product-image-warmup"
+    );
+    await Promise.race([
+      warmExploreProductImage(),
+      new Promise<void>((resolve) => setTimeout(resolve, 3_500)),
+    ]);
 
     return Response.json(
       {

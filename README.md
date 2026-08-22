@@ -21,6 +21,11 @@ catalog row is used. The optional Checkpoint 2 visual enhancement is implemented
 as a local-image Three.js layer, but remains off by default; the public product
 is always complete HTML/CSS with an accessible fallback.
 
+Approved product photographs are served through a local, policy-checked renderer.
+Its deterministic [edge-matting technique](docs/source/product-image-edge-matting.md)
+removes only light canvas pixels connected to the image border, preserving enclosed
+white labels and package details.
+
 ## Trust contract
 
 The active collector is `c_mt33nlnkq376z132b`, registered only for the

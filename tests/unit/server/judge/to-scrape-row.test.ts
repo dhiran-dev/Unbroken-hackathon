@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { productScrapeRowV1Schema } from "@/domain/product/contracts/product-scrape-row.schema";
 import {
   checkUnitConsistency,
+  type CollectorProductRecord,
   JUDGE_COLLECTOR_ID,
   parseServingSize,
   slugFromCollectorUrl,
@@ -100,7 +101,7 @@ describe("toScrapeRow — post-heal record (72 mg)", () => {
 
 describe("toScrapeRow — source-backed category evidence", () => {
   it("uses listing evidence without modifying or name-classifying the provider row", () => {
-    const providerRecord = structuredClone(postHealRecord);
+    const providerRecord: CollectorProductRecord = structuredClone(postHealRecord);
     const before = structuredClone(providerRecord);
 
     const row = toScrapeRow(providerRecord, {
@@ -121,6 +122,30 @@ describe("toScrapeRow — source-backed category evidence", () => {
     expect(productScrapeRowV1Schema.parse(row).identity.categoryProvenance).toBe(
       "source_listing",
     );
+  });
+});
+
+describe("toScrapeRow — product image publication", () => {
+  it("publishes the authorized source-hosted image without changing the provider row", () => {
+    const providerRecord: CollectorProductRecord = structuredClone(postHealRecord);
+    const imageUrl = "https://www.caffeineinformer.com/images/content/sting.jpg";
+    providerRecord.image_url = imageUrl;
+    const before = structuredClone(providerRecord);
+
+    const row = toScrapeRow(providerRecord, { observedAt: OBSERVED_AT });
+
+    expect(providerRecord).toEqual(before);
+    expect(row.media).toEqual({ imageUrl, publicationState: "allowed" });
+  });
+
+  it("blocks an unrelated image host", () => {
+    const providerRecord: CollectorProductRecord = structuredClone(postHealRecord);
+    providerRecord.image_url = "https://untrusted.example/sting.jpg";
+
+    expect(toScrapeRow(providerRecord, { observedAt: OBSERVED_AT }).media).toEqual({
+      imageUrl: null,
+      publicationState: "blocked",
+    });
   });
 });
 

@@ -230,6 +230,47 @@ export const pulseProductObservations = pulse.table(
   ],
 );
 
+/**
+ * Explicit publication link for media authorized after an observation was
+ * promoted. The observation and raw landing rows remain unchanged; this
+ * append-only record identifies the exact evidence row and trusted observation
+ * that justified publishing the image.
+ */
+export const pulseProductMediaPublications = pulse.table(
+  "product_media_publications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => pulseProducts.id, { onDelete: "cascade" }),
+    productObservationId: uuid("product_observation_id")
+      .notNull()
+      .references(() => pulseProductObservations.id, { onDelete: "cascade" }),
+    rawRecordId: uuid("raw_record_id")
+      .notNull()
+      .references(() => pulseRawRecords.id, { onDelete: "restrict" }),
+    imageUrl: text("image_url").notNull(),
+    publicationState: text("publication_state").default("allowed").notNull(),
+    policyVersion: text("policy_version").notNull(),
+    authorizedAt: timestamp("authorized_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("product_media_publications_observation_uidx").on(
+      table.productObservationId,
+    ),
+    uniqueIndex("product_media_publications_raw_record_uidx").on(
+      table.rawRecordId,
+    ),
+    index("product_media_publications_product_idx").on(table.productId),
+    check(
+      "product_media_publications_state_ck",
+      sql`${table.publicationState} IN ('allowed', 'blocked')`,
+    ),
+  ],
+);
+
 /** Named variant of a product (size/form as listed by a source). */
 export const pulseVariants = pulse.table(
   "variants",

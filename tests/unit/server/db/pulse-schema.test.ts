@@ -15,6 +15,7 @@ import {
   pulseLeaderboardEntries,
   pulseLeaderboardSnapshots,
   pulseProductAliases,
+  pulseProductMediaPublications,
   pulseProductObservations,
   pulseProducts,
   pulseRawRecords,
@@ -30,6 +31,7 @@ const PULSE_TABLES: Record<string, Table> = {
   raw_records: pulseRawRecords,
   products: pulseProducts,
   product_aliases: pulseProductAliases,
+  product_media_publications: pulseProductMediaPublications,
   product_observations: pulseProductObservations,
   variants: pulseVariants,
   variant_observations: pulseVariantObservations,
@@ -54,7 +56,7 @@ function columnNames(table: Table): Set<string> {
 }
 
 describe("isolated pulse schema", () => {
-  it("exports exactly the 16 pulse tables in the pulse schema", () => {
+  it("exports exactly the 17 pulse tables in the pulse schema", () => {
     expect(Object.keys(PULSE_TABLES).sort()).toEqual(
       [
         "change_events",
@@ -67,6 +69,7 @@ describe("isolated pulse schema", () => {
         "leaderboard_entries",
         "leaderboard_snapshots",
         "product_aliases",
+        "product_media_publications",
         "product_observations",
         "products",
         "raw_records",
@@ -155,5 +158,43 @@ describe("isolated pulse schema", () => {
     expect(migration).toContain('CREATE SCHEMA "pulse";');
     expect(migration).toMatch(/CREATE TABLE "pulse"\."product_observations"/);
     expect(migration).not.toMatch(/DROP TABLE/);
+  });
+
+  it("publishes legacy product images through exact evidence links without rewriting observations", () => {
+    const authorizationMarker = readFileSync(
+      "drizzle/0006_publish_pulserank_product_images.sql",
+      "utf8",
+    );
+    const publicationMigration = readFileSync(
+      "drizzle/0007_pulserank_media_publications.sql",
+      "utf8",
+    );
+    const publicationConfig = getTableConfig(pulseProductMediaPublications);
+
+    expect(publicationConfig.schema).toBe("pulse");
+    expect([...columnNames(pulseProductMediaPublications)]).toEqual(
+      expect.arrayContaining([
+        "product_id",
+        "product_observation_id",
+        "raw_record_id",
+        "image_url",
+        "publication_state",
+        "policy_version",
+      ]),
+    );
+    expect(authorizationMarker).not.toMatch(/UPDATE\s+pulse\.product_observations/i);
+    expect(publicationMigration).toContain(
+      "raw.captured_at = observation.observed_at",
+    );
+    expect(publicationMigration).toContain(
+      "^https://www\\.caffeineinformer\\.com/",
+    );
+    expect(publicationMigration).toMatch(
+      /INSERT INTO pulse\.product_media_publications/,
+    );
+    expect(publicationMigration).not.toMatch(
+      /UPDATE\s+pulse\.product_observations/i,
+    );
+    expect(publicationMigration).not.toMatch(/DROP (TABLE|SCHEMA)/i);
   });
 });
