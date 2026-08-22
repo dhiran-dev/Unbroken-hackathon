@@ -245,6 +245,51 @@ function parseRows(stdout: string): unknown[] {
       "Bright Data CLI did not return valid JSON output.",
     );
   }
+
+  // The batch endpoint can return an already-serialized JSON document as its
+  // JSON response body. The CLI's `--json` printer then serializes that body
+  // one more time, so the child stdout is a JSON string containing an array or
+  // object. Unwrap exactly one such layer; arbitrary status strings remain
+  // invalid collection output.
+  if (typeof parsed === "string") {
+    const nested = parsed.trim();
+    if (nested.startsWith("[") || nested.startsWith("{")) {
+      try {
+        parsed = JSON.parse(nested);
+      } catch {
+        // Batch exports may be newline-delimited JSON (one terminal row per
+        // line) inside that same outer JSON string. Parse every line rather
+        // than accepting a partially valid document.
+        const lines = nested
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter((line) => line !== "");
+        if (lines.length === 0) {
+          throw new BdataClientError(
+            "BDATA_EMPTY_OUTPUT",
+            "Bright Data CLI returned an empty row set.",
+          );
+        }
+        try {
+          const rows = lines.map((line) => JSON.parse(line));
+          if (
+            rows.some(
+              (row) => row === null || typeof row !== "object",
+            )
+          ) {
+            throw new Error("NDJSON rows must be JSON objects or arrays");
+          }
+          parsed = rows;
+        } catch {
+          throw new BdataClientError(
+            "BDATA_NON_JSON_OUTPUT",
+            "Bright Data CLI returned a string that was not valid JSON output.",
+          );
+        }
+      }
+    }
+  }
+
   if (Array.isArray(parsed)) {
     if (parsed.length === 0) {
       throw new BdataClientError(

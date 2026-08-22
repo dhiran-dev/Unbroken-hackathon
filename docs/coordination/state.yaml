@@ -1,6 +1,6 @@
 project: pulserank
-active_checkpoint: 2
-active_gate: G3-verified # Local implementation, typecheck/lint/test/release gate/build are green; the consented v2 live attempt failed closed at the provider rate limit, so no trusted run is recorded
+active_checkpoint: 1
+active_gate: CP1-local-verified # G4/G5/G6 pass locally with a fresh 30-URL golden run; public deployment remains owner/Coolify-gated
 started_at: 2026-08-21T18:15:00+05:30
 orchestrator: ox-alpha (Hermes desktop session)
 repo: https://github.com/dhiran-dev/Unbroken-hackathon.git
@@ -10,7 +10,11 @@ tag_before_rebuild: unbroken-final-before-pulserank
 db_backup: backups/unbroken-before-pulserank-20260821-1808.dump
 collector_id: c_mt33nlnkq376z132b # active consented Caffeine Informer v2 collector; legacy ids remain audit-only
 schema_version: v1 # normalized PulseRank product contract
-trusted_run_id: null
+trusted_run_id: c4871ed7-21b1-42b8-a507-0a06c9067cb6
+trusted_product_count: 128
+trusted_run_row_count: 30
+trusted_run_status: validated
+last_verified_at: 2026-08-22T06:31:00+05:30
 three_enabled: false
 public_extended_fields: false
 legacy:
@@ -19,12 +23,14 @@ legacy:
   worker_stop: pending_coolify_access
   collectors_pause: pending_brightdata_dashboard_access
   legacy_jobs: must_be_rejected_by_new_dispatcher
+  queue_claim_boundary: enforced_pulse_allowlist
 blocked:
   - source_images # audit_only until publication permission
   - non_caffeine_fields_until_permission
 waves:
-  wave1: {A0: merged, A2: merged, A3: merged, A1: retry_in_progress}
-  pending: [A4-database, A5-validation, A6-fixtures, A7-worker, A8-api, A9-design, A10-frontend, A11-local-state, A12-judge, A13-qa, A14-docs]
+  wave1: {A0: merged, A1: merged, A2: merged, A3: merged}
+  completed: [A4-database, A5-validation, A6-fixtures, A7-worker, A8-api, A9-design, A10-frontend, A11-local-state, A12-judge, A13-qa, A14-docs]
+  pending: [deployment-cutover]
 mockups:
   style_source: example_mockups/ (dark product-studio, purple accent, approved by owner as visual language)
   generator: orchestrator via Codex imagegen, one screen at a time, owner approves each

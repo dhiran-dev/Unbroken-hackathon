@@ -10,11 +10,10 @@
  * - Rejection never throws and never executes anything; it returns a structured
  *   `{ accepted: false }` result so callers can log and move on.
  *
- * Every accepted job resolves to a handler from `pulseJobHandlers`. Six jobs
- * are wired to real pipeline implementations in `./pulse-handlers` (ingest,
- * validate, promote, leaderboards, sample + discovery collection); the rest
- * remain typed stubs (`{ status: "not_implemented", job }`). The dispatch
- * contract (fail-closed, never throws) is unchanged by the wiring.
+ * Every accepted job resolves to a handler from `pulseJobHandlers`. The
+ * data-bearing pipeline handlers are real; any intentionally unavailable
+ * operation remains an explicit structured result so the worker can fail and
+ * retry it instead of claiming success.
  *
  * Import-safety: importing this module still never opens a database connection
  * or a network socket. `./pulse-handlers` reaches the db client only through

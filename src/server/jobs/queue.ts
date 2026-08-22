@@ -1,8 +1,9 @@
-import { and, eq, lte, sql as drizzleSql } from "drizzle-orm";
+import { and, eq, inArray, lte, sql as drizzleSql } from "drizzle-orm";
 
 import {
   isLegacyDeniedJobName,
   isPulseJobName,
+  PULSE_JOB_NAMES,
   dispatch,
 } from "@/server/jobs/pulse-jobs";
 
@@ -40,13 +41,16 @@ export type ClaimedJob = {
 };
 
 /**
- * Requeue running jobs whose worker lease expired. Maintenance primitive for
- * the PulseRank scheduler/worker loop (TODO A-series wiring); not invoked by
- * the skeleton poller yet.
+ * Requeue running jobs whose worker lease expired. The production PulseRank
+ * worker invokes this once before it starts claiming work.
  */
 export async function recoverAbandonedWork(now = new Date()) {
   const staleBefore = new Date(now.getTime() - JOB_LEASE_TIMEOUT_MS);
-  const staleLease = and(eq(jobs.status, "running"), lte(jobs.lockedAt, staleBefore));
+  const staleLease = and(
+    eq(jobs.status, "running"),
+    lte(jobs.lockedAt, staleBefore),
+    inArray(jobs.type, [...PULSE_JOB_NAMES]),
+  );
 
   await db
     .update(jobs)
@@ -104,7 +108,9 @@ export async function claimNextJob(workerId: string) {
     with candidate as (
       select id
       from jobs
-      where status = 'queued' and scheduled_for <= now()
+      where status = 'queued'
+        and scheduled_for <= now()
+        and type = any(${sql.array([...PULSE_JOB_NAMES])})
       order by scheduled_for asc, created_at asc
       for update skip locked
       limit 1
@@ -173,26 +179,105 @@ async function markFailed(job: ClaimedJob, error: unknown) {
 }
 
 /**
+ * Rejected legacy/unknown jobs are terminal. Retrying them would only keep
+ * retired government work in circulation and would obscure the safety event.
+ */
+async function markRejected(job: ClaimedJob, error: unknown) {
+  const now = new Date();
+  const message =
+    error instanceof Error ? error.message.slice(0, 300) : "PulseRank rejected this job.";
+  const [updated] = await db
+    .update(jobs)
+    .set({
+      status: "failed",
+      finishedAt: now,
+      lockedAt: null,
+      lockedBy: null,
+      lastError: message,
+      updatedAt: now,
+    })
+    .where(and(eq(jobs.id, job.id), eq(jobs.status, "running"), eq(jobs.lockedBy, job.locked_by)))
+    .returning({ id: jobs.id });
+  return Boolean(updated);
+}
+
+/** Settle a claimed job after the worker has completed its handler. */
+export async function settleClaimedJob(
+  job: ClaimedJob,
+  outcome: "succeeded" | "failed" | "rejected",
+  error?: unknown,
+) {
+  if (outcome === "succeeded") return markSucceeded(job);
+  if (outcome === "rejected") {
+    return markRejected(job, error ?? new Error("PulseRank rejected this job."));
+  }
+  return markFailed(job, error ?? new Error("PulseRank job failed."));
+}
+
+/**
+ * Production queue adapter used by the PulseRank worker.
+ *
+ * The worker keeps the claimed row in this adapter until settlement so a
+ * lease-renewal callback cannot accidentally settle a different retry of the
+ * same id. Unknown/legacy job names are still rejected by the dispatcher
+ * before any handler can run.
+ */
+export function createPostgresPulseJobQueue() {
+  const claimed = new Map<string, ClaimedJob>();
+
+  return {
+    async claimNext(workerId: string) {
+      const job = await claimNextJob(workerId);
+      if (job !== null) claimed.set(job.id, job);
+      return job;
+    },
+    renewLease: renewJobLease,
+    async settle(
+      jobId: string,
+      workerId: string,
+      outcome: "succeeded" | "failed" | "rejected",
+      error?: unknown,
+    ) {
+      const job = claimed.get(jobId);
+      if (job === undefined || job.locked_by !== workerId) return false;
+      const settled = await settleClaimedJob(job, outcome, error);
+      if (settled) claimed.delete(jobId);
+      return settled;
+    },
+  };
+}
+
+/**
  * Process one claimed job through the fail-closed PulseRank dispatcher.
  *
  * - Rejected names (legacy denylisted / unknown / malformed) never execute and
  *   settle as failed with the rejection reason.
- * - `not_implemented` stub results count as succeeded work: the dispatcher
- *   accepted the job; the pipeline binding lands with later agents.
- * - `handler_error` results settle as failures so normal retry semantics apply.
+ * - `not_implemented` and `handler_error` results settle as failures so the
+ *   queue never reports an unwired or broken pipeline as successful work.
  */
 export async function processJob(job: ClaimedJob) {
   try {
     const result = await dispatch({ name: job.type, payload: job.payload });
     if (!result.accepted) {
-      throw new Error(`JOB_REJECTED: ${result.reason} (${job.type})`);
+      if (
+        !(await settleClaimedJob(
+          job,
+          "rejected",
+          new Error(`JOB_REJECTED: ${result.reason} (${job.type})`),
+        ))
+      ) {
+        throw new Error("JOB_LEASE_LOST");
+      }
+      return;
     }
     if (result.result.status === "handler_error") {
       throw new Error(result.result.message || "PulseRank handler failed.");
     }
-    if (!(await markSucceeded(job))) throw new Error("JOB_LEASE_LOST");
+    if (!(await settleClaimedJob(job, "succeeded"))) {
+      throw new Error("JOB_LEASE_LOST");
+    }
   } catch (error) {
-    await markFailed(job, error);
+    await settleClaimedJob(job, "failed", error);
     throw error;
   }
 }

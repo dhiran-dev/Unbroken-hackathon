@@ -1,6 +1,6 @@
-# A7a Handoff — PulseRank Worker Dispatcher Skeleton (NO data binding)
+# A7a Handoff — PulseRank Worker Dispatcher
 
-**Status: DONE — fail-closed dispatcher + worker loop skeleton; every handler is a typed stub.**
+**Status: DONE — fail-closed dispatcher + Postgres-backed worker loop.**
 
 Branch `agent/repo-safety` (worktree `.worktrees/repo-safety`), fast-forwarded onto
 `pulserank-rebuild` (contracts, pulse schema, ingestion pipeline, UI primitives) before starting.
@@ -10,7 +10,7 @@ Branch `agent/repo-safety` (worktree `.worktrees/repo-safety`), fast-forwarded o
 | File | Purpose |
 | --- | --- |
 | `src/server/jobs/pulse-jobs.ts` | Dependency-free PulseRank job dispatcher: `PULSE_JOB_NAMES` / `PulseJobName` union (12 jobs), `LEGACY_JOB_DENYLIST` (7 legacy UNBROKEN names), `pulseJobHandlers` registry, and `dispatch()`. |
-| `src/worker/pulse-worker.ts` | Polling worker skeleton mirroring the legacy worker lifecycle (`src/worker/index.ts`, which is intentionally NOT deleted — disposition REWRITE says it stays until the replacement is wired). In-process queue seam with TODO-REWIRE, collect-flag gating, graceful shutdown. |
+| `src/worker/pulse-worker.ts` | Production polling worker with Postgres claim/lease/recovery/settlement, an explicit in-memory test seam, collect-flag gating, legacy rejection, and graceful shutdown. |
 | `tests/unit/server/jobs/pulse-jobs.test.ts` | 44 tests covering denylist rejection, unknown-name rejection, all 12 pulse.* acceptances, flag gating (pure gate + live worker-loop behavior). |
 
 ## Dispatcher contract (`pulse-jobs.ts`)
@@ -24,9 +24,9 @@ Branch `agent/repo-safety` (worktree `.worktrees/repo-safety`), fast-forwarded o
 - Accepted jobs run their registry handler inside a try/catch; a throwing
   handler becomes `{ accepted: true, result: { status: "handler_error", ... } }`
   rather than an exception escaping the dispatch boundary.
-- All 12 handlers are typed stubs returning
-  `{ status: "not_implemented", job }`. The module imports nothing — importing
-  it can never open a DB connection or socket.
+- The registry binds the real PulseRank pipeline handlers where available and
+  preserves explicit structured results for operations not yet enabled. The
+  dispatcher itself remains import-safe; the worker queue is loaded lazily.
 
 Denylist (exact strings): `collect-elevator-status`, `refresh-gtfs`,
 `refresh-accessibility-advisories`, `refresh-stop-relocations`,
@@ -39,16 +39,15 @@ flag states + poll interval), immediate first poll then interval polling,
 lease-renewal timer around each claimed job, drain-in-flight-work stop, and
 SIGTERM/SIGINT handlers that exit(0) after draining.
 
-Deliberate seams (this file opens no sockets/databases):
+Deliberate seams:
 
 1. **Queue** — minimal in-process `PulseJobQueue` interface
    (`claimNext` / `renewLease` / `settle`) plus `createInMemoryPulseJobQueue()`.
-   **TODO-REWIRE:** swap for the Postgres primitives in
-   `src/server/jobs/queue.ts` (`claimNextJob`, `renewJobLease`, succeeded/failed
-   settlement). That file's disposition is RETAIN_AND_REFACTOR so locking,
-   leases, retries, and idempotency carry over — but importing it today would
-   drag the legacy dispatch graph and a live `postgres` client into this
-   skeleton, violating "no data binding".
+   The production default uses the Postgres primitives in
+   `src/server/jobs/queue.ts` (`claimNextJob`, `renewJobLease`, recovery, and
+   terminal settlement). Claim and lease recovery are restricted to the exact
+   PulseRank job allowlist, so legacy rows remain unrunnable audit history. The
+   in-memory queue is retained as the deterministic test seam.
 2. **Flags** — before ANY `pulse.collect.*` job, the worker consults
    `COLLECT_JOB_FLAG_REQUIREMENTS`: `sample`/`refresh-batch` require
    `PULSERANK_COLLECTION_ENABLED`, `discovery` requires

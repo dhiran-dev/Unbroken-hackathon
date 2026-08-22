@@ -94,7 +94,6 @@ describe("pulse.* job acceptance", () => {
   });
 
   const REMAINING_STUB_JOBS = [
-    "pulse.collect.refresh-batch",
     "pulse.detect.changes",
     "pulse.retention",
     "pulse.incident.open",
@@ -116,6 +115,7 @@ describe("pulse.* job acceptance", () => {
   it("registers real handlers (not stubs) for the six A7b-wired jobs", () => {
     for (const name of [
       "pulse.collect.sample",
+      "pulse.collect.refresh-batch",
       "pulse.collect.discovery",
       "pulse.ingest.run",
       "pulse.validate.run",
@@ -226,7 +226,7 @@ describe("collect job flag gating", () => {
   });
 });
 
-describe("worker loop skeleton", () => {
+describe("worker loop", () => {
   function makeWorker(overrides?: {
     flags?: { collectionEnabled: boolean; discoveryEnabled: boolean };
     jobs?: Parameters<typeof createInMemoryPulseJobQueue>[0];
@@ -275,7 +275,7 @@ describe("worker loop skeleton", () => {
 
     const byId = new Map(queue.settled().map((entry) => [entry.job.id, entry]));
     expect(byId.get("job-d")?.settlement).toBe("skipped_flag_disabled");
-    expect(byId.get("job-i")?.settlement).toBe("succeeded");
+    expect(byId.get("job-i")?.settlement).toBe("failed");
     expect(logs.join("\n")).toContain("PULSERANK_DISCOVERY_ENABLED is disabled");
   });
 

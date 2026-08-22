@@ -9,7 +9,15 @@
  * stage summaries and ids.
  */
 
-import { existsSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 const SOURCE_SLUG = "caffeine-informer";
 const SOURCE_NAME = "Caffeine Informer";
@@ -31,6 +39,61 @@ function assertCaffeineInformerUrl(value: string): void {
   }
 }
 
+function inputFileUrls(file: string): string[] {
+  const raw = readFileSync(file, "utf8").trim();
+  if (raw.startsWith("[") || raw.startsWith("{")) {
+    const parsed: unknown = JSON.parse(raw);
+    const items = Array.isArray(parsed)
+      ? parsed
+      : parsed !== null &&
+          typeof parsed === "object" &&
+          Array.isArray((parsed as { urls?: unknown }).urls)
+        ? (parsed as { urls: unknown[] }).urls
+        : null;
+    if (items === null) {
+      throw new Error("collection input JSON must be an array or an object with a urls array");
+    }
+    return items.flatMap((item) => {
+      if (typeof item === "string") return [item.trim()];
+      if (item !== null && typeof item === "object" && "url" in item) {
+        const url = (item as { url?: unknown }).url;
+        return typeof url === "string" ? [url.trim()] : [];
+      }
+      return [];
+    });
+  }
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== "" && !line.startsWith("#"));
+}
+
+function normalizeCliInputFile(file: string): { path: string; cleanup: () => void } {
+  const raw = readFileSync(file, "utf8").trim();
+  // The operator runner accepts the committed golden-corpus object shape,
+  // while the Bright Data CLI accepts line files or JSON arrays only. Bridge
+  // that format at a private temporary path; no payload is persisted in the
+  // repository or included in the run envelope.
+  if (!raw.startsWith("{")) return { path: file, cleanup: () => undefined };
+  const directory = mkdtempSync(path.join(tmpdir(), "pulserank-input-"));
+  const normalized = path.join(directory, "urls.txt");
+  writeFileSync(normalized, `${inputFileUrls(file).join("\n")}\n`, "utf8");
+  return {
+    path: normalized,
+    cleanup: () => rmSync(directory, { recursive: true, force: true }),
+  };
+}
+
+function timeoutArgument(): number | undefined {
+  const raw = argument("--timeout-ms");
+  if (raw === null) return undefined;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed <= 0 || parsed > 30 * 60_000) {
+    throw new Error("--timeout-ms must be an integer from 1 to 1800000");
+  }
+  return parsed;
+}
+
 function printStage(name: string, result: unknown): void {
   process.stdout.write(`${JSON.stringify({ stage: name, result }, null, 2)}\n`);
 }
@@ -46,6 +109,14 @@ if (url !== null) assertCaffeineInformerUrl(url);
 if (inputFile !== null && !existsSync(inputFile)) {
   throw new Error(`collection input file does not exist: ${inputFile}`);
 }
+if (inputFile !== null) {
+  const inputUrls = inputFileUrls(inputFile);
+  if (inputUrls.length === 0) throw new Error("collection input file contains no URLs");
+  for (const inputUrl of inputUrls) assertCaffeineInformerUrl(inputUrl);
+}
+const normalizedInput = inputFile === null ? null : normalizeCliInputFile(inputFile);
+const collectionInputFile = normalizedInput?.path ?? null;
+const timeoutMs = timeoutArgument();
 
 const { and, eq, ne } = await import("drizzle-orm");
 const { db, sql } = await import("@/server/db/client");
@@ -127,15 +198,22 @@ try {
   const collectJob = mode === "sample" ? "pulse.collect.sample" : "pulse.collect.discovery";
   const collectPayload =
     mode === "sample"
-      ? { url: url ?? undefined, ...(inputFile === null ? {} : { inputFile }) }
-      : { query: url ?? undefined, ...(inputFile === null ? {} : { inputFile }) };
-  if (mode === "sample" && url === null && inputFile === null) {
+      ? {
+          url: url ?? undefined,
+          ...(collectionInputFile === null ? {} : { inputFile: collectionInputFile }),
+        }
+      : {
+          query: url ?? undefined,
+          ...(collectionInputFile === null ? {} : { inputFile: collectionInputFile }),
+        };
+  const boundedPayload = timeoutMs === undefined ? collectPayload : { ...collectPayload, timeoutMs };
+  if (mode === "sample" && url === null && collectionInputFile === null) {
     throw new Error("sample mode needs --url or --input-file");
   }
 
   const collected = await handlers[collectJob]({
     job: collectJob,
-    payload: collectPayload,
+    payload: boundedPayload,
   });
   printStage("collected", collected);
   if (collected.status !== "ok") throw new Error(`collection stage did not succeed: ${collected.status}`);
@@ -162,5 +240,6 @@ try {
 
   printStage("complete", { runId, collector: COLLECTOR_ID, source: SOURCE_SLUG });
 } finally {
+  normalizedInput?.cleanup();
   await sql.end({ timeout: 5 });
 }

@@ -1,11 +1,11 @@
-# A7b — Worker handler wiring (ingest / validate / promote / leaderboards / collection)
+# A7b — Worker handler wiring (collection / ingest / validate / promote / leaderboards)
 
 Branch: `agent/repo-safety` · Continues A7a (`docs/handoffs/A7a-worker-skeleton.md`).
 Status: typecheck ✅ · unit tests ✅ (30 files, 433 passed) · lint ✅ (0 errors)
 
 ## What landed
 
-The six data-bearing `pulse.*` jobs are wired to real pipeline implementations.
+The seven data-bearing `pulse.*` jobs are wired to real pipeline implementations.
 `dispatch()` in `src/server/jobs/pulse-jobs.ts` is **unchanged** — same
 fail-closed acceptance, same never-throws contract. The result union gained three
 additive variants (`ok`, `skipped`, `failed`) alongside the existing
@@ -15,8 +15,8 @@ additive variants (`ok`, `skipped`, `failed`) alongside the existing
 
 | File | Change |
 | --- | --- |
-| `src/server/jobs/pulse-handlers.ts` | NEW — handler wiring: runtime seam, six handlers, registry factory |
-| `src/server/jobs/pulse-jobs.ts` | Registry binds the six jobs via `createDefaultPulseJobHandlers`; result union extended; stubs remain for the other six jobs |
+| `src/server/jobs/pulse-handlers.ts` | NEW — handler wiring: runtime seam, seven handlers, registry factory |
+| `src/server/jobs/pulse-jobs.ts` | Registry binds the seven jobs via `createDefaultPulseJobHandlers`; result union extended; explicit stubs remain for the remaining operations |
 | `src/server/collection/bdata-client.ts` | SALVAGED + repaired: discovery query resolution, two new error codes |
 | `src/server/ingestion/repo.ts` | SALVAGED + completed: `CollectionRunPatch.startedAt/pageFingerprint`, typed `InMemoryPulseRepo.__debug` test introspection |
 | `src/server/products/queries.ts` | `getLeaderboard` prefers the latest snapshot tagged with `summary.boardKey` (legacy fallback kept) |
@@ -54,7 +54,8 @@ additive variants (`ok`, `skipped`, `failed`) alongside the existing
   order: metric DESC, product slug ASC tiebreak; ranks 1..n. Eligibility flags:
   `value_<qualifier>` / `range`, `exact_caffeine`+`ml_normalized`,
   `explicit_zero`.
-- **`pulse.collect.sample {url}` / `pulse.collect.discovery {query|inputFile}`**
+- **`pulse.collect.sample {url}` / `pulse.collect.refresh-batch {inputFile}` /
+  `pulse.collect.discovery {query|inputFile}`**
   — flag-gated FIRST (`PULSERANK_COLLECTION_ENABLED` /
   `PULSERANK_DISCOVERY_ENABLED`): disabled ⇒ structured `skipped` result before
   any DB or network touch (defense-in-depth behind the worker's own gate). When

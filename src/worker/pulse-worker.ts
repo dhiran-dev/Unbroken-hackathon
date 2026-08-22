@@ -1,25 +1,20 @@
 /**
- * PulseRank worker (Agent A7a skeleton — NO data binding).
+ * PulseRank worker.
  *
  * Lifecycle mirrors the legacy worker (`src/worker/index.ts`, kept in place
- * until this replacement is fully wired — disposition REWRITE in
+ * disposition REWRITE in
  * docs/transition/file-disposition.csv): startup log, periodic poll, lease
  * renewal while a job runs, graceful drain on SIGTERM/SIGINT.
  *
- * Deliberate skeleton seams (this file must not open sockets or databases):
- *
- * - Queue: a minimal in-process `PulseJobQueue` stands in for the Postgres
- *   queue. TODO-REWIRE: swap in the existing primitives from
- *   `src/server/jobs/queue.ts` (`claimNextJob`, `renewJobLease`, and the
- *   succeeded/failed settlement used by `processJob`) once the A0
- *   RETAIN_AND_REFACTOR refactor of that module lands with PulseRank-only job
- *   names. The primitives are reusable; importing them today would drag the
- *   legacy dispatch graph and a live DB client into this skeleton.
+ * - Queue: production defaults to the Postgres claim/lease/settlement adapter
+ *   from `src/server/jobs/queue.ts`. The import is lazy so unit tests and
+ *   disabled local tools retain import safety; the in-memory queue remains an
+ *   explicit test seam.
  * - Flags: collect-family jobs are gated on `PULSERANK_COLLECTION_ENABLED` /
  *   `PULSERANK_DISCOVERY_ENABLED` (via `src/config/pulserank-flags.ts`). A
  *   disabled gate skips the job with a log line; the job is never dispatched.
- * - Handlers: every job resolves to a `not_implemented` stub from
- *   `src/server/jobs/pulse-jobs.ts`.
+ * - Handlers: dispatch is fail-closed; handler failures and unwired jobs are
+ *   settled as failed so the queue retry policy cannot report false success.
  */
 
 import { hostname } from "node:os";
@@ -31,7 +26,7 @@ import {
   type PulseJobName,
 } from "@/server/jobs/pulse-jobs";
 
-/** Lease renewal cadence. TODO-REWIRE: reuse JOB_LEASE_RENEWAL_INTERVAL_MS from @/server/jobs/queue. */
+/** Lease renewal cadence; kept in sync with the Postgres queue primitive. */
 const JOB_LEASE_RENEWAL_INTERVAL_MS = 30_000;
 const DEFAULT_POLL_INTERVAL_MS = 2_000;
 
@@ -43,14 +38,16 @@ export interface PulseWorkerJob {
 }
 
 /** Terminal outcomes the worker records for a claimed job. */
-export type PulseJobSettlement = "succeeded" | "skipped_flag_disabled" | "rejected";
+export type PulseJobSettlement =
+  | "succeeded"
+  | "skipped_flag_disabled"
+  | "rejected"
+  | "failed";
 
 /**
- * Minimal queue seam. TODO-REWIRE: replace with the Postgres-backed primitives
- * in `src/server/jobs/queue.ts` (claimNextJob / renewJobLease / settlement) —
- * the disposition for that file is RETAIN_AND_REFACTOR, so the locking, lease,
- * retry, and idempotency mechanics carry over; only the job-name surface
- * changes to pulse.*.
+ * Queue seam shared by the production Postgres adapter and deterministic
+ * in-memory tests. `reason` is optional so the database adapter can preserve a
+ * bounded failure message for retry/operations views.
  */
 export interface PulseJobQueue {
   claimNext(workerId: string): Promise<PulseWorkerJob | null>;
@@ -59,6 +56,7 @@ export interface PulseJobQueue {
     jobId: string,
     workerId: string,
     settlement: PulseJobSettlement,
+    reason?: string,
   ): Promise<boolean>;
 }
 
@@ -68,7 +66,7 @@ export interface SettledPulseJob {
   readonly settledAt: Date;
 }
 
-/** In-process FIFO queue used only by the skeleton and its tests. */
+/** In-process FIFO queue used by tests and local worker-loop diagnostics. */
 export function createInMemoryPulseJobQueue(
   initial: readonly PulseWorkerJob[] = [],
 ): PulseJobQueue & {
@@ -92,7 +90,11 @@ export function createInMemoryPulseJobQueue(
     async renewLease(jobId: string, workerId: string) {
       return running.get(jobId)?.workerId === workerId;
     },
-    async settle(jobId: string, workerId: string, settlement: PulseJobSettlement) {
+    async settle(
+      jobId: string,
+      workerId: string,
+      settlement: PulseJobSettlement,
+    ) {
       const entry = running.get(jobId);
       if (!entry || entry.workerId !== workerId) return false;
       running.delete(jobId);
@@ -101,6 +103,62 @@ export function createInMemoryPulseJobQueue(
     },
     settled() {
       return [...settledJobs];
+    },
+  };
+}
+
+type PostgresClaimedJob = {
+  readonly id: string;
+  readonly type: string;
+  readonly payload: Record<string, unknown>;
+};
+
+type PostgresQueueAdapter = {
+  claimNext(workerId: string): Promise<PostgresClaimedJob | null>;
+  renewLease(jobId: string, workerId: string): Promise<boolean>;
+  settle(
+    jobId: string,
+    workerId: string,
+    outcome: "succeeded" | "failed" | "rejected",
+    reason?: unknown,
+  ): Promise<boolean>;
+};
+
+/**
+ * Lazy production queue. Importing the worker for tests never opens a pool;
+ * the first production poll initializes the Postgres adapter and recovers
+ * abandoned leases before claiming new work.
+ */
+function createPostgresPulseWorkerQueue(): PulseJobQueue {
+  let adapterPromise: Promise<PostgresQueueAdapter> | null = null;
+
+  async function adapter(): Promise<PostgresQueueAdapter> {
+    if (adapterPromise === null) {
+      adapterPromise = import("@/server/jobs/queue").then(async (queue) => {
+        await queue.recoverAbandonedWork();
+        return queue.createPostgresPulseJobQueue();
+      });
+    }
+    return adapterPromise;
+  }
+
+  return {
+    async claimNext(workerId) {
+      const job = await (await adapter()).claimNext(workerId);
+      if (job === null) return null;
+      return { id: job.id, name: job.type, payload: job.payload };
+    },
+    async renewLease(jobId, workerId) {
+      return (await adapter()).renewLease(jobId, workerId);
+    },
+    async settle(jobId, workerId, settlement, reason) {
+      const outcome =
+        settlement === "failed"
+          ? "failed"
+          : settlement === "rejected"
+            ? "rejected"
+            : "succeeded";
+      return (await adapter()).settle(jobId, workerId, outcome, reason);
     },
   };
 }
@@ -155,7 +213,7 @@ function defaultFlags(): PulseWorkerFlags {
 }
 
 export interface PulseWorkerOptions {
-  /** Queue seam. Defaults to the in-process skeleton queue. TODO-REWIRE. */
+  /** Queue seam. Defaults to the Postgres-backed production adapter. */
   readonly queue?: PulseJobQueue;
   /** Flag provider, consulted before every collect job. Defaults to env flags. */
   readonly flags?: () => PulseWorkerFlags;
@@ -174,7 +232,7 @@ export interface PulseWorkerHandle {
 }
 
 export function startPulseWorker(options: PulseWorkerOptions = {}): PulseWorkerHandle {
-  const queue = options.queue ?? createInMemoryPulseJobQueue();
+  const queue = options.queue ?? createPostgresPulseWorkerQueue();
   const readFlags = options.flags ?? defaultFlags;
   const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
   const workerId = options.workerId ?? `${hostname()}:${process.pid}`;
@@ -194,7 +252,7 @@ export function startPulseWorker(options: PulseWorkerOptions = {}): PulseWorkerH
     write(
       `PulseRank flags: collection ${flags.collectionEnabled ? "enabled" : "disabled"}, discovery ${flags.discoveryEnabled ? "enabled" : "disabled"}.`,
     );
-    write(`PulseRank worker polling every ${pollIntervalMs}ms (skeleton: stub handlers only).`);
+    write(`PulseRank worker polling every ${pollIntervalMs}ms (Postgres queue).`);
   }
 
   async function runClaimedJob(job: PulseWorkerJob) {
@@ -216,7 +274,9 @@ export function startPulseWorker(options: PulseWorkerOptions = {}): PulseWorkerH
         write(
           `PulseRank worker skipping job ${job.id} (${job.name}): ${gate.env} is disabled.`,
         );
-        await queue.settle(job.id, workerId, "skipped_flag_disabled");
+        if (!(await queue.settle(job.id, workerId, "skipped_flag_disabled"))) {
+          throw new Error("JOB_LEASE_LOST");
+        }
         return;
       }
 
@@ -225,7 +285,9 @@ export function startPulseWorker(options: PulseWorkerOptions = {}): PulseWorkerH
         writeError(
           `PulseRank worker rejected legacy job ${job.id} (${job.name}): legacy_or_unknown_job_rejected.`,
         );
-        await queue.settle(job.id, workerId, "rejected");
+        if (!(await queue.settle(job.id, workerId, "rejected", "legacy_or_unknown_job_rejected"))) {
+          throw new Error("JOB_LEASE_LOST");
+        }
         return;
       }
 
@@ -234,14 +296,34 @@ export function startPulseWorker(options: PulseWorkerOptions = {}): PulseWorkerH
         writeError(
           `PulseRank worker rejected job ${job.id} (${job.name}): ${result.reason}.`,
         );
-        await queue.settle(job.id, workerId, "rejected");
+        if (!(await queue.settle(job.id, workerId, "rejected", result.reason))) {
+          throw new Error("JOB_LEASE_LOST");
+        }
         return;
       }
 
       write(
         `PulseRank worker job ${job.id} (${job.name}) finished with status ${result.result.status}.`,
       );
-      await queue.settle(job.id, workerId, "succeeded");
+      if (
+        result.result.status === "failed" ||
+        result.result.status === "handler_error" ||
+        result.result.status === "not_implemented"
+      ) {
+        const reason =
+          result.result.status === "failed"
+            ? result.result.message
+            : result.result.status === "handler_error"
+              ? result.result.message
+              : `Job ${job.name} is not implemented.`;
+        if (!(await queue.settle(job.id, workerId, "failed", reason))) {
+          throw new Error("JOB_LEASE_LOST");
+        }
+        return;
+      }
+      if (!(await queue.settle(job.id, workerId, "succeeded"))) {
+        throw new Error("JOB_LEASE_LOST");
+      }
     } finally {
       clearInterval(leaseTimer);
     }

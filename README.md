@@ -74,6 +74,19 @@ single-product run. It rejects non-Caffeine Informer hosts and has no
 auto-approval path. A failed external run remains visible in Live Data and
 does not create public products.
 
+For a controlled multi-page verification, pass a line-oriented URL file (or
+the committed golden corpus object, which the runner normalizes into a private
+temporary URL file):
+
+```bash
+bun run collect:pulse -- --mode sample \
+  --input-file docs/source/golden-urls.json --timeout-ms 1200000
+```
+
+The production worker uses the Postgres queue claim/lease/retry path by
+default. The in-memory queue is only a test seam; rejected legacy or unknown
+jobs settle terminally and cannot be retried into a retired collector.
+
 Useful checks:
 
 ```bash
@@ -82,6 +95,7 @@ bun run typecheck
 bun run test
 node node_modules/next/dist/bin/next build
 bun run release:check
+bun run test:e2e
 ```
 
 ## Environment
@@ -119,6 +133,10 @@ runtime-only environment at deploy time.
 See [deploy/coolify.md](deploy/coolify.md) for the release order, environment
 boundary, rollback, and safe deployment notes. The owner sets the final public
 domain; no unverified deployment URL is hard-coded here.
+
+The current cutover evidence and owner-only provisioning boundary are recorded
+in [docs/handoffs/deployment-cutover.md](docs/handoffs/deployment-cutover.md)
+and [artifacts/release/cutover-checklist.md](artifacts/release/cutover-checklist.md).
 
 ## Design
 

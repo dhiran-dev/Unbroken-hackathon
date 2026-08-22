@@ -312,7 +312,7 @@ describe("pulse.validate.run handler", () => {
     expect(patched?.errorCode).toBeNull();
   });
 
-  it("fails a run that contains a collector error row", async () => {
+  it("records a collector error row without turning it into a product", async () => {
     const repo = createInMemoryPulseRepo();
     const { run, collector } = await seedRunWithRows(repo, []);
     await repo.insertRawRecord({
@@ -334,10 +334,39 @@ describe("pulse.validate.run handler", () => {
       payload: { runId: run.id },
     });
 
+    expect(result.status === "ok" && result.details.validationOk).toBe(true);
+    const patched = await repo.getCollectionRun(run.id);
+    expect(patched?.status).toBe("validated");
+    expect(patched?.report?.collectorErrorRecordIds).toHaveLength(1);
+    const findings = (patched?.report?.findings ?? []) as Array<{ check: string; severity: string }>;
+    expect(findings).toContainEqual({
+      check: "collector_errors",
+      severity: "warn",
+      detail: expect.stringContaining("excluded from promotion"),
+    });
+  });
+
+  it("fails a run that contains a malformed non-error record", async () => {
+    const repo = createInMemoryPulseRepo();
+    const { run, collector } = await seedRunWithRows(repo, []);
+    await repo.insertRawRecord({
+      collectionRunId: run.id,
+      collectorId: collector.id,
+      payload: { unexpected: true },
+      mediaType: "application/json",
+      pageFingerprint: "malformed-record",
+      capturedAt: FIXED_NOW,
+    });
+    const handlers = makeHandlers(repo);
+
+    const result = await handlers["pulse.validate.run"]({
+      job: "pulse.validate.run",
+      payload: { runId: run.id },
+    });
+
     expect(result.status === "ok" && result.details.validationOk).toBe(false);
     const patched = await repo.getCollectionRun(run.id);
     expect(patched?.status).toBe("validation_failed");
-    expect(patched?.report?.unparsableRecordIds).toHaveLength(1);
     const findings = (patched?.report?.findings ?? []) as Array<{ check: string; severity: string }>;
     expect(findings).toContainEqual({
       check: "contract_parse",
@@ -734,6 +763,29 @@ describe("pulse.collect handlers", () => {
     expect(raws.every((r) => typeof r.payload.page === "string")).toBe(true);
   });
 
+  it("accepts a bounded sample batch input file", async () => {
+    const repo = createInMemoryPulseRepo();
+    await seedRunWithRows(repo, []);
+    const handlers = makeHandlers(repo, {
+      collect: async (input) => {
+        expect(input.mode).toBe("sample");
+        expect(input.inputFile).toBe("artifacts/scraper/discovery-input-100.txt");
+        expect(input.timeoutMs).toBe(1_200_000);
+        return { rows: [], fingerprint: "sha256:batch" };
+      },
+    });
+
+    const result = await handlers["pulse.collect.sample"]({
+      job: "pulse.collect.sample",
+      payload: {
+        inputFile: "artifacts/scraper/discovery-input-100.txt",
+        timeoutMs: 1_200_000,
+      },
+    });
+
+    expect(result).toMatchObject({ status: "ok" });
+  });
+
   it("records a structured failure on the run row when the CLI fails", async () => {
     const repo = createInMemoryPulseRepo();
     seedRunWithRows(repo, []);
@@ -878,6 +930,59 @@ describe("bdata-client spawn contract", () => {
       capturingRunner('{"single":"row"}'),
     );
     expect(output.rows).toEqual([{ single: "row" }]);
+  });
+
+  it("unwraps one JSON-encoded batch document returned by the CLI", async () => {
+    for (const [key, value] of Object.entries(BD_ENV)) {
+      savedEnv[key] = process.env[key];
+      process.env[key] = value;
+    }
+    commands = [];
+
+    const output = await collectViaBdata(
+      { mode: "sample", inputFile: "/tmp/pulse-input.txt" },
+      capturingRunner(JSON.stringify(JSON.stringify([{ product_name: "Batch row" }]))),
+    );
+
+    expect(output.rows).toEqual([{ product_name: "Batch row" }]);
+  });
+
+  it("parses newline-delimited JSON rows inside a batch document", async () => {
+    for (const [key, value] of Object.entries(BD_ENV)) {
+      savedEnv[key] = process.env[key];
+      process.env[key] = value;
+    }
+    commands = [];
+
+    const ndjson = [
+      JSON.stringify({ product_name: "First batch row" }),
+      JSON.stringify({ product_name: "Second batch row" }),
+    ].join("\n");
+    const output = await collectViaBdata(
+      { mode: "sample", inputFile: "/tmp/pulse-input.txt" },
+      capturingRunner(JSON.stringify(ndjson)),
+    );
+
+    expect(output.rows).toEqual([
+      { product_name: "First batch row" },
+      { product_name: "Second batch row" },
+    ]);
+  });
+
+  it("rejects a batch document containing a scalar status line", async () => {
+    for (const [key, value] of Object.entries(BD_ENV)) {
+      savedEnv[key] = process.env[key];
+      process.env[key] = value;
+    }
+    commands = [];
+
+    const ndjson = `${JSON.stringify({ product_name: "Valid row" })}\n${JSON.stringify("status")}`;
+    await expect(
+      collectViaBdata(
+        { mode: "sample", inputFile: "/tmp/pulse-input.txt" },
+        capturingRunner(JSON.stringify(ndjson)),
+      ),
+    ).rejects.toMatchObject({ code: "BDATA_NON_JSON_OUTPUT" });
   });
 
   it.each([

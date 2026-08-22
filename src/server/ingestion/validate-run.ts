@@ -15,6 +15,7 @@
  * | duplicate_slug_rate    | fail     | duplicate slugs > 2% of the run           |
  * | invalid_caffeine_values| fail     | negative / non-finite caffeine readings   |
  * | contract_parse         | fail     | any raw record cannot map to V1 contract  |
+ * | collector_errors       | warn     | collector reports a page-level failure   |
  * | row_contraction        | fail     | run shrank > 10% vs previous run count    |
  * | zero_value_spike       | warn     | > 30% zeros among present sugar/calories  |
  * | unknown_unit_spike     | warn     | > 20% unknown units among servings        |
@@ -56,6 +57,7 @@ export type RunFindingCheck =
   | "duplicate_slug_rate"
   | "invalid_caffeine_values"
   | "contract_parse"
+  | "collector_errors"
   | "row_contraction"
   | "zero_value_spike"
   | "unknown_unit_spike";
@@ -112,6 +114,8 @@ export type ValidateRunOptions = {
   previousRunCount?: number | undefined;
   /** Raw records that could not be mapped to the V1 contract. */
   unparsableRecordCount?: number | undefined;
+  /** Page-level collector errors that are retained as non-product evidence. */
+  collectorErrorRecordCount?: number | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -159,6 +163,16 @@ export function validateRun(
       detail:
         `${options.unparsableRecordCount} raw record(s) could not be mapped ` +
         "to the V1 product contract; the run is not publishable",
+    });
+  }
+
+  if ((options.collectorErrorRecordCount ?? 0) > 0) {
+    findings.push({
+      check: "collector_errors",
+      severity: "warn",
+      detail:
+        `${options.collectorErrorRecordCount} collector error record(s) were ` +
+        "retained as non-product evidence and excluded from promotion",
     });
   }
 

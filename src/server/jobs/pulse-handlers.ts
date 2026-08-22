@@ -172,10 +172,16 @@ function zodIssues(error: z.ZodError): string[] {
 
 const RUN_ID_PAYLOAD_SCHEMA = z.object({ runId: z.string().min(1) });
 
-const SAMPLE_COLLECT_PAYLOAD_SCHEMA = z.object({
-  url: z.url(),
-  timeoutMs: z.number().int().positive().max(30 * 60_000).optional(),
-});
+const SAMPLE_COLLECT_PAYLOAD_SCHEMA = z
+  .object({
+    url: z.url().optional(),
+    inputFile: z.string().min(1).optional(),
+    timeoutMs: z.number().int().positive().max(30 * 60_000).optional(),
+  })
+  .refine(
+    (payload) => payload.url !== undefined || payload.inputFile !== undefined,
+    { message: "sample needs a url or an inputFile" },
+  );
 
 const DISCOVERY_COLLECT_PAYLOAD_SCHEMA = z
   .object({
@@ -196,10 +202,28 @@ type ParsedRunRows = {
   candidatesByFingerprint: Map<string, NormalizedCandidate>;
   validatableRows: ValidatableRow[];
   unparsableRecordIds: string[];
+  collectorErrorRecordIds: string[];
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * Bright Data can return a page-level error beside successful product rows.
+ * That is failed-page evidence, not a malformed product contract. Keep it in
+ * the run report and exclude it from candidate promotion without allowing it
+ * to invalidate otherwise healthy product rows.
+ */
+function isCollectorErrorPayload(value: unknown): value is Record<string, unknown> {
+  if (!isRecord(value)) return false;
+  const hasErrorMarker =
+    typeof value.error === "string" || typeof value.error_code === "string";
+  const hasProductMarker =
+    typeof value.product_name === "string" ||
+    typeof value.product_page_url === "string" ||
+    typeof value.product_url === "string";
+  return hasErrorMarker && !hasProductMarker;
 }
 
 /**
@@ -292,11 +316,16 @@ async function parseRunRows(
   const candidatesByFingerprint = new Map<string, NormalizedCandidate>();
   const validatableRows: ValidatableRow[] = [];
   const unparsableRecordIds: string[] = [];
+  const collectorErrorRecordIds: string[] = [];
 
   for (const record of rawRecords) {
     const mappedPayload = mapCollectorPayload(record.payload, record.capturedAt);
     const parsed = productScrapeRowV1Schema.safeParse(mappedPayload);
     if (!parsed.success) {
+      if (isCollectorErrorPayload(mappedPayload)) {
+        collectorErrorRecordIds.push(record.id);
+        continue;
+      }
       // Contract-invalid rows stay inspectable for run-level validation:
       // wrong host / schemaVersion are FINDINGS, not silent drops.
       const inspectable = toValidatableRow(mappedPayload);
@@ -312,7 +341,12 @@ async function parseRunRows(
     validatableRows.push(parsed.data as ValidatableRow);
   }
 
-  return { candidatesByFingerprint, validatableRows, unparsableRecordIds };
+  return {
+    candidatesByFingerprint,
+    validatableRows,
+    unparsableRecordIds,
+    collectorErrorRecordIds,
+  };
 }
 
 /**
@@ -477,12 +511,16 @@ export function createIngestRunHandler(
       return okResult(job, `ingested ${insertedObservations} candidate observation(s)`, {
         runId,
         rawRecordCount:
-          parsed.validatableRows.length + parsed.unparsableRecordIds.length,
+          parsed.validatableRows.length +
+          parsed.unparsableRecordIds.length +
+          parsed.collectorErrorRecordIds.length,
         parsedRowCount: parsed.validatableRows.length,
         insertedObservations,
         duplicateObservations,
         unparsableRecords: parsed.unparsableRecordIds.length,
         unparsableRecordIds: parsed.unparsableRecordIds,
+        collectorErrorRecords: parsed.collectorErrorRecordIds.length,
+        collectorErrorRecordIds: parsed.collectorErrorRecordIds,
       });
     });
   };
@@ -532,6 +570,7 @@ export function createValidateRunHandler(
       const validation = validateRun(parsed.validatableRows, {
         previousRunCount: previousRowCount ?? undefined,
         unparsableRecordCount: parsed.unparsableRecordIds.length,
+        collectorErrorRecordCount: parsed.collectorErrorRecordIds.length,
       });
 
       const firstFail =
@@ -545,6 +584,7 @@ export function createValidateRunHandler(
           findings: validation.findings,
           rowCount: parsed.validatableRows.length,
           unparsableRecordIds: parsed.unparsableRecordIds,
+          collectorErrorRecordIds: parsed.collectorErrorRecordIds,
           previousRunCount: previousRowCount ?? null,
           validatedAtIso: runtime.now().toISOString(),
         },
@@ -566,6 +606,7 @@ export function createValidateRunHandler(
           findings: validation.findings,
           rowCount: parsed.validatableRows.length,
           previousRowCount: previousRowCount ?? null,
+          collectorErrorRecords: parsed.collectorErrorRecordIds.length,
         },
       );
     });
@@ -738,6 +779,7 @@ export function createPromoteSnapshotHandler(
         skippedWithoutProduct,
         changeEventsInserted,
         unparsableRecords: parsed.unparsableRecordIds.length,
+        collectorErrorRecords: parsed.collectorErrorRecordIds.length,
       });
     });
   };
@@ -1050,10 +1092,12 @@ async function collectAndPersist(
   }
 }
 
-function createCollectSampleHandler(runtime: PulseJobRuntime): PulseJobHandler {
+function createCollectSampleHandler(
+  runtime: PulseJobRuntime,
+  job: Extract<PulseJobName, "pulse.collect.sample" | "pulse.collect.refresh-batch"> =
+    "pulse.collect.sample",
+): PulseJobHandler {
   return async ({ payload }) => {
-    const job: PulseJobName = "pulse.collect.sample";
-
     // Flag gate FIRST: a disabled flag skips before any db or network touch.
     if (!runtime.flags.collectionEnabled) {
       return skippedResult(
@@ -1065,14 +1109,19 @@ function createCollectSampleHandler(runtime: PulseJobRuntime): PulseJobHandler {
 
     const parsedPayload = SAMPLE_COLLECT_PAYLOAD_SCHEMA.safeParse(payload);
     if (!parsedPayload.success) {
-      return failedResult(job, "invalid_payload", "payload must be { url: string }", {
+      return failedResult(job, "invalid_payload", "payload must include a url or inputFile", {
         issues: zodIssues(parsedPayload.error),
       });
     }
 
     const outcome = await collectAndPersist(
       runtime,
-      { mode: "sample", url: parsedPayload.data.url, timeoutMs: parsedPayload.data.timeoutMs },
+      {
+        mode: "sample",
+        url: parsedPayload.data.url,
+        inputFile: parsedPayload.data.inputFile,
+        timeoutMs: parsedPayload.data.timeoutMs,
+      },
       "job:pulse.collect.sample",
     );
     if (!outcome.ok) {
@@ -1154,8 +1203,11 @@ export function createPulseJobHandlers(
 ): Record<PulseJobName, PulseJobHandler> {
   return {
     "pulse.collect.sample": createCollectSampleHandler(runtime),
+    "pulse.collect.refresh-batch": createCollectSampleHandler(
+      runtime,
+      "pulse.collect.refresh-batch",
+    ),
     "pulse.collect.discovery": createCollectDiscoveryHandler(runtime),
-    "pulse.collect.refresh-batch": notImplemented("pulse.collect.refresh-batch"),
     "pulse.ingest.run": createIngestRunHandler(runtime),
     "pulse.validate.run": createValidateRunHandler(runtime),
     "pulse.promote.snapshot": createPromoteSnapshotHandler(runtime),
