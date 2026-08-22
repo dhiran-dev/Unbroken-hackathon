@@ -3,8 +3,7 @@
 Status: local release candidate verified; production cutover pending owner
 provisioning in Coolify.
 
-Latest release commit: pending the local Checkpoint 2 verification commit
-(pushed to `origin/main`).
+Latest release commit: `5fe3775` (pushed to `origin/main`).
 
 ## Verified release candidate
 
