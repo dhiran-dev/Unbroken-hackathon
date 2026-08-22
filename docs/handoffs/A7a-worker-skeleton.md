@@ -24,9 +24,10 @@ Branch `agent/repo-safety` (worktree `.worktrees/repo-safety`), fast-forwarded o
 - Accepted jobs run their registry handler inside a try/catch; a throwing
   handler becomes `{ accepted: true, result: { status: "handler_error", ... } }`
   rather than an exception escaping the dispatch boundary.
-- The registry binds the real PulseRank pipeline handlers where available and
-  preserves explicit structured results for operations not yet enabled. The
-  dispatcher itself remains import-safe; the worker queue is loaded lazily.
+- The registry binds the complete PulseRank handler set. Data stages are real,
+  retention is an explicit append-only skip, change/incident stages read the
+  atomic promotion report, and healing is flag/approval-gated. The dispatcher
+  itself remains import-safe; the worker queue is loaded lazily.
 
 Denylist (exact strings): `collect-elevator-status`, `refresh-gtfs`,
 `refresh-accessibility-advisories`, `refresh-stop-relocations`,

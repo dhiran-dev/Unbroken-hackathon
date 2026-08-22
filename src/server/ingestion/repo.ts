@@ -20,7 +20,7 @@
  * can import this file freely.
  */
 
-import { and, asc, desc, eq, lt, ne } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, lt, ne } from "drizzle-orm";
 import type { ExtractTablesWithRelations } from "drizzle-orm";
 import type { PgTransaction } from "drizzle-orm/pg-core";
 import type {
@@ -815,7 +815,7 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
       await db
         .update(pulseHealSessions)
         .set({ approvedAt: now, approvedBy, updatedAt: now })
-        .where(eq(pulseHealSessions.id, sessionId));
+        .where(and(eq(pulseHealSessions.id, sessionId), isNull(pulseHealSessions.approvedAt)));
     },
 
     async listTrustedObservationPayloads() {
