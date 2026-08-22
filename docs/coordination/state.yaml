@@ -27,6 +27,7 @@ legacy:
   government_collector_id: c_msyjsllt1r9ej5tdub # audit identity only — never invoke/heal/approve/rename
   sfmta_target: prohibited
   worker_stop: pending_coolify_access
+  coolify_access: blocked_by_cloudflare_access_credentials
   collectors_pause: pending_brightdata_dashboard_access
   legacy_jobs: must_be_rejected_by_new_dispatcher
   queue_claim_boundary: enforced_pulse_allowlist

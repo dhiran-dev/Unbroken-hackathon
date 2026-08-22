@@ -32,8 +32,10 @@ leaderboard snapshots, and `/admin` returning 404.
 `https://unbroken.fifthavatar.com` still serves the legacy UNBROKEN application.
 It must not be changed by DNS or routing until the PulseRank web target passes
 the deployment checklist. The configured Coolify API token was used only for
-read-only inspection and currently returns no projects or applications, so
-there is no safe target ID for an agent to deploy to.
+read-only inspection, but the Coolify hostname redirects API requests into
+Cloudflare Access. No Cloudflare service-token credentials are present in the
+runtime environment, so no project/application target can be safely verified
+or deployed to.
 
 An old scheduler is still inserting retired `collect_sfmta_elevators` queue
 rows in the shared database. The PulseRank queue claim and lease-recovery SQL
@@ -42,7 +44,8 @@ unrunnable and are retained only as audit history. The owner still needs to
 stop the old scheduler at its source; do not treat the claim boundary as a
 replacement for that operational cutover.
 
-The owner must provision or identify the Coolify resources before cutover:
+The owner must provide Cloudflare Access API credentials or provision/identify
+the Coolify resources before cutover:
 
 1. Web service from `main`, Dockerfile target `runtime`, port `3000`, health
    path `/api/health/ready`.
