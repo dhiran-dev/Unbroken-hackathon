@@ -10,10 +10,14 @@ Latest release commit: `5fe3775` (pushed to `origin/main`).
 - Canonical repository: `https://github.com/dhiran-dev/Unbroken-hackathon.git`
 - Deployment branch: `main`
 - Active collector: `c_mt33nlnkq376z132b` (Caffeine Informer only)
-- Latest trusted run: `c4871ed7-21b1-42b8-a507-0a06c9067cb6`
+- Latest trusted run: `ca3ddc0b-e76e-430c-ab5a-d512f323aa41`
 - Latest trusted catalog count: 128 products
-- Latest golden run: 30 rows collected, 30 validated, zero findings, 28 new
-  observations promoted
+- Latest golden run: 30 rows collected, 30 validated, zero findings, and 30
+  expected duplicates (no new observations required)
+- Active-collector G7 recovery: explicit approval completed on
+  `c_mt33nlnkq376z132b`; the same approved collector then passed the full
+  30-URL ingest → validate → promote → rebuild path. The one-page replay was
+  correctly rejected by the row-contraction gate and was not promoted.
 - `PULSERANK_COLLECTION_ENABLED=false` and
   `PULSERANK_DISCOVERY_ENABLED=false` remain the safe defaults
 - Three-dimensional enhancement is implemented and remains disabled by default;

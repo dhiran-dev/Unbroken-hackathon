@@ -134,27 +134,29 @@ never through an automatic approval flag. The HTML-first `/judge` artifact
 cockpit remains the read-only evidence surface and its existing live demo
 actions continue to write only under `artifacts/demo/`.
 
-## Current active-collector G7 evidence (local, approval pending)
+## Current active-collector G7 evidence (local, approval completed)
 
 On 2026-08-22 the active collector `c_mt33nlnkq376z132b` ran against the
 consented Caffeine Informer `viter-mints` page and returned one structured
 record. A non-approving heal on that same collector reached
-`awaiting_approval`; the provider envelope records no automatic approval. The
+`awaiting_approval`; the provider envelope recorded no automatic approval. The
 preview was mapped with the production `toScrapeRow` function, passed
 `productScrapeRowV1Schema`, and returned `validateRun: ok` with zero findings.
 
 The bounded evidence is retained under the ignored
-`artifacts/incidents/pulserank-g7-current/` directory. The explicit human
-approval, same-collector rerun, promotion, and ranking-impact steps remain
-pending; no claim is made that recovery has completed.
+`artifacts/incidents/pulserank-g7-current/` directory. On the owner's finish
+instruction, the exact active-collector approval completed without
+`--auto-approve` or `--auto-save`. A one-page same-URL rerun then collected one
+row, but the deterministic row-contraction guard rejected promotion because
+the prior trusted run had 30 rows. The approved collector was subsequently
+rerun against `docs/source/golden-urls.json`: 30 rows collected, 30 parsed, 0
+validation findings, 0 collector errors, 0 new promotions (all 30 were
+expected duplicates), and all three leaderboards rebuilt successfully.
 
-The next human-only provider action, after reviewing the preview, is the
-non-automatic command:
+The recorded non-automatic provider action was:
 
 ```bash
 bdata scraper approve c_mt33nlnkq376z132b --url https://www.caffeineinformer.com/caffeine-content/viter-mints
 ```
 
-The command must not be replaced with `--auto-approve` or a different
-collector. After it completes, the same active collector must be rerun through
-the PulseRank ingest → validate → promote → rebuild path.
+The command was not replaced with `--auto-approve` or a different collector.

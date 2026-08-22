@@ -153,5 +153,9 @@ bun run lint        # 0 errors (1 pre-existing warning in judge actions.test)
 The current v2 collector also completed a bounded real Caffeine Informer run
 against the consented `viter-mints` URL (one structured record), followed by a
 non-approving heal that returned `awaiting_approval`; the mapped preview was
-schema-valid and `validateRun` returned zero findings. No provider approval or
-same-collector recovery rerun was performed.
+schema-valid and `validateRun` returned zero findings. The exact active-
+collector approval then completed without `--auto-approve` or `--auto-save`.
+A one-page replay was held by the deterministic row-contraction gate, after
+which the same collector completed the full 30-URL golden-corpus recovery:
+30 parsed rows, zero validation findings, zero collector errors, zero new
+promotions (all expected duplicates), and all three leaderboard rebuilds.
