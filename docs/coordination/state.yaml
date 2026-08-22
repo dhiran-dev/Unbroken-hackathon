@@ -14,7 +14,8 @@ trusted_run_id: c4871ed7-21b1-42b8-a507-0a06c9067cb6
 trusted_product_count: 128
 trusted_run_row_count: 30
 trusted_run_status: validated
-last_verified_at: 2026-08-22T06:31:00+05:30
+last_verified_at: 2026-08-22T07:03:14+05:30
+release_commit: bdb65401535b26603482277914cd37ca832a54a2
 three_enabled: false
 public_extended_fields: false
 pulse_stage_handlers: complete_local_safe_outcomes

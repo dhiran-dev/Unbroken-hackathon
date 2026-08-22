@@ -3,6 +3,9 @@
 Status: local release candidate verified; production cutover pending owner
 provisioning in Coolify.
 
+Latest release commit: `bdb65401535b26603482277914cd37ca832a54a2` (pushed to
+`origin/main`).
+
 ## Verified release candidate
 
 - Canonical repository: `https://github.com/dhiran-dev/Unbroken-hackathon.git`
@@ -45,6 +48,9 @@ The owner must provision or identify the Coolify resources before cutover:
    incident-artifact volume.
 3. One-time `ops` migration run against the target PostgreSQL database.
 4. The owner-selected HTTPS domain or a temporary `/pulse-preview` route.
+   The PulseRank heal approval endpoint is available at
+   `/api/pulse/heal/{sessionId}/approve`; keep judge mutations and its token
+   disabled until the owner explicitly authorizes a live healing demo.
 
 Runtime secrets and database URLs belong only in Coolify runtime environment
 configuration. Keep judge mutations and automatic Bright Data approval off.
