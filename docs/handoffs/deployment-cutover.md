@@ -3,8 +3,7 @@
 Status: local release candidate verified; production cutover pending owner
 provisioning in Coolify.
 
-Latest release commit: `bdb65401535b26603482277914cd37ca832a54a2` (pushed to
-`origin/main`).
+Latest release commit: `3f765bd` (pushed to `origin/main`).
 
 ## Verified release candidate
 
