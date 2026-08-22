@@ -111,9 +111,12 @@ never mutated by tests.
 
 1. **Real-DB healing integration is intentionally operator-gated.** The live
    trusted collection pipeline has been exercised against the migrated pulse
-   tables; heal preview/approval/verification remain disabled by default and
-   require an owner-authorized provider run before production evidence is
-   claimed.
+   tables. A current active-collector Caffeine Informer run and non-approving
+   heal preview have now been exercised locally; the preview is stored under
+   ignored incident artifacts, passes the V1 contract plus `validateRun`, and
+   remains at the explicit human-approval gate. Approval/verification remain
+   disabled by default and require an owner-authorized provider action before
+   recovery is claimed.
 2. **One snapshot PER BOARD per rebuild.** `leaderboard_entries` enforces
    `(snapshot_id, product_id)` uniqueness, so one snapshot cannot carry a
    product on two boards. Each rebuild therefore appends three snapshots, one
@@ -143,9 +146,12 @@ never mutated by tests.
 
 ```
 bun run typecheck   # clean
-bun run test        # 30 files, 433 passed, 4 todo, 0 failed
+bun run test        # 30 files, 444 passed, 4 todo, 0 failed
 bun run lint        # 0 errors (1 pre-existing warning in judge actions.test)
 ```
 
-No live collection was run; no dependencies were installed (the worktree
-resolves toolchain packages through the main checkout's `node_modules`).
+The current v2 collector also completed a bounded real Caffeine Informer run
+against the consented `viter-mints` URL (one structured record), followed by a
+non-approving heal that returned `awaiting_approval`; the mapped preview was
+schema-valid and `validateRun` returned zero findings. No provider approval or
+same-collector recovery rerun was performed.

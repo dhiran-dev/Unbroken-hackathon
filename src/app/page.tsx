@@ -10,6 +10,7 @@ import {
   TrustCallout,
   categoryLabel,
 } from "@/components/pulserank/public-ui";
+import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
 import { toPublicProductDto } from "@/server/products/dto";
 import { getOverviewStats } from "@/server/products/queries";
 
@@ -43,7 +44,10 @@ export default async function HomePage() {
             </div>
             {lead ? <p className="pr-home-featured">Featured from the trusted snapshot: <a href={`/products/${lead.slug}`}>{lead.name}</a> · {categoryLabel(lead.category)}</p> : null}
           </div>
-          <div className="pr-hero-visual"><HeroCan /></div>
+          <div className="pr-hero-visual">
+            <HeroCan />
+            <OptionalVisualStage page="home" variant="home" className="pr-hero-stage" />
+          </div>
         </section>
 
         <section className="pr-hero-stats" aria-label="Trusted catalog statistics">

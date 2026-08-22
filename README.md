@@ -17,8 +17,9 @@ The public experience is deliberately transparent:
 - Judge is a read-only-by-default HTML-first evidence cockpit.
 
 No product model, generated brand image, confidence score, or fabricated
-catalog row is used. The optional Checkpoint 2 visual enhancement remains off;
-the public product is HTML/CSS with an accessible fallback.
+catalog row is used. The optional Checkpoint 2 visual enhancement is implemented
+as a local-image Three.js layer, but remains off by default; the public product
+is always complete HTML/CSS with an accessible fallback.
 
 ## Trust contract
 
@@ -87,6 +88,13 @@ The production worker uses the Postgres queue claim/lease/retry path by
 default. The in-memory queue is only a test seam; rejected legacy or unknown
 jobs settle terminally and cannot be retried into a retired collector.
 
+Checkpoint 2 is opt-in. It uses the original local observatory atlas under
+`public/pulserank/` as textured planes only—never a product model or an
+unapproved remote image. The shared stage is dynamically loaded in the browser,
+caps device pixel ratio, pauses when the tab is hidden, and falls back for
+reduced motion, WebGL errors, texture errors, or a disabled flag. Product
+metrics, commands, JSON, and navigation remain HTML.
+
 The remaining PulseRank stages are explicit and fail-closed: change events and
 quarantine incidents are recorded atomically during promotion, raw retention is
 skipped until an owner-approved policy exists, and heal preview/verification
@@ -124,6 +132,8 @@ incident bodies. Use `.env.example` as the variable contract.
 | `INCIDENT_ARTIFACTS_DIR` | Private persistent incident/evidence directory. |
 | `PULSERANK_JUDGE_TOKEN` | Server-only token required for explicit heal approval; never expose it to the browser. |
 | `PULSERANK_*` | Fail-closed application, collection, public-field, and judge flags. |
+| `NEXT_PUBLIC_PULSERANK_3D_ENABLED` | Global Checkpoint 2 kill switch; `false` by default. |
+| `NEXT_PUBLIC_PULSERANK_3D_HOME` … `NEXT_PUBLIC_PULSERANK_3D_JUDGE` | Per-page image-stage flags; each is subordinate to the global switch and defaults to `false`. |
 
 ## Deployment
 

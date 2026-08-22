@@ -34,6 +34,7 @@ import {
   type RecordAnalysis,
 } from "@/server/judge/evidence";
 import { JUDGE_COLLECTOR_ID } from "@/server/judge/to-scrape-row";
+import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -117,6 +118,7 @@ export default async function JudgePage({
   return (
     <div className="space-y-6">
       <OutcomeBanner params={params} />
+      <OptionalVisualStage page="judge" variant="judge" className="pr-route-stage pr-judge-stage" />
 
       {/* 1 — Collector ------------------------------------------------- */}
       <JudgeStepCard

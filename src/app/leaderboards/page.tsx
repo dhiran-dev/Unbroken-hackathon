@@ -9,6 +9,7 @@ import {
   categoryLabel,
   formatNumber,
 } from "@/components/pulserank/public-ui";
+import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export default async function LeaderboardsPage({ searchParams }: { searchParams:
       <main className="pr-shell pr-main">
         <div className="pr-page-heading"><p className="pr-eyebrow">Ranked from trusted snapshots</p><h1>See what rises.</h1><p className="pr-page-description">Three boards, one source, explicit qualifiers. Every entry is a product that passed the board’s deterministic eligibility gate.</p></div>
         <div className="pr-board-tabs">{BOARDS.map((board) => <a key={board.key} href={`/leaderboards?board=${board.key}${category ? `&category=${category}` : ""}`} className={`pr-board-tab${board.key === selectedBoard.key ? " is-active" : ""}`}><BarChart3 size={14} aria-hidden="true" /> {board.label}</a>)}</div>
+        <OptionalVisualStage page="leaderboards" variant="leaderboards" className="pr-route-stage pr-board-stage" />
         <div className="pr-board-layout"><section>
           <div className="pr-results-meta"><span>{selectedBoard.detail}</span><form action="/leaderboards" method="get"><input type="hidden" name="board" value={selectedBoard.key} /><label className="pr-inline-filter"><SlidersHorizontal size={13} aria-hidden="true" /><select name="category" defaultValue={category ?? ""}><option value="">All categories</option>{categories.map((item) => <option key={item.category} value={item.category}>{categoryLabel(item.category)} · {item.productCount}</option>)}</select><button className="pr-button pr-button-ghost" type="submit">Apply</button></label></form></div>
           {leaderboard && leaderboard.entries.length > 0 ? <div className="pr-table-wrap"><table className="pr-data-table"><thead><tr><th>Rank</th><th>Product</th><th>Metric</th><th>Qualifier</th><th>Eligibility</th></tr></thead><tbody>{leaderboard.entries.map((entry) => <tr key={entry.productId}><td><strong className="pr-rank">{String(entry.rank).padStart(2, "0")}</strong></td><td><a href={`/products/${entry.product.slug}`} className="pr-table-product"><span><strong>{entry.product.name}</strong><small>{categoryLabel(entry.product.category)}</small></span><ArrowUpRight size={14} aria-hidden="true" /></a></td><td><strong>{formatNumber(entry.metricValue)} {selectedBoard.key === "highest-exact-concentration" ? "mg/100 ml" : "mg"}</strong></td><td><span className="pr-eligibility-chip is-eligible">{entry.eligibilityFlags.join(" · ")}</span></td><td><span className="pr-eligibility-chip is-eligible"><Check size={12} /> Eligible</span></td></tr>)}</tbody></table></div> : <EmptyState title="This board has no eligible entries" description="The board is backed by an immutable trusted snapshot. It will populate only when source observations meet its exact rules." action="Inspect live data" />}

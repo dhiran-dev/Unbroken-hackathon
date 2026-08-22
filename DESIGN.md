@@ -257,3 +257,7 @@ When no publishable source image exists, show original non-branded category art 
 - **Don't** hide essential controls or state behind hover, canvas, animation, or color alone.
 - **Don't** use a bright accent as a border around every panel; reserve it for action and selection.
 - **Don't** publish audit-only images, raw collector text, candidate observations, or confidence scores.
+
+### Optional observatory depth layer
+
+The Checkpoint 2 enhancement uses the original local `public/pulserank/observatory-atlas-*.webp` artwork as a restrained image-plane stage. It is decorative and feature-flagged per route; it never contains required copy, source-derived metrics, or a fabricated product package. The server-rendered HTML/CSS experience remains the fallback for disabled flags, reduced motion, unavailable WebGL, failed texture loading, and mobile-safe release settings.

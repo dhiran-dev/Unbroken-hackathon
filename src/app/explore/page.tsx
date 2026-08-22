@@ -16,6 +16,7 @@ import {
   caffeineText,
   servingText,
 } from "@/components/pulserank/public-ui";
+import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
             <button type="submit" className="pr-button pr-button-primary">Apply filters</button>{parsed.ok ? null : <p className="pr-action-message">One filter was invalid; showing the trusted catalog.</p>}
           </form></aside>
           <section>
+            <OptionalVisualStage page="explore" variant="explore" className="pr-explore-stage" />
             <SearchForm initialValue={filters.search ?? ""} />
             <div className="pr-results-meta"><span><strong>{products.length}</strong> products in this page</span><span>{categories.length} active categories</span></div>
             <ScatterPlot products={products} />

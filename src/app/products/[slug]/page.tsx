@@ -15,6 +15,7 @@ import {
   servingText,
 } from "@/components/pulserank/public-ui";
 import { ProductViewTracker } from "@/components/pulserank/local-workspaces";
+import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
 import { toPublicProductDto } from "@/server/products/dto";
 import { getProductBySlug } from "@/server/products/queries";
 
@@ -44,6 +45,7 @@ export default async function ProductPage({ params }: RouteProps) {
       <main className="pr-shell pr-main">
         <Breadcrumbs items={[{ label: "Explore", href: "/explore" }, { label: categoryLabel(product.category), href: `/explore?category=${product.category}` }, { label: product.name }]} />
         <ProductViewTracker product={product} />
+        <OptionalVisualStage page="product" variant="product" className="pr-route-stage pr-product-stage" />
         <section className="pr-product-hero">
           <ProductArt category={product.category} name={product.name} large />
           <div className="pr-product-detail">

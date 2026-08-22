@@ -15,8 +15,11 @@ trusted_product_count: 128
 trusted_run_row_count: 30
 trusted_run_status: validated
 last_verified_at: 2026-08-22T07:04:58+05:30
-release_commit: 3f765bd
+release_commit: pending-local-checkpoint2-commit
 three_enabled: false
+three_stage: implemented_local_flagged_fallback_verified
+three_stage_asset: public/pulserank/observatory-atlas-{256,512,1024}.webp
+three_stage_routes: [home, explore, leaderboards, compare, changes, product, live-data, judge]
 public_extended_fields: false
 pulse_stage_handlers: complete_local_safe_outcomes
 heal_preview_binding: complete_flag_and_approval_gated
@@ -30,6 +33,7 @@ legacy:
 blocked:
   - source_images # audit_only until publication permission
   - non_caffeine_fields_until_permission
+  - live_heal_approval_and_same_collector_rerun # explicit human approval required
 waves:
   wave1: {A0: merged, A1: merged, A2: merged, A3: merged}
   completed: [A4-database, A5-validation, A6-fixtures, A7-worker, A8-api, A9-design, A10-frontend, A11-local-state, A12-judge, A13-qa, A14-docs]

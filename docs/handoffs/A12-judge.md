@@ -133,3 +133,17 @@ the token/origin-gated `POST /api/pulse/heal/{sessionId}/approve` endpoint and
 never through an automatic approval flag. The HTML-first `/judge` artifact
 cockpit remains the read-only evidence surface and its existing live demo
 actions continue to write only under `artifacts/demo/`.
+
+## Current active-collector G7 evidence (local, approval pending)
+
+On 2026-08-22 the active collector `c_mt33nlnkq376z132b` ran against the
+consented Caffeine Informer `viter-mints` page and returned one structured
+record. A non-approving heal on that same collector reached
+`awaiting_approval`; the provider envelope records no automatic approval. The
+preview was mapped with the production `toScrapeRow` function, passed
+`productScrapeRowV1Schema`, and returned `validateRun: ok` with zero findings.
+
+The bounded evidence is retained under the ignored
+`artifacts/incidents/pulserank-g7-current/` directory. The explicit human
+approval, same-collector rerun, promotion, and ranking-impact steps remain
+pending; no claim is made that recovery has completed.

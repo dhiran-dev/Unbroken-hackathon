@@ -3,7 +3,8 @@
 Status: local release candidate verified; production cutover pending owner
 provisioning in Coolify.
 
-Latest release commit: `3f765bd` (pushed to `origin/main`).
+Latest release commit: pending the local Checkpoint 2 verification commit
+(pushed to `origin/main`).
 
 ## Verified release candidate
 
@@ -16,11 +17,15 @@ Latest release commit: `3f765bd` (pushed to `origin/main`).
   observations promoted
 - `PULSERANK_COLLECTION_ENABLED=false` and
   `PULSERANK_DISCOVERY_ENABLED=false` remain the safe defaults
-- Three-dimensional enhancement remains disabled
+- Three-dimensional enhancement is implemented and remains disabled by default;
+  opt-in browser smoke passed for home, explore, leaderboards, compare, changes,
+  and live data with one stage/canvas and preserved HTML headings per route
 
 The local release checks pass: lint (one pre-existing warning), typecheck, unit
 tests, production build, release hygiene, and six Chromium desktop/mobile smoke
-tests. Public API smoke confirms 100-page pagination, trusted attribution, three
+tests. The opt-in stage was separately exercised in an isolated Webpack dev
+process; default-off HTML was checked against the long-lived local server.
+Public API smoke confirms 100-page pagination, trusted attribution, three
 leaderboard snapshots, and `/admin` returning 404.
 
 ## External boundary

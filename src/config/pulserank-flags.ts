@@ -30,6 +30,8 @@ export type ThreeDimensionalPage =
   | "leaderboards"
   | "compare"
   | "changes"
+  | "product"
+  | "live-data"
   | "judge";
 
 export interface PulserankServerFlags {
@@ -53,6 +55,8 @@ export interface PulserankThreeDimensionalFlags {
   readonly leaderboards: boolean;
   readonly compare: boolean;
   readonly changes: boolean;
+  readonly product: boolean;
+  readonly liveData: boolean;
   readonly judge: boolean;
 }
 
@@ -82,6 +86,8 @@ export const pulserankFlags: PulserankFlags = Object.freeze({
       globalThreeEnabled && readPublicFlag(process.env.NEXT_PUBLIC_PULSERANK_3D_LEADERBOARDS),
     compare: globalThreeEnabled && readPublicFlag(process.env.NEXT_PUBLIC_PULSERANK_3D_COMPARE),
     changes: globalThreeEnabled && readPublicFlag(process.env.NEXT_PUBLIC_PULSERANK_3D_CHANGES),
+    product: globalThreeEnabled && readPublicFlag(process.env.NEXT_PUBLIC_PULSERANK_3D_PRODUCT),
+    liveData: globalThreeEnabled && readPublicFlag(process.env.NEXT_PUBLIC_PULSERANK_3D_LIVE_DATA),
     judge: globalThreeEnabled && readPublicFlag(process.env.NEXT_PUBLIC_PULSERANK_3D_JUDGE),
   }),
 });
@@ -103,6 +109,10 @@ export function isThreeDimensionalPageEnabled(page: ThreeDimensionalPage): boole
       return pulserankFlags.threeDimensional.compare;
     case "changes":
       return pulserankFlags.threeDimensional.changes;
+    case "product":
+      return pulserankFlags.threeDimensional.product;
+    case "live-data":
+      return pulserankFlags.threeDimensional.liveData;
     case "judge":
       return pulserankFlags.threeDimensional.judge;
   }
