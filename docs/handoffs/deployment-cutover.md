@@ -23,7 +23,8 @@ Latest release commit: `5fe3775` (pushed to `origin/main`).
 The local release checks pass: lint (one pre-existing warning), typecheck, unit
 tests, production build, release hygiene, and six Chromium desktop/mobile smoke
 tests. The opt-in stage was separately exercised in an isolated Webpack dev
-process; default-off HTML was checked against the long-lived local server.
+process, including reduced-motion fallback; default-off HTML was checked
+against the long-lived local server.
 Public API smoke confirms 100-page pagination, trusted attribution, three
 leaderboard snapshots, and `/admin` returning 404.
 

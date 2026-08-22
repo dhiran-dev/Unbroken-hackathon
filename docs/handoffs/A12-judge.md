@@ -147,3 +147,14 @@ The bounded evidence is retained under the ignored
 `artifacts/incidents/pulserank-g7-current/` directory. The explicit human
 approval, same-collector rerun, promotion, and ranking-impact steps remain
 pending; no claim is made that recovery has completed.
+
+The next human-only provider action, after reviewing the preview, is the
+non-automatic command:
+
+```bash
+bdata scraper approve c_mt33nlnkq376z132b --url https://www.caffeineinformer.com/caffeine-content/viter-mints
+```
+
+The command must not be replaced with `--auto-approve` or a different
+collector. After it completes, the same active collector must be rerun through
+the PulseRank ingest → validate → promote → rebuild path.
