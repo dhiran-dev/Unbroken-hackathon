@@ -28,7 +28,7 @@ import {
 
 /** Lease renewal cadence; kept in sync with the Postgres queue primitive. */
 const JOB_LEASE_RENEWAL_INTERVAL_MS = 30_000;
-const DEFAULT_POLL_INTERVAL_MS = 2_000;
+const DEFAULT_POLL_INTERVAL_MS = 10_000;
 
 /** A job as the queue hands it to the worker. */
 export interface PulseWorkerJob {
