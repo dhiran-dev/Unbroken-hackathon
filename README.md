@@ -158,6 +158,12 @@ The current cutover evidence and owner-only provisioning boundary are recorded
 in [docs/handoffs/deployment-cutover.md](docs/handoffs/deployment-cutover.md)
 and [artifacts/release/cutover-checklist.md](artifacts/release/cutover-checklist.md).
 
+When the owner is ready to clear the remaining Cloudflare Access/Coolify
+boundary, run `ENV_FILE=.env.local ./scripts/pulserank-cutover-wizard.sh`. It
+captures only the owner-provided Access and resource identifiers locally, then
+walks through legacy shutdown and the final smoke-check confirmation. It never
+starts services, changes DNS, or enables automatic Bright Data approval.
+
 ## Design
 
 The approved mockups are consolidated in [DESIGN.md](DESIGN.md), with machine-

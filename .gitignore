@@ -9,6 +9,7 @@ playwright-report
 test-results
 *.log
 *.tsbuildinfo
+/backups/
 /docs/plans/
 /artifacts/incidents/
 /@session/

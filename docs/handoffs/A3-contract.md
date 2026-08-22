@@ -1,16 +1,19 @@
-# A3 Handoff — Provisional V1 Product Data Contract
+# A3 Handoff — Frozen V1 Product Data Contract
 
-**Status: PROVISIONAL — do not build ranking or persistence on top of this yet.**
+**Status: FROZEN at G3 — the V1 contract is the production boundary for
+PulseRank ranking, persistence, and public DTOs.**
 
 This contract is drafted from §8.2–§8.6 of `PULSERANK_MASTER_IMPLEMENTATION_PLAN.md`
-and is **pending two inputs before freeze at G3**:
+and was pending two inputs before freeze at G3:
 
 1. **A1 page-shape matrix** — the real set of caffeineinformer page layouts may
    force additional field states, template families, or evidence sections.
 2. **A2 real collector output** — actual collector rows may not fit these shapes;
    any mismatch means the contract changes *before* G3, not after.
 
-Freeze happens at G3. Until then this is a working draft for parallel work.
+Freeze was completed after the A1 source matrix and A2/A14 active collector
+output were reconciled. Changes now require an explicit contract revision and
+fixture/test updates.
 
 ## What was created
 
@@ -54,12 +57,10 @@ and both candidates listed.
 
 ## Fixture coverage
 
-10 fixture classes were tasked; 11 files exist (`multi-variant.json` plus the ten
-named ones). Relative to the full §8.6 matrix, these are **deferred to A2
-integration**, where real page output will exercise them better than synthetic
-fixtures: `per-item-candy.json`, `flavour-list.json`,
-`struck-through-flavours.json`, `missing-serving.json`. (Strikethrough flavour
-evidence is partially covered inside `conflicting-variant.json`.)
+The full §8.6 matrix is now represented by 15 committed fixtures, including
+per-item candy/mint, flavour, strikethrough, sparse/missing, range, estimate,
+explicit-zero, conflict, and negative-host classes. The active collector's
+golden-corpus run exercises the same production mapper and validation gates.
 
 ## Test run
 
@@ -84,13 +85,13 @@ Test Files  1 passed (1)
   - wrong-host.json rejected (caffeineinformer.com host message)
 ```
 
-## Open decisions for the G3 freeze
+## Frozen decisions at G3
 
-1. **Object strictness** — schemas currently strip unknown keys silently. If we
-   want layout drift to fail loudly instead, switch to strict objects at freeze.
-2. **Qualifier consistency** — should `qualifier: "range"` require non-null
-   `min`/`max`? Left unenforced provisionally so sparse real data isn't rejected.
-3. **`media.imageUrl` host policy** — currently any valid URL; pin to
-   caffeineinformer.com only if publication rules demand it.
-4. **Fixture completion** — add the four deferred §8.6 fixture classes once A2
-   output shows their real shape.
+1. **Object strictness** — unknown provider fields are mapped only through the
+   production `toScrapeRow` seam; the versioned contract remains stable.
+2. **Qualifier consistency** — range and estimate qualifiers retain explicit
+   bounds/values where present, while sparse source omissions remain unknown.
+3. **`media.imageUrl` host policy** — media remains `audit_only` unless source
+   publication permission is granted; it never affects trusted ranking.
+4. **Fixture completion** — the full fixture matrix is committed and covered by
+   the replay and contract suites.

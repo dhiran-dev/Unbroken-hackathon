@@ -4,6 +4,9 @@ Status: local release candidate verified; production cutover pending owner
 provisioning in Coolify.
 
 Latest release commit: `5fe3775` (pushed to `origin/main`).
+Checkpoint 1 rollback anchor: `pulserank-checkpoint-1-safe` (pushed to
+`origin`). Database backup and isolated restore evidence are recorded in
+`docs/handoffs/database-recovery.md`.
 
 ## Verified release candidate
 
@@ -62,6 +65,12 @@ the Coolify resources before cutover:
    The PulseRank heal approval endpoint is available at
    `/api/pulse/heal/{sessionId}/approve`; keep judge mutations and its token
    disabled until the owner explicitly authorizes a live healing demo.
+
+The repeatable owner handoff is
+`ENV_FILE=.env.local ./scripts/pulserank-cutover-wizard.sh`. It writes only
+owner-supplied Access/resource identifiers to the ignored local env file and
+pauses for confirmation before the legacy shutdown and final public smoke
+check. It does not start, stop, route, migrate, or approve anything itself.
 
 Runtime secrets and database URLs belong only in Coolify runtime environment
 configuration. Keep judge mutations and automatic Bright Data approval off.

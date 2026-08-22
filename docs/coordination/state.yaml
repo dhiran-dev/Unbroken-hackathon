@@ -8,14 +8,17 @@ branch_integration: pulserank-rebuild
 branch_archive: archive/unbroken-final-before-pulserank
 tag_before_rebuild: unbroken-final-before-pulserank
 db_backup: backups/unbroken-before-pulserank-20260821-1808.dump
+db_schema_backup: backups/pulserank-schema-before-cutover-20260822-075626.sql
+checkpoint1_tag: pulserank-checkpoint-1-safe
 collector_id: c_mt33nlnkq376z132b # active consented Caffeine Informer v2 collector; legacy ids remain audit-only
 schema_version: v1 # normalized PulseRank product contract
 trusted_run_id: ca3ddc0b-e76e-430c-ab5a-d512f323aa41
 trusted_product_count: 128
 trusted_run_row_count: 30
 trusted_run_status: validated
-last_verified_at: 2026-08-22T07:51:35+05:30
+last_verified_at: 2026-08-22T08:04:50+05:30
 release_commit: 5fe3775
+schema_restore_probe: passed
 three_enabled: false
 three_stage: implemented_local_flagged_fallback_verified
 three_stage_asset: public/pulserank/observatory-atlas-{256,512,1024}.webp

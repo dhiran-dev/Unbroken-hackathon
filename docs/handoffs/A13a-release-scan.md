@@ -1,6 +1,7 @@
 # A13a Handoff — PulseRank Release Compliance Gate
 
-**Status: DONE — gate implemented, 31/31 unit tests green, runs in ~0.13 s, intentionally RED on the current tree (legacy surface inventory below).**
+**Status: DONE — gate implemented, 31/31 unit tests green, and the current
+PulseRank tree passes all failure checks.**
 
 Branch `agent/qa-release` (worktree `.worktrees/qa-release`), fast-forwarded onto
 `pulserank-rebuild` at `c6b71b5` before starting.
@@ -28,7 +29,7 @@ Fail ⇒ exit 1 with findings listed (file:line). Warn ⇒ reported, never block
    `docs/handoffs/`, `docs/source/`, migration history, AGENTS.md), which sit
    outside the scanned roots by construction. The checker excludes
    `scripts/release-check.ts` itself so its own detection patterns never trip
-   the gate. The PulseRank collector `c_mt2yacvcyvyvim56d` is unaffected.
+   the gate. The active PulseRank collector is `c_mt33nlnkq376z132b`.
 2. **`pulserank-flags`** — `src/config/pulserank-flags.ts` exists and every
    binding inside the `pulserankFlags` initializer provably defaults to false:
    each operand must be a safe reader call (`readServerFlag(…)` /
@@ -51,7 +52,8 @@ Fail ⇒ exit 1 with findings listed (file:line). Warn ⇒ reported, never block
    outside the known set. Known set is parameterizable
    (`checkDatabaseSchemas(root, { knownSchemas })`).
 5. **`package-metadata`** *(WARN-only)* — package.json name/description/
-   keywords mentioning "pulserank". Currently clean (`name: "unbroken"`).
+   keywords mentioning "pulserank". The current package name is intentionally
+   retained for repository continuity, so this remains a tolerated warning.
 6. **`backup-artifact`** *(WARN-only)* — the `db_backup:` path referenced in
    `docs/coordination/state.yaml` (expected shape
    `backups/unbroken-before-pulserank-*.dump`) exists on disk.
@@ -73,20 +75,23 @@ runReleaseChecks(root, opts?)          // aggregate → ReleaseReport { results,
 Shared types: `CheckResult`, `Finding`, `CheckStatus` (`"pass" | "warn" | "fail"`),
 `ReleaseReport`; constants `LEGACY_COLLECTOR_ID`, `PULSERANK_COLLECTOR_ID`.
 
-## Current-tree status (why the gate is red)
+## Current-tree status
 
-`bun scripts/release-check.ts` exits 1 today with **~75 findings, all in check 1**
-— the frozen UNBROKEN surface still lives under `src/`/`scripts/`/`.github/`/
-`deploy/` and is full of SFMTA/GTFS-refresh references plus three legacy-collector
-hits (`src/lib/env.ts:3`, `src/domain/judge/model.ts:9`, `.github/workflows/ci.yml:25`,
-`deploy/coolify.md:81`). Checks 2–4 pass on the real tree; check 6 warns because
-`backups/unbroken-before-pulserank-20260821-1808.dump` is not present in this
-worktree.
+`bun scripts/release-check.ts` currently reports the same zero-failure result as
+`bun run release:check`.
+As of 2026-08-22, `bun run release:check` passes with zero failures:
 
-This is by design: the gate is the definition-of-done scanner for de-legacy-fication.
-It turns green as the remaining UNBROKEN surfaces are archived/deleted per the
-rebuild plan. Note `bun run check` chains `release:check`, so full-repo `check`
-runs stay red until then; CI (`ci.yml`) does not invoke `release:check` directly.
+- legacy runtime references: pass
+- fail-closed PulseRank flags: pass
+- product contract and golden fixture: pass
+- database schema boundary: pass
+- pre-rebuild backup artifact: pass
+- package metadata: one tolerated warning because the package name remains
+  `pulserank`
+
+The release gate is intentionally static and offline. It does not prove the
+owner-only Coolify cutover, Bright Data dashboard pause, or production worker
+shutdown; those remain in `docs/handoffs/deployment-cutover.md`.
 
 ## Design decisions & caveats
 
@@ -97,9 +102,8 @@ runs stay red until then; CI (`ci.yml`) does not invoke `release:check` directly
 - **No git dependency**: unlike the previous release-check, file discovery is a
   plain fs walk (deterministic order, text-extension filter, 2 MB cap, NUL-byte
   binary guard), so it works in non-git temp fixtures.
-- **Pre-existing failure not from A13a**: `tools/replay/adapters.ts(74,3)` has a
-  TS2322 error on the pristine merged tree (came in with A5's replay tooling;
-  verified via stash). Left untouched — outside A13a scope.
+- The former replay-tooling type error noted during the initial handoff is no
+  longer present; the current full-tree typecheck passes.
 - Runtime cost measured at ~0.13 s wall clock; no network, no DB.
 
 ## Verification performed
@@ -109,4 +113,4 @@ runs stay red until then; CI (`ci.yml`) does not invoke `release:check` directly
   zero diagnostics attributable to A13a files.
 - `bunx eslint scripts/release-check.ts tests/unit/release/release-check.test.ts`
   → clean.
-- CLI run captured above; exit code 1 with report as expected.
+- CLI run on the current tree → exit code 0 (0 failures, 1 tolerated warning).
