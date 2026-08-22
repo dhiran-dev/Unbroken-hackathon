@@ -25,7 +25,11 @@
  */
 
 import { pulserankServerFlags } from "@/config/pulserank-flags";
-import type { CanonicalCategory, ConcentrationResult } from "@/server/ingestion/normalize";
+import type {
+  CanonicalCategory,
+  CategoryProvenance,
+  ConcentrationResult,
+} from "@/server/ingestion/normalize";
 import type {
   TrustedMetricPoint,
   TrustedProductRecord,
@@ -35,7 +39,7 @@ import type {
 export const SOURCE_ATTRIBUTION = "Caffeine Informer";
 
 /** Current public schema version reported by every endpoint. */
-export const PUBLIC_SCHEMA_VERSION = "1.0";
+export const PUBLIC_SCHEMA_VERSION = "1.1";
 
 // ---------------------------------------------------------------------------
 // Stored trusted-record shapes (what the ingestion writer persists)
@@ -100,6 +104,7 @@ export type PublicCaffeineDto = {
 
 export type PublicServingDto = {
   value: number | null;
+  normalizedMl: number | null;
   unit: TrustedProductRecord["serving"]["unit"];
   form: TrustedProductRecord["serving"]["form"];
   state: TrustedProductRecord["serving"]["state"];
@@ -135,6 +140,7 @@ export type PublicProductDto = {
   slug: string;
   name: string;
   category: CanonicalCategory;
+  categoryProvenance: CategoryProvenance;
   caffeine: PublicCaffeineDto;
   serving: PublicServingDto;
   concentration: PublicConcentrationDto;
@@ -233,6 +239,9 @@ function mapServing(payload: TrustedObservationPayload): PublicServingDto {
   const serving = payload.serving;
   return {
     value: isFiniteNumber(serving.value) ? serving.value : null,
+    normalizedMl: isFiniteNumber(serving.normalizedMl)
+      ? serving.normalizedMl
+      : null,
     unit: serving.unit,
     form: serving.form,
     state: serving.state,
@@ -348,6 +357,7 @@ export function toPublicProductDto(
     slug: row.product.slug,
     name: row.product.name,
     category: payload.category,
+    categoryProvenance: payload.categoryProvenance ?? "legacy_broad",
     caffeine: mapCaffeine(payload),
     serving: mapServing(payload),
     concentration: {

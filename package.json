@@ -23,6 +23,7 @@
     "db:studio": "drizzle-kit studio",
     "collect:run": "bun scripts/run-collection.ts",
     "collect:pulse": "bun scripts/run-pulserank-collection.ts",
+    "verify:pulse-backend": "bun scripts/verify-pulserank-backend.ts",
     "worker": "bun src/worker/index.ts",
     "worker:pulse": "bun src/worker/pulse-worker.ts",
     "release:check": "bun scripts/release-check.ts"

@@ -34,6 +34,7 @@ import type {
   ServingObservation,
 } from "@/domain/product/contracts/observations";
 import type { ProductScrapeRowV1 } from "@/domain/product/contracts/product-scrape-row";
+import type { TaxonomyEntry } from "@/server/ingestion/taxonomy";
 
 /** The PulseRank collector identity permitted in runtime code. */
 export const JUDGE_COLLECTOR_ID = "c_mt33nlnkq376z132b";
@@ -75,6 +76,8 @@ export type ToScrapeRowOptions = {
   collectorId?: string;
   /** Template family recorded into the extraction block. */
   templateFamily?: string | null;
+  /** Exact-slug source-listing evidence joined outside the provider payload. */
+  taxonomyEntry?: TaxonomyEntry | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -340,6 +343,17 @@ export function toScrapeRow(
     asString(record.product_page_url) ??
     asString(record.product_url) ??
     asString(inputUrl);
+  const sourcePdpCategory = asString(record.category);
+  const categoryLabel =
+    options.taxonomyEntry?.category ??
+    sourcePdpCategory ??
+    asString(record.beverage_type);
+  const categoryProvenance =
+    options.taxonomyEntry !== undefined && options.taxonomyEntry !== null
+      ? "source_listing"
+      : sourcePdpCategory !== null
+        ? "source_pdp"
+        : "legacy_broad";
   const warnings: string[] = [];
   if (consistency.consistent === false) {
     warnings.push(
@@ -381,7 +395,8 @@ export function toScrapeRow(
     },
     identity: {
       name: asString(record.product_name) ?? "",
-      categoryLabel: asString(record.category) ?? asString(record.beverage_type),
+      categoryLabel,
+      categoryProvenance,
       pageTitle: null,
     },
     primary: {
@@ -404,7 +419,12 @@ export function toScrapeRow(
     },
     evidence: {
       sectionsPresent: ["product_identity", "caffeine", "serving"],
-      sourceLinks: url === null ? [] : [url],
+      sourceLinks: [
+        ...(url === null ? [] : [url]),
+        ...(options.taxonomyEntry === undefined || options.taxonomyEntry === null
+          ? []
+          : [options.taxonomyEntry.listingUrl]),
+      ],
       warnings,
     },
     extraction: {

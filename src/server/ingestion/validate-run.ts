@@ -114,7 +114,7 @@ export type ValidateRunOptions = {
   previousRunCount?: number | undefined;
   /** Raw records that could not be mapped to the V1 contract. */
   unparsableRecordCount?: number | undefined;
-  /** Page-level collector errors that are retained as non-product evidence. */
+  /** Page-level collector failures retained as row-level or aggregate evidence. */
   collectorErrorRecordCount?: number | undefined;
 };
 
@@ -171,7 +171,7 @@ export function validateRun(
       check: "collector_errors",
       severity: "warn",
       detail:
-        `${options.collectorErrorRecordCount} collector error record(s) were ` +
+        `${options.collectorErrorRecordCount} collector page failure(s) were ` +
         "retained as non-product evidence and excluded from promotion",
     });
   }

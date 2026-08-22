@@ -25,6 +25,7 @@
 export const PULSE_JOB_NAMES = [
   "pulse.collect.sample",
   "pulse.collect.discovery",
+  "pulse.collect.poll",
   "pulse.collect.refresh-batch",
   "pulse.ingest.run",
   "pulse.validate.run",

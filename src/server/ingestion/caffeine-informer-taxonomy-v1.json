@@ -1,0 +1,3765 @@
+{
+  "manifestId": "caffeine-informer-taxonomy-v1",
+  "capturedAt": "2026-08-22T08:20:07.720Z",
+  "fingerprint": "sha256:3b6b31749719dd0068d640510530f805da484cf908884df20045f6bad83ece2d",
+  "listings": [
+    {
+      "url": "https://www.caffeineinformer.com/the-caffeine-database",
+      "sourceCode": "DRINKS",
+      "fingerprint": "sha256:e04cc8a1ba276c5f6365c231e3efaca20c953b0ad1e78a977d046e2a5fafd9a2",
+      "entryCount": 662
+    },
+    {
+      "url": "https://www.caffeineinformer.com/caffeine-in-candy",
+      "sourceCode": "FOOD",
+      "fingerprint": "sha256:7534741d2a53b783988c7cbc674be05df32aaa2ece9d7806d7a5a19d749576d5",
+      "entryCount": 74
+    },
+    {
+      "url": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum",
+      "sourceCode": "GUM",
+      "fingerprint": "sha256:8b2f0a8bf2a889c8466fea2872e09f3619cbbf819e4b3e365ed748d03f8791c6",
+      "entryCount": 12
+    },
+    {
+      "url": "https://www.caffeineinformer.com/caffeine-in-workout-supplements",
+      "sourceCode": "SUPPLEMENT",
+      "fingerprint": "sha256:82253efb35283153ee96e744e807d8d56a1bbfed3d371f1d7323aad3ba322585",
+      "entryCount": 12
+    },
+    {
+      "url": "https://www.caffeineinformer.com/caffeine-content/caffeine-pills",
+      "sourceCode": "SUPPLEMENT",
+      "fingerprint": "sha256:e9277b0addb7ef2a5e67e046e757411a20556231a58bf39a7292a8b50a80ca12",
+      "entryCount": 3
+    },
+    {
+      "url": "https://www.caffeineinformer.com/nootropics",
+      "sourceCode": "SUPPLEMENT",
+      "fingerprint": "sha256:2769574c1c5d66dc07a327c2a19df74863d7bb217dbec6213454d31a06cea785",
+      "entryCount": 6
+    }
+  ],
+  "entries": {
+    "28-energy-drink-black-white": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "3-caffeine-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "3d-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "4-c-energy-rush": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "4-purpose": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "5-hour-energy": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "5-hour-extra-strength": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "7-eleven-brewed-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "7-eleven-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "7-up": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "a-w-cream-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "accelerator": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "adrenaline-shoc-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "advocare-slim": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "advocare-spark": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "aeropress-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "afri-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "aha-sparkling-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "alani-nu": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "aldi-red-thunder": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ale-8-1": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "all-day-energy-spray": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "all-in": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "alpine-start": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "alsa-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "amazon-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "amino-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "amp-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "arbonne-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ardor-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ardor-sparkling-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "arizona-caution-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "arizona-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "arnold-palmer-half-and-half": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "arti-sparkling-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "asda-blue-charge": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "aw-root-beer": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "awake-chocolate": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "awake-coffee-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "axio": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bai-boost": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bai-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "baja-blast": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "baking-chocolate": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "balance-active-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "balance-energy": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bang-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bang-keto-coffee": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bang-natural": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bang-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bang-tea": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bangers": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "barista-bros": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "barqs-red-creme-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "barqs-root-beer": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "baskin-robbins-cappuccino-blast": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bawls": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "be-beyond-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "beaver-buzz-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "beebad-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ben-jerrys-coffee-ice-cream": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "berocca": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "berzerk": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "best-choice-energy-drink-mix": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "big-red-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "big-train-java-chip-ice-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "big-train-spiced-chai": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bigelow-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "biggby-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "biggby-coffee-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "biggby-espresso-shot": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "biggby-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "biggby-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bing-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bizzy-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "black-black-gum": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "black-bruin-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "black-ink-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "black-insomnia-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "black-label": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bloom-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "blu-frog-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "blue-bolt-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "blue-rebel-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bodyarmour-edge": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bomb-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bomba-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "boost-chocolate-drink": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "boost-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "boss-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bpm": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "brein-fuel-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "brew-dr-uplift": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "breyers-coffee-ice-cream": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "brown-rice-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bubblr": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bubly": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bubly-bounce": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bucked-up": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bulletproof-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "burn-uk": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "bustelo-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "c4-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "c4-on-the-go": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "c4-smart-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "c4-ultimate": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cacao-nibs": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "cafe-con-leche": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cafe-mocha": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "caffe-americano": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "caffe-nero-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "caffeinated-donut": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "caffeine-pills": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "caffeine-powder": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "califia-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cannonball-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cappuccino": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "carabao": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "caribou-bousted": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "caribou-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "caribou-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cascara": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cbd-coffee-green-roads": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "celsius-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "celsius-heat": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-workout-supplements"
+    },
+    "celsius-stevia": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chai-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chameleon-cold-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chameleon-milk": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chameleon-rtd": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cheerwine": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cherry-coke": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chick-fil-a-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chick-fil-a-frosted-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chick-fil-a-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chick-fil-a-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "chocolate-espresso-beans": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "chocolate-milk": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "choffy": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cintron-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "clif-energy-bars": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "clif-shot-blok": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "clif-shot-turbo-energy-gel": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "club-mate": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coca-cola-cherry-vanilla": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coca-cola-classic": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coca-cola-coffee": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coca-cola-free": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coca-cola-plus": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cocaine-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cocoa-powder": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "coffee-bean-tea-leaf-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coffee-beans": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "coffee-brewed": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coffee-decaf-brewed": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coffee-decaf-instant": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coffee-flour": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "coffee-friend": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coffee-grounds": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "coffee-instant": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coffee-leaf-tea": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cogo-hot-chocolate": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coke-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coke-zero": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coke-zero-cherry": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "coke-zero-vanilla": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cold-brew-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cool-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "costa-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "cranenergy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "crave-energy-drink-mix": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "crio-bru": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "crunk-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "crystal-light-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "crystal-light-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dalgona-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dannon-coffee-yogurt": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "dare-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dark-chocolate": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "dark-dog-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "death-wish-canned-cold-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "death-wish-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "death-wish-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "decaffeinated-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "demon-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-a-w-cream-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-barqs": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-cheerwine": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-coke": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-coke-with-splenda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-dr-pepper": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-mountain-dew": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-pepsi-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-pepsi-wild-cherry": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-presidents-choice-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-rc-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "diet-turbo-punch": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "doc-360-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "double-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dr-pepper": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dr-pepper-10-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dr-pepper-zero": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dr-shasta-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "draft-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "driftaway-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "drip-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "duff-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkaccino": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-cold-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-donuts-cereal": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "dunkin-donuts-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-donuts-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-extra-charged-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-iced-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-shot-in-the-dark": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dunkin-sparked": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dutch-bros-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "dynapep-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "e6-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "eboost-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "eboost-super-fuel": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "eboost-workout": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "edys-coffee-ice-cream": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "eight-o-clock": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "einstein-bros-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "electric-monkey-wild": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "endurelite-performelite": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "enerbee": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "energems": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "equip-pure-energy": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "espresso": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "espresso-monster": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "eternal-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "eternal-extra-strength": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "euroshopper-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "f3 energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "fakeer-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "fanta-soft-drinks": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "fast-lane": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "faxe-kondi": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "faygo-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "faygo-moon-mist": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "fire-department-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "firestar-energy-booster": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "flat-white-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "flow-nooflux": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/nootropics"
+    },
+    "folgers": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "folgers-half-caff": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "forto-coffee": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "freeway-cola": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "fresca": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "fritz-kola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "frs": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "full-throttle-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "fuze-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "g-fuel-energy-drink-mix": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "g-fuel-rtd-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gamer-supps": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gatorade-energize": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gatorade-fast-twitch": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ghost": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ginger-ale-beer": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "glaceau-vitaminwater": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gloria-jeans-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "go-coffee-energy": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "go-fast-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "go-fast-high-octane": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "go-girl-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "goat-fuel": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gold-peak-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gold-peak-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gothrider-gasoline": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gourmesso": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "greek-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "green-coffee-extract": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-content/caffeine-pills"
+    },
+    "green-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "green-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "green-tea-extract": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-content/caffeine-pills"
+    },
+    "green-tea-ginger-ale": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gridlock-aldi": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gu-energy-gel": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "guarana": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "guayaki-lemon-elation-energy-drink": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "guayaki-pure-yerba-mate": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "guayusa-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "guru": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "guru-energy-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "gym-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "haagen-dazs-coffee-ice-cream": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "hell-energy-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "hell-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "help-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "herbal-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "heroec-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "hershey-chocolate-bar": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "hersheys-chocolate-milk": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "hersheys-kisses": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "hersheys-special-dark": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "hi-ball-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "hicaf-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "high-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "high-voltage": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "hint-kick-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "honest-teas": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "hot-cocoa": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "hot6-the-king-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "huxley-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "hyde-energy-drink": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-workout-supplements"
+    },
+    "hyde-xtreme": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "hype-energy-drinks": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ibc-root-beer": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "iced-coffee-bottled-dunkin": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "illy-issimo-latte-macchiato": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "inca-kola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "indulgio-cappuccinos": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "inkos-white-tea-energy": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "international-delight": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "irn-bru-32-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "jamocha-shake": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "jasmine-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "java-caffeinated-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "java-kick": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "java-monster": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "java-monster-triple-shot": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "javy": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "jelly-belly-extreme-beans": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "joker-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "jolt-energy-drink": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "jolt-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "juice-monster": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "juvee": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "k-cup-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "k-cup-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kaffn8": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kashi-mocha-granola-bar": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "keurig-decaf": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kevita-kombucha": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kickapoo": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kill-cliff": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kill-cliff-ignite-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "killer-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kin-euphorics": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kirkland-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kit-kat": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "koe": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kombucha-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kona-gold": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "kopiko": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "kyoto-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "la-colombe-cold-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "la-croix": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "laphet": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "levlup": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "lift-plus-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "limitless-caffeinated-sparkling-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "lipton-brisk-lemon": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "lipton-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "lipton-natural-energy-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "lipton-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "liquid-death-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "liquid-ice-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "liquid-iv-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "long-black-espresso": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "loud-truck-energy-gummy-bears": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "lucozade": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "m-150-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "m-m-chocolate-candies": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "mad-croc-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "mamma-chia-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mana-energy-potion": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "marquis": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "matcha-green-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mati": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "max-boost-maxwell-house": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "maxwell-house": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mcdonalds-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mcdonalds-large-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mcdonalds-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mcdonalds-mocha": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mcdonalds-sweet-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mega-monster-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mello-yello": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mio-energy-water-enhancer": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mocca-shots-energy-gummies": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "moka-pot-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-absolutely-zero-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-assault-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-doctor": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-dragon-tea": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-hydro": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-import": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-juiced-mango-loco": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-killer-brew": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-lo-carb-uk": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-nitro": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-pipeline": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-rehab-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-reserve": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-ripper": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-tour-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "monster-ultra-blue": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "moose-juice": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "morning-thunder": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mother-new": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mount-hagen-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-code-red": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-game-fuel": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-kick-start": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-live-wire": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-major-mellon": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-spark": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-voltage": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-dew-zero-sugar": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mountain-rush-shasta": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "movit-gummies": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "moxie-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mtn-dew-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mucho-mango-arizona": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mug-root-beer": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "muscle-milk-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "muscle-monster-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "mushroom-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nerd-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nescafe-dolce-gusto": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nescafe-gold-instant-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nescafe-ice-java": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nescafe-ricoffy": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nespresso-coffee-capsules": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nestea-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nestle-3-1": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nestle-milo": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "neu-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "neuro-mints": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "neurogum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "neurosonic": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nocco": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "noocaf": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nos-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nutramint": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "nuun-energy-tabs": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "oca-plant-based-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ocean-spray-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "octane-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "odyssey-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "oh-my-caffeine-mints": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "oi-ocha-green-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "oikos-caffeinated-yogurt-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ok-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "oli-pop-vintage-cola": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "oolong-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "optimind": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-content/caffeine-pills"
+    },
+    "orange-crush": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "orange-vanilla-coke": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "oregon-chai": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "oreo-cookies": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "ovaltine": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "pacific-chai": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "panera-bread-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peace-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-americano": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-brewed-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-cappuccino": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-decaf": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-iced-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-iced-mocha": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "peets-mocha": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "penguin-mints": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "pep-talk-caffeinated-soda-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pepsi-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pepsi-free": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pepsi-max": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pepsi-nitro": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pepsi-throwback": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pepsi-wild-cherry": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "performance-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "perk-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "perky-jerky": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "perrier": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "perrier-energize": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pg-tips-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "phocus-caffeinated-sparkling-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "phoenix-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pibb-xtra": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pink-drink-starbucks": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "plow-on-energy-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "poland-spring-energy-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "polar-frost": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "polar-seltzer": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "poppi": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "power-horse-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "premier-protein-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "premium-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "presidents-choice-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "prime-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "private-selection-espresso-drinks": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "propel-zero": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "proper-wild-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "protein2o-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "punchd-gummies": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "pure-boost": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pure-coffein": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pure-kick-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pure-leaf-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "pure-lyft": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "purity-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "quake-7-eleven": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "quake-energy-slurpee": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rally-caffeinated-mints": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "rambler-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "raze-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-bull": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-bull-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-bull-editions": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-bull-total-zero": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-devil-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-elixir": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-eye-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-thunder-shot-aldi": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "red-thunder-shot-extra": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "redline-power-rush": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "redline-princess": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "redline-xtreme-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "redline-xtreme-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "reeds-ginger-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "reeses": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "reign-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "reign-storm": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rev3-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "revv-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "riot-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rip-it-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rip-it-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ripped-force-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rise-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ritual-energy": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "ritz-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "roaring-lion-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "robusta-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-boom-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-citrus-punched": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-halo-infinite-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-juiced": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-organic": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-pure-zero": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-recovery-energy-hydration": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-sugar-free": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-thermo-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-unplugged": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-xdurance-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rockstar-zero-carb": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rogue-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rogue-energy-drink-mix": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rootjack-caffeinated-pirate-root-beer": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rowdy-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "royal-crown-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ruby-red-squirt": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "run-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "runa-clean-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "rush-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ryse-fuel": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sarsaparilla": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "scheckters-organic-energy-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "score-energy-drink-gorilla": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "screamin-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "seattles-best-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sencha-shot": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "shasta-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "shasta-diet-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ski-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "slam-energy-drink": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "slammers-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "slim-fast-cappuccino": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "slurpee-frozen-drinks": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "snapple-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sneak-mix": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sobe-energy-citrus": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sobe-green-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "soda-stream": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "solimo-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "source-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "soylent": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sparkling-ice-caffeine": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sparkling-ice-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "speed-fuel-energy-drink-robby-gordon": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "speed-stack-energy-drink": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-workout-supplements"
+    },
+    "spider-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "spike-double-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "spike-shooter": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "spike-shotgun": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sprecher-cherry-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sprite": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "squirt": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "stacker-extreme-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-bottled-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-bottled-espresso-classics": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-bottled-frappucino": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-bottled-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-canned-nitro": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-cold-brew-canned": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-cold-crafted": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-cordusio": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-double": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-double-shot": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-espresso-and-cream": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-grande-caffe-americano": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-grande-caffe-latte": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-grande-caffe-mocha": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-grande-cappuccino": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-grande-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-grande-latte-macchiato": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-iced-espresso": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-nitro-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-plus": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-pumpkin-cream": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-refreshers": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-refreshers-canned": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-tall-decaf-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-triple-shot": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-verismo-pods": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "starbucks-via-instant-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "stay-alert-us-army": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "steaz-organic-energy-drink-berry": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "steep-18": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sting": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "stok-coffee-shots": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "stok-cold-brew-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "strike-force": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "stumptown-coffee-cold-brew": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "stumptown-nitro": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sudden-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sugar-free-red-bull": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sundrop": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sunkist-orange-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "sunup": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "superfast-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "sweet-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "t-virus-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "taft-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "taiwanese-milk-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tasters-choice": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "taurus-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tazo-chai": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tea-brewed": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tea-iced": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tea-instant": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "teas-tea-oolong": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "teavana": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tejava-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tenzing": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tesco-blue-spark": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "think-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "tiger-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tim-hortons-large-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tim-hortons-small-french-vanilla-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tonic-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "triton-energy-drink-7-eleven": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tropicana-twister": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tru-brain": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "true-lemon": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "truenergy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "truestart-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "turbo-snort-energy-nasal-spray": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "turbo-truffle": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "turkey-hill-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "turkish-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tweaker-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "tweaker-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "twig-tea-kukicha": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ugly-energy-water": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "uk-pepsi-max": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "up-time-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "v": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "v-double-espresso": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "v8-fusion-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "vae-energy-spray": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "vanilla-coke": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "venom-death-adder": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "vernors-ginger-ale": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "very-strong-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "vimto energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "virtue-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "viso-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "vital-4u-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "vitarain-energy-enhanced-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "viter-extra-strength": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "viter-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "viter-mints": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "voila": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "voke": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "vpx-meltdown-1-keto": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "vuum": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "waka-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "waka-decaf": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "waka-indian-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "waka-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wake-up-bar": {
+      "sourceCode": "SUPPLEMENT",
+      "category": "other",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-workout-supplements"
+    },
+    "walmart-energy-drink-enhancer": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "walmart-energy-drink-mix": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "water-joe-caffeine-water": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wave-soda": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wawa-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wendys-iced-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "white-chocolate": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "white-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wide-awake-coffee-energy-drink": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wide-awake-iced-coffee": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wild-tiger-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wildcat-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wired-x-3000-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wired-x-berry-rush-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "wired-x344-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "woke-up-energy-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "x-mode-shot": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "x-ray-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "x8-energy-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "xenergy-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "xing-craft-brew-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "xingtea-flavored-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "xl-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "xs-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "yellow-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "yerba-mate": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "yerbae": {
+      "sourceCode": "W",
+      "category": "water",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "ymateina-yerba-mate": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "yoo-hoo": {
+      "sourceCode": "FOOD",
+      "category": "food",
+      "listingUrl": "https://www.caffeineinformer.com/caffeine-in-candy"
+    },
+    "zenergy-caffeine-gum": {
+      "sourceCode": "GUM",
+      "category": "gum",
+      "listingUrl": "https://www.caffeineinformer.com/efs-guide-to-caffeine-gum"
+    },
+    "zest-sparkling-tea": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "zest-tea": {
+      "sourceCode": "T",
+      "category": "tea",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "zevia-cola": {
+      "sourceCode": "S",
+      "category": "soda",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "zevia-energy": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "zipfizz-energy-drink-mix": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "zoa-energy-drink": {
+      "sourceCode": "ED",
+      "category": "energy-drink",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "zola-coconut-water-espresso": {
+      "sourceCode": "C",
+      "category": "coffee",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    },
+    "zombie-blood-energy-potion": {
+      "sourceCode": "ES",
+      "category": "energy-shot",
+      "listingUrl": "https://www.caffeineinformer.com/the-caffeine-database"
+    }
+  }
+}

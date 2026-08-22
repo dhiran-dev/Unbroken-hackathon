@@ -29,6 +29,8 @@ export async function GET(request: Request): Promise<Response> {
     return jsonPublic({
       schemaVersion: PUBLIC_SCHEMA_VERSION,
       items: result.items.map((row) => toPublicProductDto(row)),
+      totalCount: result.totalCount,
+      activeFacets: result.activeFacets,
       nextCursor: result.nextCursor,
     });
   } catch (error) {

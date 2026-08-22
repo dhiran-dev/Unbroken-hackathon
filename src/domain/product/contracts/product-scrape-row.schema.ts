@@ -145,6 +145,9 @@ export const sourceSchema = z.object({
 export const identitySchema = z.object({
   name: z.string().min(1),
   categoryLabel: z.string().nullable(),
+  categoryProvenance: z
+    .enum(["source_listing", "source_pdp", "legacy_broad"])
+    .optional(),
   pageTitle: z.string().nullable(),
 });
 

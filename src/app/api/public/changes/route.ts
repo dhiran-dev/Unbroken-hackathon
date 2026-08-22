@@ -2,8 +2,8 @@
  * GET /api/public/changes — recent trusted-to-trusted change events (A8).
  *
  * Thin handler: newest-first, keyset-paged via an opaque cursor. Only event
- * metadata is published (slug, event type, timestamp) — the internal
- * before/after bodies never leave the server.
+ * metadata and strictly allowlisted field points are published. Raw records,
+ * arbitrary report keys, and source prose never leave the server.
  */
 
 import { PUBLIC_SCHEMA_VERSION } from "@/server/products/dto";

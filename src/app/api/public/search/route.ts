@@ -32,6 +32,8 @@ export async function GET(request: Request): Promise<Response> {
       schemaVersion: PUBLIC_SCHEMA_VERSION,
       query,
       items: result.items.map((row) => toPublicProductDto(row)),
+      totalCount: result.totalCount,
+      activeFacets: { ...result.activeFacets, search: query },
       nextCursor: result.nextCursor,
     });
   } catch (error) {

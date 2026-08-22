@@ -20,7 +20,7 @@
  * can import this file freely.
  */
 
-import { and, asc, desc, eq, isNull, lt, ne } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, lt, ne } from "drizzle-orm";
 import type { ExtractTablesWithRelations } from "drizzle-orm";
 import type { PgTransaction } from "drizzle-orm/pg-core";
 import type {
@@ -285,6 +285,7 @@ export interface PulseRepo {
   insertCollectionRun(input: InsertCollectionRunInput): Promise<CollectionRunRow>;
   updateCollectionRun(runId: string, patch: CollectionRunPatch): Promise<void>;
   insertRawRecord(input: InsertRawRecordInput): Promise<RawRecordRow>;
+  insertRawRecords(inputs: InsertRawRecordInput[]): Promise<RawRecordRow[]>;
   /** Row count of the most recent earlier run for this collector, if any. */
   getPreviousRunRowCount(
     collectorId: string,
@@ -319,6 +320,10 @@ export interface PulseRepo {
     sourceId: string,
     pageFingerprint: string,
   ): Promise<ObservationRow | null>;
+  listObservationFingerprints(
+    sourceId: string,
+    fingerprints: readonly string[],
+  ): Promise<string[]>;
   /** Returns null when a unique constraint made the insert a no-op. */
   insertObservation(input: InsertObservationInput): Promise<ObservationRow | null>;
   getObservation(id: string): Promise<ObservationRow | null>;
@@ -354,6 +359,7 @@ export interface PulseRepo {
   listTrustedObservationPayloads(): Promise<TrustedPayloadRow[]>;
   insertLeaderboardSnapshot(summary: JsonObject): Promise<string>;
   insertLeaderboardEntry(input: InsertLeaderboardEntryInput): Promise<void>;
+  insertLeaderboardEntries(inputs: InsertLeaderboardEntryInput[]): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -476,6 +482,23 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
         pageFingerprint: row.pageFingerprint,
         capturedAt: row.capturedAt,
       };
+    },
+
+    async insertRawRecords(inputs) {
+      if (inputs.length === 0) return [];
+      const rows = await db
+        .insert(pulseRawRecords)
+        .values(inputs)
+        .returning();
+      return rows.map((row) => ({
+        id: row.id,
+        collectionRunId: row.collectionRunId,
+        collectorId: row.collectorId,
+        payload: row.payload,
+        mediaType: row.mediaType,
+        pageFingerprint: row.pageFingerprint,
+        capturedAt: row.capturedAt,
+      }));
     },
 
     async getPreviousRunRowCount(collectorId, excludeRunId, before) {
@@ -635,6 +658,20 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
         .limit(1);
       const row = rows[0];
       return row ? mapObservation(row) : null;
+    },
+
+    async listObservationFingerprints(sourceId, fingerprints) {
+      if (fingerprints.length === 0) return [];
+      const rows = await db
+        .select({ pageFingerprint: pulseProductObservations.pageFingerprint })
+        .from(pulseProductObservations)
+        .where(
+          and(
+            eq(pulseProductObservations.sourceId, sourceId),
+            inArray(pulseProductObservations.pageFingerprint, [...fingerprints]),
+          ),
+        );
+      return rows.map((row) => row.pageFingerprint);
     },
 
     async insertObservation(input) {
@@ -866,6 +903,21 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
         eligibilityFlags: input.eligibilityFlags,
       });
     },
+
+    async insertLeaderboardEntries(inputs) {
+      if (inputs.length === 0) return;
+      await db.insert(pulseLeaderboardEntries).values(
+        inputs.map((input) => ({
+          snapshotId: input.snapshotId,
+          productId: input.productId,
+          rank: input.rank,
+          metricKey: input.metricKey,
+          metricValue: input.metricValue,
+          eligible: input.eligible,
+          eligibilityFlags: input.eligibilityFlags,
+        })),
+      );
+    },
   };
 }
 
@@ -1066,6 +1118,11 @@ export function createInMemoryPulseRepo(): InMemoryPulseRepo {
       rawRecords.set(row.id, row);
       return row;
     },
+    async insertRawRecords(inputs) {
+      const rows: RawRecordRow[] = [];
+      for (const input of inputs) rows.push(await api.insertRawRecord(input));
+      return rows;
+    },
     async getPreviousRunRowCount(collectorId, excludeRunId, before) {
       let best: CollectionRunRow | null = null;
       for (const run of runs.values()) {
@@ -1143,6 +1200,15 @@ export function createInMemoryPulseRepo(): InMemoryPulseRepo {
         }
       }
       return null;
+    },
+    async listObservationFingerprints(sourceId, fingerprints) {
+      const requested = new Set(fingerprints);
+      return [...observations.values()]
+        .filter(
+          (row) =>
+            row.sourceId === sourceId && requested.has(row.pageFingerprint),
+        )
+        .map((row) => row.pageFingerprint);
     },
     async insertObservation(input) {
       for (const row of observations.values()) {
@@ -1286,6 +1352,9 @@ export function createInMemoryPulseRepo(): InMemoryPulseRepo {
         }
       }
       leaderboardEntries.push(input);
+    },
+    async insertLeaderboardEntries(inputs) {
+      for (const input of inputs) await api.insertLeaderboardEntry(input);
     },
   };
 

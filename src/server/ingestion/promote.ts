@@ -93,6 +93,7 @@ export type TrustedProductRecord = {
   slug: string;
   name: string;
   category: CanonicalCategory;
+  categoryProvenance: NormalizedCandidate["categoryProvenance"];
   sourceUrl: string;
   observedAt: string;
   pageFingerprint: string;
@@ -524,6 +525,7 @@ function toTrustedRecord(
     slug: candidate.identity.slug,
     name: candidate.name,
     category: candidate.category,
+    categoryProvenance: candidate.categoryProvenance,
     sourceUrl: candidate.sourceUrl,
     observedAt: candidate.observedAt,
     pageFingerprint: candidate.pageFingerprint,

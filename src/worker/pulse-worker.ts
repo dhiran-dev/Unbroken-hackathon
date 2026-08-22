@@ -184,6 +184,7 @@ export const COLLECT_JOB_FLAG_REQUIREMENTS: Readonly<
     env: "PULSERANK_COLLECTION_ENABLED",
   },
   "pulse.collect.discovery": { flag: "discoveryEnabled", env: "PULSERANK_DISCOVERY_ENABLED" },
+  "pulse.collect.poll": { flag: "discoveryEnabled", env: "PULSERANK_DISCOVERY_ENABLED" },
 });
 
 export type CollectJobGateResult =

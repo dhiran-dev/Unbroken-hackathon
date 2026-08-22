@@ -14,7 +14,7 @@ import {
   jsonPublic,
   notFound,
 } from "@/server/products/request-params";
-import { getLeaderboard } from "@/server/products/queries";
+import { getLeaderboard, InvalidCursorError } from "@/server/products/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export async function GET(request: Request): Promise<Response> {
     return badRequest("board is required and must not be empty");
   }
 
-  let limit = 50;
+  let limit = 25;
   const limitRaw = parameters.getAll("limit").at(-1);
   if (limitRaw !== undefined) {
     if (!/^\d+$/.test(limitRaw.trim())) {
@@ -50,11 +50,24 @@ export async function GET(request: Request): Promise<Response> {
     return badRequest(`category must be one of ${CANONICAL_CATEGORIES.join("|")}`);
   }
 
-  const leaderboard = await getLeaderboard(
-    board,
-    limit,
-    categoryRaw as (typeof CANONICAL_CATEGORIES)[number] | undefined,
-  );
+  const cursorRaw = parameters.getAll("cursor").at(-1);
+  if (cursorRaw !== undefined && cursorRaw.trim() === "") {
+    return badRequest("cursor must not be empty when provided");
+  }
+
+  let leaderboard;
+  try {
+    leaderboard = await getLeaderboard(board, {
+      limit,
+      cursor: cursorRaw ?? null,
+      category: categoryRaw as
+        | (typeof CANONICAL_CATEGORIES)[number]
+        | undefined,
+    });
+  } catch (error) {
+    if (error instanceof InvalidCursorError) return badRequest(error.message);
+    throw error;
+  }
   if (!leaderboard) {
     return notFound(
       "NO_LEADERBOARD_SNAPSHOT",
@@ -70,6 +83,8 @@ export async function GET(request: Request): Promise<Response> {
     trustedProductCount: leaderboard.trustedProductCount,
     eligibleCount: leaderboard.eligibleCount,
     excludedCount: leaderboard.excludedCount,
+    totalCount: leaderboard.totalCount,
+    nextCursor: leaderboard.nextCursor,
     entries: leaderboard.entries,
   });
 }

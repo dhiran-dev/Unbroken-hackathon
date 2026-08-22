@@ -98,6 +98,32 @@ describe("toScrapeRow — post-heal record (72 mg)", () => {
   });
 });
 
+describe("toScrapeRow — source-backed category evidence", () => {
+  it("uses listing evidence without modifying or name-classifying the provider row", () => {
+    const providerRecord = structuredClone(postHealRecord);
+    const before = structuredClone(providerRecord);
+
+    const row = toScrapeRow(providerRecord, {
+      observedAt: OBSERVED_AT,
+      taxonomyEntry: {
+        sourceCode: "ED",
+        category: "energy-drink",
+        listingUrl: "https://www.caffeineinformer.com/the-caffeine-database",
+      },
+    });
+
+    expect(providerRecord).toEqual(before);
+    expect(row.identity.categoryLabel).toBe("energy-drink");
+    expect(row.identity.categoryProvenance).toBe("source_listing");
+    expect(row.evidence.sourceLinks).toContain(
+      "https://www.caffeineinformer.com/the-caffeine-database",
+    );
+    expect(productScrapeRowV1Schema.parse(row).identity.categoryProvenance).toBe(
+      "source_listing",
+    );
+  });
+});
+
 describe("toScrapeRow — pre-heal record (72250 unit bug)", () => {
   const row = toScrapeRow(preHealRecord, { observedAt: OBSERVED_AT });
 

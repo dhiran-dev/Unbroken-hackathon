@@ -99,7 +99,9 @@ describe("toPublicProductDto — trusted-only mapping", () => {
     expect(dto.slug).toBe("red-bull");
     expect(dto.name).toBe("Red Bull");
     expect(dto.category).toBe("energy-drink");
+    expect(dto.categoryProvenance).toBe("legacy_broad");
     expect(dto.caffeine.mg).toBe(80);
+    expect(dto.serving.normalizedMl).toBe(250);
     expect(dto.caffeine.qualifier).toBe("exact");
     expect(dto.sourceAttribution).toBe(SOURCE_ATTRIBUTION);
   });
@@ -111,7 +113,7 @@ describe("toPublicProductDto — trusted-only mapping", () => {
   });
 
   it("carries the current public schema version constant", () => {
-    expect(PUBLIC_SCHEMA_VERSION).toBe("1.0");
+    expect(PUBLIC_SCHEMA_VERSION).toBe("1.1");
   });
 
   it("is deterministic — identical row in, identical DTO out", () => {

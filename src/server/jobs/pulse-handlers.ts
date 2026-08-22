@@ -50,12 +50,24 @@ import {
   BdataClientError,
   collectViaBdata,
   rawOutputFingerprint,
+  resolveDiscoveryQuery,
   type BdataCollectInput,
 } from "@/server/collection/bdata-client";
+import {
+  BrightDataProviderError,
+  DEFAULT_PROVIDER_WINDOW_MS,
+  createDefaultBrightDataProvider,
+  type BrightDataProvider,
+} from "@/server/collection/bright-data-provider";
 import {
   normalizeRow,
   type NormalizedCandidate,
 } from "@/server/ingestion/normalize";
+import {
+  isCollectorErrorPayload,
+  mapCollectorPayload,
+} from "@/server/ingestion/export-recovery";
+import { caffeineInformerTaxonomyManifest } from "@/server/ingestion/taxonomy";
 import {
   promoteCandidate,
   type PriorTrustedFields,
@@ -67,14 +79,13 @@ import {
 } from "@/server/ingestion/change-detection";
 import {
   runInPulseTransaction,
+  type InsertRawRecordInput,
   type PulseRepo,
   type SourceRow,
 } from "@/server/ingestion/repo";
 import { validateRun, type ValidatableRow } from "@/server/ingestion/validate-run";
 import {
   JUDGE_COLLECTOR_ID,
-  toScrapeRow,
-  type CollectorProductRecord,
 } from "@/server/judge/to-scrape-row";
 import type {
   PulseJobExecutionResult,
@@ -113,6 +124,16 @@ export interface PulseJobRuntime {
   readonly now: () => Date;
   /** Bright Data client seam; unit tests substitute canned output. */
   readonly collect: typeof collectViaBdata;
+  /** True external provider seam used by async discovery submit/poll jobs. */
+  readonly provider: BrightDataProvider;
+  /** Durable queue seam; retries are idempotent by caller-supplied key. */
+  readonly enqueue: (input: {
+    name: PulseJobName;
+    payload?: Record<string, unknown>;
+    idempotencyKey: string;
+    scheduledFor?: Date;
+    maxAttempts?: number;
+  }) => Promise<unknown>;
   /** Bright Data heal-preview seam; approval is deliberately a separate step. */
   readonly healPreview?: (prompt: string, sourceUrl: string) => Promise<unknown>;
 }
@@ -133,6 +154,18 @@ export function createDefaultPulseJobRuntime(): PulseJobRuntime {
     },
     now: () => new Date(),
     collect: collectViaBdata,
+    provider: {
+      async submit(input) {
+        return (await createDefaultBrightDataProvider()).submit(input);
+      },
+      async poll(collectionId) {
+        return (await createDefaultBrightDataProvider()).poll(collectionId);
+      },
+    },
+    enqueue: async (input) => {
+      const { enqueuePulseJob } = await import("@/server/jobs/queue");
+      return enqueuePulseJob(input);
+    },
     healPreview: async (prompt, sourceUrl) => {
       const { requestBrightDataHealing } = await import(
         "@/server/services/bright-data-healing"
@@ -188,7 +221,7 @@ const SAMPLE_COLLECT_PAYLOAD_SCHEMA = z
   .object({
     url: z.url().optional(),
     inputFile: z.string().min(1).optional(),
-    timeoutMs: z.number().int().positive().max(30 * 60_000).optional(),
+    timeoutMs: z.number().int().positive().max(60 * 60_000).optional(),
   })
   .refine(
     (payload) => payload.url !== undefined || payload.inputFile !== undefined,
@@ -199,12 +232,29 @@ const DISCOVERY_COLLECT_PAYLOAD_SCHEMA = z
   .object({
     query: z.string().min(1).optional(),
     inputFile: z.string().min(1).optional(),
-    timeoutMs: z.number().int().positive().max(30 * 60_000).optional(),
+    timeoutMs: z.number().int().positive().max(60 * 60_000).optional(),
   })
   .refine(
     (payload) => payload.query !== undefined || payload.inputFile !== undefined,
     { message: "discovery needs a query or an inputFile" },
   );
+
+const POLL_COLLECT_PAYLOAD_SCHEMA = z.object({
+  runId: z.string().min(1),
+  resume: z.boolean().optional().default(false),
+});
+
+const PROVIDER_STATE_SCHEMA = z.object({
+  kind: z.literal("bright_data_dca"),
+  collectionId: z.string().regex(/^j_[A-Za-z0-9]+$/),
+  submittedAt: z.iso.datetime(),
+  lastPollAt: z.iso.datetime().nullable(),
+  attempts: z.number().int().nonnegative(),
+  status: z.string().min(1),
+  windowEndsAt: z.iso.datetime(),
+});
+
+type ProviderState = z.infer<typeof PROVIDER_STATE_SCHEMA>;
 
 const HEAL_PREVIEW_PAYLOAD_SCHEMA = z.object({
   sourceUrl: z.url(),
@@ -240,40 +290,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * the run report and exclude it from candidate promotion without allowing it
  * to invalidate otherwise healthy product rows.
  */
-function isCollectorErrorPayload(value: unknown): value is Record<string, unknown> {
-  if (!isRecord(value)) return false;
-  const hasErrorMarker =
-    typeof value.error === "string" || typeof value.error_code === "string";
-  const hasProductMarker =
-    typeof value.product_name === "string" ||
-    typeof value.product_page_url === "string" ||
-    typeof value.product_url === "string";
-  return hasErrorMarker && !hasProductMarker;
-}
-
-/**
- * The v2 collector emits flat product records, while the database contract is
- * deliberately stricter. Map only recognizable product rows; collector error
- * objects remain unparseable evidence and can never become products.
- */
-function mapCollectorPayload(
-  payload: unknown,
-  observedAt: Date,
-): unknown {
-  if (!isRecord(payload) || payload.schemaVersion === "1.0") return payload;
-  const hasProductIdentity =
-    typeof payload.product_name === "string" && payload.product_name.trim() !== "";
-  const hasProductUrl =
-    typeof payload.product_page_url === "string" ||
-    typeof payload.product_url === "string";
-  if (!hasProductIdentity && !hasProductUrl) return payload;
-  return toScrapeRow(payload as CollectorProductRecord, {
-    observedAt: observedAt.toISOString(),
-    collectorId: JUDGE_COLLECTOR_ID,
-    templateFamily: "caffeine-informer-v2",
-  });
-}
-
 function isAllowedCaffeineInformerUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -285,6 +301,27 @@ function isAllowedCaffeineInformerUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+function rawLandingFingerprint(
+  row: unknown,
+  index: number,
+  seen: ReadonlySet<string>,
+): { fingerprint: string; duplicate: boolean } {
+  const contentFingerprint = rawOutputFingerprint(row);
+  if (!seen.has(contentFingerprint)) {
+    return { fingerprint: contentFingerprint, duplicate: false };
+  }
+  if (isCollectorErrorPayload(row)) {
+    return {
+      fingerprint: rawOutputFingerprint({
+        terminalErrorOccurrence: index,
+        payload: row,
+      }),
+      duplicate: false,
+    };
+  }
+  return { fingerprint: contentFingerprint, duplicate: true };
 }
 
 type ValidatedHealPreview = {
@@ -359,6 +396,11 @@ function reportSection(
 ): Record<string, unknown> | null {
   const value = report?.[key];
   return isRecord(value) ? value : null;
+}
+
+function providerState(report: JsonObject | null): ProviderState | null {
+  const parsed = PROVIDER_STATE_SCHEMA.safeParse(reportSection(report, "provider"));
+  return parsed.success ? parsed.data : null;
 }
 
 /**
@@ -569,27 +611,37 @@ export function createIngestRunHandler(
       let insertedObservations = 0;
       let duplicateObservations = 0;
 
-      for (const candidate of parsed.candidatesByFingerprint.values()) {
-        source ??= await resolveSource(repo, candidate);
+      const candidates = [...parsed.candidatesByFingerprint.values()];
+      const firstCandidate = candidates[0];
+      if (firstCandidate !== undefined) {
+        source = await resolveSource(repo, firstCandidate);
         if (source === null) {
           return failedResult(
             job,
             "source_not_registered",
-            `source "${candidate.identity.sourceId}" is not registered; register it before ingesting`,
-            { runId, sourceSlug: candidate.identity.sourceId },
+            `source "${firstCandidate.identity.sourceId}" is not registered; register it before ingesting`,
+            { runId, sourceSlug: firstCandidate.identity.sourceId },
           );
         }
+      }
+      const existingFingerprints = new Set(
+        source === null
+          ? []
+          : await repo.listObservationFingerprints(
+              source.id,
+              candidates.map((candidate) => candidate.pageFingerprint),
+            ),
+      );
 
+      for (const candidate of candidates) {
         // Idempotency: (source, fingerprint) first, then the insert-level
         // unique constraints ((source, slug, observed_at) included).
-        const existing = await repo.findObservationBySourceFingerprint(
-          source.id,
-          candidate.pageFingerprint,
-        );
-        if (existing !== null) {
+        if (existingFingerprints.has(candidate.pageFingerprint)) {
           duplicateObservations += 1;
           continue;
         }
+
+        if (source === null) throw new Error("source resolution invariant failed");
 
         const product = await repo.upsertProductBySlug({
           slug: candidate.identity.slug,
@@ -619,6 +671,28 @@ export function createIngestRunHandler(
           candidate,
         );
       }
+
+      const ingestion = {
+        rawRecordCount:
+          parsed.validatableRows.length +
+          parsed.unparsableRecordIds.length +
+          parsed.collectorErrorRecordIds.length,
+        parsedRowCount: parsed.validatableRows.length,
+        insertedObservations,
+        duplicateObservations,
+        unparsableRecords: parsed.unparsableRecordIds.length,
+        collectorErrorRecords: parsed.collectorErrorRecordIds.length,
+        completedAtIso: runtime.now().toISOString(),
+      };
+      const priorIngestion = reportSection(run.report, "ingestion");
+      const replayOnly = insertedObservations === 0 && priorIngestion !== null;
+      await repo.updateCollectionRun(runId, {
+        report: {
+          ...(run.report ?? {}),
+          ingestion: replayOnly ? priorIngestion : ingestion,
+          ...(replayOnly ? { ingestionReplay: ingestion } : {}),
+        },
+      });
 
       return okResult(job, `ingested ${insertedObservations} candidate observation(s)`, {
         runId,
@@ -679,11 +753,65 @@ export function createValidateRunHandler(
         run.id,
         run.createdAt,
       );
+      const landing = reportSection(run.report, "landing");
+      const terminalPageErrors = Math.max(
+        parsed.collectorErrorRecordIds.length,
+        typeof landing?.terminalPageErrors === "number"
+          ? landing.terminalPageErrors
+          : 0,
+      );
       const validation = validateRun(parsed.validatableRows, {
         previousRunCount: previousRowCount ?? undefined,
         unparsableRecordCount: parsed.unparsableRecordIds.length,
-        collectorErrorRecordCount: parsed.collectorErrorRecordIds.length,
+        collectorErrorRecordCount: terminalPageErrors,
       });
+      const nonObjectRowsSkipped =
+        typeof landing?.nonObjectRowsSkipped === "number"
+          ? landing.nonObjectRowsSkipped
+          : 0;
+      const discoveredInputCount =
+        typeof landing?.inputRows === "number"
+          ? landing.inputRows
+          : parsed.validatableRows.length +
+            parsed.unparsableRecordIds.length +
+            parsed.collectorErrorRecordIds.length;
+      const manifestReconciliation = {
+        discoveredInputCount,
+        successfulRows: parsed.validatableRows.length,
+        terminalPageErrors,
+        invalidRows: parsed.unparsableRecordIds.length + nonObjectRowsSkipped,
+        reconciled:
+          parsed.validatableRows.length +
+            terminalPageErrors +
+            parsed.unparsableRecordIds.length +
+            nonObjectRowsSkipped ===
+          discoveredInputCount,
+      };
+      const sourceListingSlugs = new Set(
+        Object.entries(caffeineInformerTaxonomyManifest.entries)
+          .filter(
+            ([, entry]) =>
+              entry.listingUrl ===
+              "https://www.caffeineinformer.com/the-caffeine-database",
+          )
+          .map(([slug]) => slug),
+      );
+      const collectedSlugs = new Set(
+        parsed.validatableRows.map((row) => row.source.slug),
+      );
+      const taxonomyReconciliation = {
+        manifestId: caffeineInformerTaxonomyManifest.manifestId,
+        sourceListingUniqueSlugs: sourceListingSlugs.size,
+        matchedSourceListingSlugs: [...collectedSlugs].filter((slug) =>
+          sourceListingSlugs.has(slug),
+        ).length,
+        missingSourceListingSlugs: [...sourceListingSlugs].filter(
+          (slug) => !collectedSlugs.has(slug),
+        ).length,
+        providerOnlySlugs: [...collectedSlugs].filter(
+          (slug) => !sourceListingSlugs.has(slug),
+        ).length,
+      };
 
       const firstFail =
         validation.findings.find((finding) => finding.severity === "fail") ??
@@ -693,15 +821,26 @@ export function createValidateRunHandler(
       await repo.updateCollectionRun(runId, {
         status,
         report: {
+          ...(run.report ?? {}),
           findings: validation.findings,
           rowCount: parsed.validatableRows.length,
           unparsableRecordIds: parsed.unparsableRecordIds,
           collectorErrorRecordIds: parsed.collectorErrorRecordIds,
           previousRunCount: previousRowCount ?? null,
           validatedAtIso: runtime.now().toISOString(),
+          validation: {
+            ok: validation.ok,
+            status,
+            findingCount: validation.findings.length,
+            rowCount: parsed.validatableRows.length,
+            collectorErrorRecords: terminalPageErrors,
+            completedAtIso: runtime.now().toISOString(),
+          },
+          manifestReconciliation,
+          taxonomyReconciliation,
         },
         ...(validation.ok
-          ? {}
+          ? { errorCode: null, errorSummary: null }
           : {
               errorCode: "validation_failed",
               errorSummary: firstFail?.detail ?? "run-level validation failed",
@@ -718,7 +857,9 @@ export function createValidateRunHandler(
           findings: validation.findings,
           rowCount: parsed.validatableRows.length,
           previousRowCount: previousRowCount ?? null,
-          collectorErrorRecords: parsed.collectorErrorRecordIds.length,
+          collectorErrorRecords: terminalPageErrors,
+          manifestReconciliation,
+          taxonomyReconciliation,
         },
       );
     });
@@ -875,8 +1016,14 @@ export function createPromoteSnapshotHandler(
           await repo.insertChangeEvent({
             productId: product.id,
             eventType: event.type,
-            before: (event.before ?? null) as JsonObject | null,
-            after: (event.after ?? null) as JsonObject | null,
+            before:
+              event.before === null
+                ? null
+                : ({ ...event.before, field: event.field ?? null } as JsonObject),
+            after:
+              event.after === null
+                ? null
+                : ({ ...event.after, field: event.field ?? null } as JsonObject),
             productObservationId: observation.id,
             occurredAt: new Date(event.observedAt),
           });
@@ -894,10 +1041,14 @@ export function createPromoteSnapshotHandler(
         incidentIds,
         completedAtIso: runtime.now().toISOString(),
       };
+      const priorPromotion = reportSection(run.report, "promotion");
+      const replayOnly =
+        candidateObservations.length === 0 && priorPromotion !== null;
       await repo.updateCollectionRun(runId, {
         report: {
           ...(run.report ?? {}),
-          promotion,
+          promotion: replayOnly ? priorPromotion : promotion,
+          ...(replayOnly ? { promotionReplay: promotion } : {}),
         },
       });
 
@@ -1391,8 +1542,16 @@ function computeBoards(input: TrustedBoardInput): BoardComputation[] {
 export function createRebuildLeaderboardsHandler(
   runtime: PulseJobRuntime,
 ): PulseJobHandler {
-  return async () => {
+  return async ({ payload }) => {
     const job: PulseJobName = "pulse.rebuild.leaderboards";
+    const parsedPayload = z
+      .object({ runId: z.string().min(1).optional() })
+      .safeParse(payload);
+    if (!parsedPayload.success) {
+      return failedResult(job, "invalid_payload", "payload may include a runId", {
+        issues: zodIssues(parsedPayload.error),
+      });
+    }
 
     return runtime.runTransaction(async (repo) => {
       const trusted = await repo.listTrustedObservationPayloads();
@@ -1442,11 +1601,12 @@ export function createRebuildLeaderboardsHandler(
         });
 
         let rank = 0;
+        const boardEntries = [];
         for (const entry of entries) {
           rank += 1;
           const computation = metrics.get(`${boardKey}:${entry.productSlug}`);
           if (computation === undefined) continue;
-          await repo.insertLeaderboardEntry({
+          boardEntries.push({
             snapshotId,
             productId: entry.productId,
             rank,
@@ -1456,8 +1616,29 @@ export function createRebuildLeaderboardsHandler(
             eligibilityFlags: computation.eligibilityFlags,
           });
         }
+        await repo.insertLeaderboardEntries(boardEntries);
         counts[boardKey] = entries.length;
         snapshotIds[boardKey] = snapshotId;
+      }
+
+      if (parsedPayload.data.runId !== undefined) {
+        const run = await repo.getCollectionRun(parsedPayload.data.runId);
+        if (run === null) {
+          return failedResult(job, "run_not_found", "collection run was not found", {
+            runId: parsedPayload.data.runId,
+          });
+        }
+        await repo.updateCollectionRun(run.id, {
+          report: {
+            ...(run.report ?? {}),
+            leaderboard: {
+              snapshotIds,
+              trustedProducts: inputs.length,
+              entryCounts: counts,
+              completedAtIso: runtime.now().toISOString(),
+            },
+          },
+        });
       }
 
       return okResult(
@@ -1485,6 +1666,7 @@ type CollectOutcome =
       rowCount: number;
       duplicateRowsSkipped: number;
       nonObjectRowsSkipped: number;
+      collectorErrorWarnings: number;
       fingerprint: string;
     }
   | { ok: false; errorCode: string; message: string };
@@ -1538,14 +1720,19 @@ async function collectAndPersist(
   try {
     const output = await runtime.collect(input);
     const persisted = await runtime.runTransaction(async (repo) => {
+      const run = await repo.getCollectionRun(runId);
+      if (run === null) throw new Error("collection run disappeared before landing");
       const seen = new Set<string>();
       let stored = 0;
       let duplicateRowsSkipped = 0;
       let nonObjectRowsSkipped = 0;
+      let collectorErrorWarnings = 0;
+      const rawInputs: InsertRawRecordInput[] = [];
 
-      for (const row of output.rows) {
-        const fingerprint = rawOutputFingerprint(row);
-        if (seen.has(fingerprint)) {
+      for (const [index, row] of output.rows.entries()) {
+        const landed = rawLandingFingerprint(row, index, seen);
+        const fingerprint = landed.fingerprint;
+        if (landed.duplicate || seen.has(fingerprint)) {
           duplicateRowsSkipped += 1;
           continue;
         }
@@ -1556,7 +1743,7 @@ async function collectAndPersist(
           nonObjectRowsSkipped += 1;
           continue;
         }
-        await repo.insertRawRecord({
+        rawInputs.push({
           collectionRunId: runId,
           collectorId,
           payload: row as JsonObject,
@@ -1564,16 +1751,32 @@ async function collectAndPersist(
           pageFingerprint: fingerprint,
           capturedAt: runtime.now(),
         });
-        stored += 1;
+        if (isCollectorErrorPayload(row)) collectorErrorWarnings += 1;
       }
+      stored = (await repo.insertRawRecords(rawInputs)).length;
 
       await repo.updateCollectionRun(runId, {
         status: "succeeded",
         finishedAt: runtime.now(),
         rowCount: stored,
         pageFingerprint: output.fingerprint,
+        report: {
+          ...(run.report ?? {}),
+          landing: {
+            inputRows: output.rows.length,
+            storedRows: stored,
+            duplicateRowsSkipped,
+            nonObjectRowsSkipped,
+            collectorErrorWarnings,
+          },
+        },
       });
-      return { rowCount: stored, duplicateRowsSkipped, nonObjectRowsSkipped };
+      return {
+        rowCount: stored,
+        duplicateRowsSkipped,
+        nonObjectRowsSkipped,
+        collectorErrorWarnings,
+      };
     });
 
     return {
@@ -1583,6 +1786,7 @@ async function collectAndPersist(
       rowCount: persisted.rowCount,
       duplicateRowsSkipped: persisted.duplicateRowsSkipped,
       nonObjectRowsSkipped: persisted.nonObjectRowsSkipped,
+      collectorErrorWarnings: persisted.collectorErrorWarnings,
       fingerprint: output.fingerprint,
     };
   } catch (error) {
@@ -1647,6 +1851,7 @@ function createCollectSampleHandler(
       rowCount: outcome.rowCount,
       duplicateRowsSkipped: outcome.duplicateRowsSkipped,
       nonObjectRowsSkipped: outcome.nonObjectRowsSkipped,
+      collectorErrorWarnings: outcome.collectorErrorWarnings,
       fingerprint: outcome.fingerprint,
     });
   };
@@ -1676,26 +1881,545 @@ function createCollectDiscoveryHandler(
       );
     }
 
-    const outcome = await collectAndPersist(
-      runtime,
-      {
+    let query: string;
+    try {
+      query = resolveDiscoveryQuery({
         mode: "discovery",
         url: parsedPayload.data.query,
         inputFile: parsedPayload.data.inputFile,
-        timeoutMs: parsedPayload.data.timeoutMs,
-      },
-      "job:pulse.collect.discovery",
-    );
-    if (!outcome.ok) {
-      return failedResult(job, outcome.errorCode, outcome.message);
+      });
+    } catch (error) {
+      return failedResult(
+        job,
+        error instanceof BdataClientError ? error.code : "invalid_payload",
+        error instanceof Error ? error.message : "could not resolve discovery URL",
+      );
     }
-    return okResult(job, `collected ${outcome.rowCount} discovery result row(s)`, {
-      runId: outcome.runId,
-      collectorId: outcome.collectorId,
-      rowCount: outcome.rowCount,
-      duplicateRowsSkipped: outcome.duplicateRowsSkipped,
-      nonObjectRowsSkipped: outcome.nonObjectRowsSkipped,
-      fingerprint: outcome.fingerprint,
+    if (!isAllowedCaffeineInformerUrl(query)) {
+      return failedResult(
+        job,
+        "source_not_allowed",
+        "discovery is restricted to an HTTPS Caffeine Informer listing URL",
+      );
+    }
+
+    const submittedAt = runtime.now();
+    const providerWindowEndsAt = new Date(
+      submittedAt.getTime() +
+        (parsedPayload.data.timeoutMs ?? DEFAULT_PROVIDER_WINDOW_MS),
+    );
+    let runId: string;
+    let collectorId: string;
+    try {
+      const opened = await runtime.runTransaction(async (repo) => {
+        const collector = await repo.findActiveCollector();
+        if (collector === null) throw new Error("no active pulse collector is registered");
+        const run = await repo.insertCollectionRun({
+          collectorId: collector.id,
+          trigger: "job:pulse.collect.discovery",
+          status: "provider_submit",
+          startedAt: submittedAt,
+          finishedAt: null,
+          rowCount: null,
+          pageFingerprint: null,
+          report: {
+            mode: "discovery",
+            query,
+            taxonomy: {
+              manifestId: caffeineInformerTaxonomyManifest.manifestId,
+              fingerprint: caffeineInformerTaxonomyManifest.fingerprint,
+              sourceListingEntryCount:
+                caffeineInformerTaxonomyManifest.listings.find(
+                  (listing) => listing.sourceCode === "DRINKS",
+                )?.entryCount ?? null,
+            },
+            provider: {
+              kind: "bright_data_dca",
+              collectionId: null,
+              submittedAt: submittedAt.toISOString(),
+              lastPollAt: null,
+              attempts: 0,
+              status: "submitting",
+              windowEndsAt: providerWindowEndsAt.toISOString(),
+            },
+          },
+        });
+        return { runId: run.id, collectorId: collector.id };
+      });
+      runId = opened.runId;
+      collectorId = opened.collectorId;
+    } catch (error) {
+      return failedResult(
+        job,
+        "no_active_collector",
+        error instanceof Error ? error.message : "collection setup failed",
+      );
+    }
+
+    let collectionId: string;
+    try {
+      collectionId = (await runtime.provider.submit({ url: query })).collectionId;
+      await runtime.runTransaction(async (repo) => {
+        const run = await repo.getCollectionRun(runId);
+        if (run === null) throw new Error("collection run disappeared after provider submit");
+        await repo.updateCollectionRun(runId, {
+          status: "provider_wait",
+          report: {
+            ...(run.report ?? {}),
+            provider: {
+              kind: "bright_data_dca",
+              collectionId,
+              submittedAt: submittedAt.toISOString(),
+              lastPollAt: null,
+              attempts: 0,
+              status: "submitted",
+              windowEndsAt: providerWindowEndsAt.toISOString(),
+            },
+          },
+          errorCode: null,
+          errorSummary: null,
+        });
+      });
+    } catch (error) {
+      const errorCode =
+        error instanceof BrightDataProviderError
+          ? error.code
+          : "provider_submit_failed";
+      const message =
+        error instanceof Error ? error.message : "Bright Data submission failed";
+      try {
+        await runtime.runTransaction(async (repo) => {
+          const run = await repo.getCollectionRun(runId);
+          await repo.updateCollectionRun(runId, {
+            status: "failed",
+            finishedAt: runtime.now(),
+            errorCode,
+            errorSummary: message,
+            report: {
+              ...(run?.report ?? {}),
+              provider: {
+                kind: "bright_data_dca",
+                collectionId: null,
+                submittedAt: submittedAt.toISOString(),
+                lastPollAt: null,
+                attempts: 0,
+                status: "failed",
+                windowEndsAt: providerWindowEndsAt.toISOString(),
+              },
+            },
+          });
+        });
+      } catch {
+        // Preserve the original provider failure.
+      }
+      return failedResult(job, errorCode, message, { runId });
+    }
+
+    let pollQueued = true;
+    try {
+      await runtime.enqueue({
+        name: "pulse.collect.poll",
+        payload: { runId },
+        idempotencyKey: `pulse.collect.poll:${runId}:0`,
+        scheduledFor: runtime.now(),
+        maxAttempts: 3,
+      });
+    } catch {
+      // The persisted collection id is the recovery authority. An operator can
+      // resume even when the initial queue write failed.
+      pollQueued = false;
+    }
+
+    return okResult(job, "submitted discovery and persisted resumable provider state", {
+      runId,
+      collectorId,
+      providerStatus: "submitted",
+      pollQueued,
+      hasCollectionId: collectionId.length > 0,
+      providerWindowMinutes: Math.round(
+        (providerWindowEndsAt.getTime() - submittedAt.getTime()) / 60_000,
+      ),
+    });
+  };
+}
+
+function providerPollDelayMs(attempts: number): number {
+  return Math.min(5_000 * 2 ** Math.max(0, attempts - 1), 60_000);
+}
+
+function createCollectPollHandler(runtime: PulseJobRuntime): PulseJobHandler {
+  return async ({ payload }) => {
+    const job: PulseJobName = "pulse.collect.poll";
+    if (!runtime.flags.collectionEnabled || !runtime.flags.discoveryEnabled) {
+      return skippedResult(
+        job,
+        "collection_disabled",
+        "skipped: asynchronous discovery collection is disabled",
+      );
+    }
+
+    const parsedPayload = POLL_COLLECT_PAYLOAD_SCHEMA.safeParse(payload);
+    if (!parsedPayload.success) {
+      return failedResult(job, "invalid_payload", "payload must include a runId", {
+        issues: zodIssues(parsedPayload.error),
+      });
+    }
+    const { runId, resume } = parsedPayload.data;
+    const loaded = await runtime.runTransaction(async (repo) => {
+      const run = await repo.getCollectionRun(runId);
+      return { run, rawCount: (await repo.listRawRecords(runId)).length };
+    });
+    if (loaded.run === null) {
+      return failedResult(job, "run_not_found", "collection run was not found", {
+        runId,
+      });
+    }
+
+    let state = providerState(loaded.run.report);
+    if (state === null) {
+      return failedResult(
+        job,
+        "provider_state_missing",
+        "collection run has no resumable provider state",
+        { runId },
+      );
+    }
+    if (state.status === "ready") {
+      return okResult(job, "provider dataset was already landed", {
+        runId,
+        providerStatus: "ready",
+        rowCount: loaded.rawCount,
+        attempts: state.attempts,
+        idempotentReplay: true,
+      });
+    }
+
+    const pollStartedAt = runtime.now();
+    if (resume) {
+      state = {
+        ...state,
+        status: "resuming",
+        windowEndsAt: new Date(
+          pollStartedAt.getTime() + DEFAULT_PROVIDER_WINDOW_MS,
+        ).toISOString(),
+      };
+      await runtime.runTransaction(async (repo) => {
+        const run = await repo.getCollectionRun(runId);
+        if (run === null) throw new Error("collection run disappeared during resume");
+        await repo.updateCollectionRun(runId, {
+          status: "provider_wait",
+          finishedAt: null,
+          errorCode: null,
+          errorSummary: null,
+          report: { ...(run.report ?? {}), provider: state as unknown as JsonObject },
+        });
+      });
+    } else if (pollStartedAt.getTime() >= Date.parse(state.windowEndsAt)) {
+      await runtime.runTransaction(async (repo) => {
+        const run = await repo.getCollectionRun(runId);
+        if (run === null) throw new Error("collection run disappeared during timeout");
+        await repo.updateCollectionRun(runId, {
+          status: "provider_wait_timeout",
+          finishedAt: pollStartedAt,
+          errorCode: "provider_wait_timeout",
+          errorSummary: "The provider wait window elapsed; this run remains resumable.",
+          report: {
+            ...(run.report ?? {}),
+            provider: { ...state, status: "timed_out" },
+          },
+        });
+      });
+      return okResult(job, "provider wait window elapsed; run remains resumable", {
+        runId,
+        providerStatus: "timed_out",
+        attempts: state.attempts,
+        resumable: true,
+      });
+    }
+
+    const attempts = state.attempts + 1;
+    let providerResult: Awaited<ReturnType<BrightDataProvider["poll"]>>;
+    try {
+      providerResult = await runtime.provider.poll(state.collectionId);
+    } catch (error) {
+      const retryable =
+        error instanceof BrightDataProviderError && error.retryable;
+      const errorCode =
+        error instanceof BrightDataProviderError
+          ? error.code
+          : "provider_poll_failed";
+      const message =
+        error instanceof Error ? error.message : "Bright Data polling failed";
+      const failedAt = runtime.now();
+      const withinWindow = failedAt.getTime() < Date.parse(state.windowEndsAt);
+
+      if (retryable && withinWindow) {
+        await runtime.runTransaction(async (repo) => {
+          const run = await repo.getCollectionRun(runId);
+          if (run === null) throw new Error("collection run disappeared during retry");
+          await repo.updateCollectionRun(runId, {
+            status: "provider_wait",
+            report: {
+              ...(run.report ?? {}),
+              provider: {
+                ...state,
+                attempts,
+                lastPollAt: failedAt.toISOString(),
+                status: "retrying",
+              },
+            },
+            errorCode,
+            errorSummary: message,
+          });
+        });
+        await runtime.enqueue({
+          name: job,
+          payload: { runId },
+          idempotencyKey: `pulse.collect.poll:${runId}:${attempts}`,
+          scheduledFor: new Date(failedAt.getTime() + providerPollDelayMs(attempts)),
+          maxAttempts: 3,
+        });
+        return okResult(job, "provider poll will retry with bounded backoff", {
+          runId,
+          providerStatus: "retrying",
+          attempts,
+        });
+      }
+
+      if (retryable && !withinWindow) {
+        await runtime.runTransaction(async (repo) => {
+          const run = await repo.getCollectionRun(runId);
+          if (run === null) throw new Error("collection run disappeared during timeout");
+          await repo.updateCollectionRun(runId, {
+            status: "provider_wait_timeout",
+            finishedAt: failedAt,
+            errorCode: "provider_wait_timeout",
+            errorSummary:
+              "The provider wait window elapsed; this run remains resumable.",
+            report: {
+              ...(run.report ?? {}),
+              provider: {
+                ...state,
+                attempts,
+                lastPollAt: failedAt.toISOString(),
+                status: "timed_out",
+              },
+            },
+          });
+        });
+        return okResult(job, "provider wait window elapsed; run remains resumable", {
+          runId,
+          providerStatus: "timed_out",
+          attempts,
+          resumable: true,
+        });
+      }
+
+      await runtime.runTransaction(async (repo) => {
+        const run = await repo.getCollectionRun(runId);
+        if (run === null) throw new Error("collection run disappeared after poll failure");
+        await repo.updateCollectionRun(runId, {
+          status: "failed",
+          finishedAt: failedAt,
+          errorCode,
+          errorSummary: message,
+          report: {
+            ...(run.report ?? {}),
+            provider: {
+              ...state,
+              attempts,
+              lastPollAt: failedAt.toISOString(),
+              status: "failed",
+            },
+          },
+        });
+      });
+      return failedResult(job, errorCode, message, {
+        runId,
+        attempts,
+        resumable: true,
+      });
+    }
+
+    const polledAt = runtime.now();
+    if (providerResult.status === "pending") {
+      if (!resume && polledAt.getTime() >= Date.parse(state.windowEndsAt)) {
+        await runtime.runTransaction(async (repo) => {
+          const run = await repo.getCollectionRun(runId);
+          if (run === null) throw new Error("collection run disappeared during timeout");
+          await repo.updateCollectionRun(runId, {
+            status: "provider_wait_timeout",
+            finishedAt: polledAt,
+            errorCode: "provider_wait_timeout",
+            errorSummary:
+              "The provider wait window elapsed; this run remains resumable.",
+            report: {
+              ...(run.report ?? {}),
+              provider: {
+                ...state,
+                attempts,
+                lastPollAt: polledAt.toISOString(),
+                status: "timed_out",
+              },
+            },
+          });
+        });
+        return okResult(job, "provider wait window elapsed; run remains resumable", {
+          runId,
+          providerStatus: "timed_out",
+          attempts,
+          resumable: true,
+        });
+      }
+      await runtime.runTransaction(async (repo) => {
+        const run = await repo.getCollectionRun(runId);
+        if (run === null) throw new Error("collection run disappeared while pending");
+        await repo.updateCollectionRun(runId, {
+          status: "provider_wait",
+          report: {
+            ...(run.report ?? {}),
+            provider: {
+              ...state,
+              attempts,
+              lastPollAt: polledAt.toISOString(),
+              status: "pending",
+            },
+          },
+          errorCode: null,
+          errorSummary: null,
+        });
+      });
+      await runtime.enqueue({
+        name: job,
+        payload: { runId },
+        idempotencyKey: `pulse.collect.poll:${runId}:${attempts}`,
+        scheduledFor: new Date(polledAt.getTime() + providerPollDelayMs(attempts)),
+        maxAttempts: 3,
+      });
+      return okResult(job, "provider dataset is not ready yet", {
+        runId,
+        providerStatus: "pending",
+        attempts,
+      });
+    }
+
+    const landed = await runtime.runTransaction(async (repo) => {
+      const run = await repo.getCollectionRun(runId);
+      if (run === null) throw new Error("collection run disappeared before landing");
+      const currentState = providerState(run.report);
+      const existing = await repo.listRawRecords(runId);
+      if (currentState?.status === "ready") {
+        return {
+          rowCount: existing.length,
+          stored: 0,
+          duplicateRowsSkipped: 0,
+          nonObjectRowsSkipped: 0,
+          collectorErrorWarnings: existing.filter((row) =>
+            isCollectorErrorPayload(row.payload),
+          ).length,
+          idempotentReplay: true,
+        };
+      }
+
+      const seen = new Set(existing.map((row) => row.pageFingerprint));
+      let stored = 0;
+      let duplicateRowsSkipped = 0;
+      let nonObjectRowsSkipped = 0;
+      let collectorErrorWarnings = existing.filter((row) =>
+        isCollectorErrorPayload(row.payload),
+      ).length;
+      const rawInputs: InsertRawRecordInput[] = [];
+      for (const [index, row] of providerResult.rows.entries()) {
+        const landed = rawLandingFingerprint(row, index, seen);
+        const fingerprint = landed.fingerprint;
+        if (landed.duplicate || seen.has(fingerprint)) {
+          duplicateRowsSkipped += 1;
+          continue;
+        }
+        seen.add(fingerprint);
+        if (!isRecord(row)) {
+          nonObjectRowsSkipped += 1;
+          continue;
+        }
+        rawInputs.push({
+          collectionRunId: runId,
+          collectorId: run.collectorId,
+          payload: row,
+          mediaType: "application/json",
+          pageFingerprint: fingerprint,
+          capturedAt: polledAt,
+        });
+        if (isCollectorErrorPayload(row)) collectorErrorWarnings += 1;
+      }
+      stored = (await repo.insertRawRecords(rawInputs)).length;
+      const providerTerminalErrors = providerResult.manifest.fails;
+      collectorErrorWarnings = Math.max(
+        collectorErrorWarnings,
+        providerTerminalErrors,
+      );
+      const rowCount = existing.length + stored;
+      await repo.updateCollectionRun(runId, {
+        status: "succeeded",
+        finishedAt: polledAt,
+        rowCount,
+        pageFingerprint: providerResult.fingerprint,
+        errorCode: null,
+        errorSummary: null,
+        report: {
+          ...(run.report ?? {}),
+          provider: {
+            ...state,
+            attempts,
+            lastPollAt: polledAt.toISOString(),
+            status: "ready",
+          },
+          landing: {
+            inputRows:
+              providerResult.manifest.lines + providerTerminalErrors,
+            storedRows: stored,
+            duplicateRowsSkipped,
+            nonObjectRowsSkipped,
+            collectorErrorWarnings,
+            terminalPageErrors: providerTerminalErrors,
+            providerManifest: providerResult.manifest,
+          },
+        },
+      });
+      return {
+        rowCount,
+        stored,
+        duplicateRowsSkipped,
+        nonObjectRowsSkipped,
+        collectorErrorWarnings,
+        idempotentReplay: false,
+      };
+    });
+
+    let ingestionQueued = true;
+    if (!landed.idempotentReplay) {
+      try {
+        await runtime.enqueue({
+          name: "pulse.ingest.run",
+          payload: { runId },
+          idempotencyKey: `pulse.ingest.run:${runId}`,
+          scheduledFor: runtime.now(),
+          maxAttempts: 3,
+        });
+      } catch {
+        ingestionQueued = false;
+      }
+    }
+    return okResult(job, "provider dataset landed immutably", {
+      runId,
+      providerStatus: "ready",
+      rowCount: landed.rowCount,
+      attempts,
+      duplicateRowsSkipped: landed.duplicateRowsSkipped,
+      nonObjectRowsSkipped: landed.nonObjectRowsSkipped,
+      collectorErrorWarnings: landed.collectorErrorWarnings,
+      terminalPageErrors: providerResult.manifest.fails,
+      ingestionQueued,
+      idempotentReplay: landed.idempotentReplay,
     });
   };
 }
@@ -1726,6 +2450,7 @@ export function createPulseJobHandlers(
       "pulse.collect.refresh-batch",
     ),
     "pulse.collect.discovery": createCollectDiscoveryHandler(runtime),
+    "pulse.collect.poll": createCollectPollHandler(runtime),
     "pulse.ingest.run": createIngestRunHandler(runtime),
     "pulse.validate.run": createValidateRunHandler(runtime),
     "pulse.promote.snapshot": createPromoteSnapshotHandler(runtime),

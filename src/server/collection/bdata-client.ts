@@ -326,7 +326,7 @@ function sampleArgv(input: BdataCollectInput, collectorId: string): string[] {
  * with `#` comments skipped, or a JSON array of strings / {"url": ...}
  * objects) — the collector listing stage has no --input-file option.
  */
-function resolveDiscoveryQuery(input: BdataCollectInput): string {
+export function resolveDiscoveryQuery(input: BdataCollectInput): string {
   const explicit = input.url?.trim();
   if (explicit !== undefined && explicit !== "") return explicit;
 

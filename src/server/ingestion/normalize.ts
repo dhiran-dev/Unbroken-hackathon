@@ -47,6 +47,10 @@ export const CANONICAL_CATEGORIES = [
 ] as const;
 
 export type CanonicalCategory = (typeof CANONICAL_CATEGORIES)[number];
+export type CategoryProvenance =
+  | "source_listing"
+  | "source_pdp"
+  | "legacy_broad";
 
 /**
  * Ordered keyword rules. First match wins; order is part of the contract so
@@ -178,6 +182,7 @@ export type NormalizedCandidate = {
   /** Original free-text category label, preserved as evidence. */
   categoryLabel: string | null;
   category: CanonicalCategory;
+  categoryProvenance: CategoryProvenance;
   sourceUrl: string;
   observedAt: string;
   pageFingerprint: string;
@@ -311,6 +316,7 @@ export function normalizeRow(row: ProductScrapeRowV1): NormalizedCandidate {
     pageTitle: row.identity.pageTitle,
     categoryLabel: row.identity.categoryLabel,
     category: normalizeCategoryLabel(row.identity.categoryLabel),
+    categoryProvenance: row.identity.categoryProvenance ?? "legacy_broad",
     sourceUrl: row.source.url,
     observedAt: row.source.observedAt,
     pageFingerprint: row.source.pageFingerprint,

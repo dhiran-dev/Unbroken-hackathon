@@ -27,22 +27,48 @@ test.describe("PulseRank public release smoke", () => {
     expect(products.status()).toBe(200);
     const productBody = (await products.json()) as {
       schemaVersion?: string;
-      items?: Array<{ name?: string; sourceUrl?: string | null }>;
+      totalCount?: number;
+      activeFacets?: Record<string, unknown>;
+      items?: Array<{
+        name?: string;
+        sourceUrl?: string | null;
+        categoryProvenance?: string;
+        serving?: { normalizedMl?: number | null };
+      }>;
     };
-    expect(productBody.schemaVersion).toBe("1.0");
+    expect(productBody.schemaVersion).toBe("1.1");
+    expect(productBody.totalCount).toBeGreaterThan(0);
+    expect(productBody.activeFacets).toEqual({});
     expect(productBody.items?.length).toBeGreaterThan(0);
     expect(productBody.items?.every((item) => item.name && item.sourceUrl)).toBe(true);
+    expect(
+      productBody.items?.every(
+        (item) =>
+          typeof item.categoryProvenance === "string" &&
+          item.serving &&
+          "normalizedMl" in item.serving,
+      ),
+    ).toBe(true);
 
     const leaderboard = await request.get(
       "/api/public/leaderboards?board=highest-total-caffeine&limit=3",
     );
     expect(leaderboard.status()).toBe(200);
     const leaderboardBody = (await leaderboard.json()) as {
+      schemaVersion?: string;
       trustedProductCount?: number;
-      entries?: unknown[];
+      totalCount?: number;
+      entries?: Array<{ previousRank?: number | null; rankDelta?: number | null }>;
     };
+    expect(leaderboardBody.schemaVersion).toBe("1.1");
     expect(leaderboardBody.trustedProductCount).toBeGreaterThan(0);
+    expect(leaderboardBody.totalCount).toBeGreaterThan(0);
     expect(leaderboardBody.entries?.length).toBeGreaterThan(0);
+    expect(
+      leaderboardBody.entries?.every(
+        (entry) => "previousRank" in entry && "rankDelta" in entry,
+      ),
+    ).toBe(true);
   });
 
   test("keeps the retired admin namespace unavailable", async ({ request }) => {

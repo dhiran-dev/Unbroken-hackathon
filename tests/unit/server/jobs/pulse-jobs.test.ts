@@ -86,8 +86,8 @@ describe("fail-closed dispatch of unknown jobs", () => {
 });
 
 describe("pulse.* job acceptance", () => {
-  it("defines exactly the twelve PulseRank job names", () => {
-    expect(PULSE_JOB_NAMES).toHaveLength(12);
+  it("defines exactly the thirteen PulseRank job names", () => {
+    expect(PULSE_JOB_NAMES).toHaveLength(13);
     for (const name of PULSE_JOB_NAMES) {
       expect(name.startsWith("pulse.")).toBe(true);
     }

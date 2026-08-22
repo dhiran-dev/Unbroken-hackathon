@@ -25,6 +25,10 @@ import {
   type BdataRunnerCommand,
 } from "@/server/collection/bdata-client";
 import {
+  BrightDataProviderError,
+  type BrightDataProvider,
+} from "@/server/collection/bright-data-provider";
+import {
   createInMemoryPulseRepo,
   type InMemoryPulseRepo,
 } from "@/server/ingestion/repo";
@@ -44,8 +48,11 @@ import {
 /** Runtime overrides tests can pass to the harness. */
 type RuntimeOverrides = {
   flags?: Partial<PulseJobRuntime["flags"]>;
+  now?: PulseJobRuntime["now"];
   collect?: PulseJobRuntime["collect"];
   healPreview?: NonNullable<PulseJobRuntime["healPreview"]>;
+  provider?: BrightDataProvider;
+  enqueue?: PulseJobRuntime["enqueue"];
 };
 
 // ---------------------------------------------------------------------------
@@ -157,12 +164,23 @@ function makeRuntime(
       discoveryEnabled: overrides.flags?.discoveryEnabled ?? true,
       judgeMutationsEnabled: overrides.flags?.judgeMutationsEnabled ?? false,
     },
-    now: () => FIXED_NOW,
+    now: overrides.now ?? (() => FIXED_NOW),
     collect:
       overrides.collect ??
       (async () => {
         throw new Error("collect seam must not be called in this test");
       }),
+    provider:
+      overrides.provider ??
+      {
+        async submit() {
+          throw new Error("provider submit seam must not be called in this test");
+        },
+        async poll() {
+          throw new Error("provider poll seam must not be called in this test");
+        },
+      },
+    enqueue: overrides.enqueue ?? (async () => null),
     healPreview: overrides.healPreview,
   };
 }
@@ -303,6 +321,19 @@ describe("pulse.validate.run handler", () => {
   it("marks a clean run validated with no error code", async () => {
     const repo = createInMemoryPulseRepo();
     const { run } = await seedRunWithRows(repo, [makeScrapeRow({ slug: "only-good-row" })]);
+    await repo.updateCollectionRun(run.id, {
+      report: {
+        provider: {
+          kind: "bright_data_dca",
+          collectionId: "j_preserved123",
+          submittedAt: FIXED_NOW.toISOString(),
+          lastPollAt: FIXED_NOW.toISOString(),
+          attempts: 1,
+          status: "ready",
+          windowEndsAt: new Date(FIXED_NOW.getTime() + 60_000).toISOString(),
+        },
+      },
+    });
     const handlers = makeHandlers(repo);
 
     const result = await handlers["pulse.validate.run"]({
@@ -314,6 +345,17 @@ describe("pulse.validate.run handler", () => {
     const patched = await repo.getCollectionRun(run.id);
     expect(patched?.status).toBe("validated");
     expect(patched?.errorCode).toBeNull();
+    expect(patched?.report).toMatchObject({
+      provider: { collectionId: "j_preserved123", status: "ready" },
+      validation: { ok: true, status: "validated" },
+      manifestReconciliation: {
+        discoveredInputCount: 1,
+        successfulRows: 1,
+        terminalPageErrors: 0,
+        invalidRows: 0,
+        reconciled: true,
+      },
+    });
   });
 
   it("records a collector error row without turning it into a product", async () => {
@@ -538,6 +580,14 @@ describe("pulse.promote.snapshot handler", () => {
     const handlers = makeHandlers(repo);
 
     await ingestAndPromote(repo, run.id, handlers);
+    const ingestedAgain = await handlers["pulse.ingest.run"]({
+      job: "pulse.ingest.run",
+      payload: { runId: run.id },
+    });
+    expect(ingestedAgain).toMatchObject({
+      status: "ok",
+      details: { insertedObservations: 0, duplicateObservations: 1 },
+    });
     const again = await handlers["pulse.promote.snapshot"]({
       job: "pulse.promote.snapshot",
       payload: { runId: run.id },
@@ -545,6 +595,14 @@ describe("pulse.promote.snapshot handler", () => {
     expect(again.status === "ok" && again.details.promoted).toBe(0);
     expect(again.status === "ok" && again.details.quarantined).toBe(0);
     expect(again.status === "ok" && again.details.candidateCount).toBe(0);
+    expect(await repo.getCollectionRun(run.id)).toMatchObject({
+      report: {
+        ingestion: { insertedObservations: 1, duplicateObservations: 0 },
+        ingestionReplay: { insertedObservations: 0, duplicateObservations: 1 },
+        promotion: { promoted: 1, candidateCount: 1 },
+        promotionReplay: { promoted: 0, candidateCount: 0 },
+      },
+    });
   });
 });
 
@@ -765,6 +823,287 @@ describe("pulse.collect handlers", () => {
     );
     expect(raws).toHaveLength(2);
     expect(raws.every((r) => typeof r.payload.page === "string")).toBe(true);
+  });
+
+  it("submits discovery, persists provider identity, and queues a separate poll", async () => {
+    const repo = createInMemoryPulseRepo();
+    const source = repo.seedSource({ slug: "caffeine-informer" });
+    repo.seedCollector({ sourceId: source.id, externalId: JUDGE_COLLECTOR_ID });
+    const queued: Array<{ name: string; payload?: Record<string, unknown> }> = [];
+    const handlers = makeHandlers(repo, {
+      provider: {
+        async submit(input) {
+          expect(input.url).toBe(
+            "https://www.caffeineinformer.com/the-caffeine-database",
+          );
+          return { collectionId: "j_async123" };
+        },
+        async poll() {
+          throw new Error("discovery submission must not poll inline");
+        },
+      },
+      enqueue: async (input) => {
+        queued.push(input);
+        return { id: "job-poll" };
+      },
+    });
+
+    const result = await handlers["pulse.collect.discovery"]({
+      job: "pulse.collect.discovery",
+      payload: { query: "https://www.caffeineinformer.com/the-caffeine-database" },
+    });
+
+    expect(result).toMatchObject({ status: "ok", details: { providerStatus: "submitted" } });
+    const runId = result.status === "ok" ? String(result.details.runId) : "";
+    expect(await repo.getCollectionRun(runId)).toMatchObject({
+      status: "provider_wait",
+      report: {
+        provider: {
+          kind: "bright_data_dca",
+          collectionId: "j_async123",
+          status: "submitted",
+          attempts: 0,
+        },
+      },
+    });
+    expect(repo.__debug.rawRecords.size).toBe(0);
+    expect(queued).toContainEqual(
+      expect.objectContaining({
+        name: "pulse.collect.poll",
+        payload: { runId },
+      }),
+    );
+  });
+
+  it("lands repeated terminal page errors as separate warning evidence", async () => {
+    const repo = createInMemoryPulseRepo();
+    const source = repo.seedSource({ slug: "caffeine-informer" });
+    repo.seedCollector({ sourceId: source.id, externalId: JUDGE_COLLECTOR_ID });
+    const terminalError = {
+      error: "terminal page failure",
+      error_code: "page_failed",
+    };
+    const handlers = makeHandlers(repo, {
+      collect: async () => ({
+        rows: [terminalError, terminalError],
+        fingerprint: "sha256:two-errors",
+      }),
+    });
+
+    const result = await handlers["pulse.collect.sample"]({
+      job: "pulse.collect.sample",
+      payload: { url: "https://www.caffeineinformer.com/the-caffeine-database" },
+    });
+
+    expect(result).toMatchObject({
+      status: "ok",
+      details: { rowCount: 2, duplicateRowsSkipped: 0 },
+    });
+    expect(repo.__debug.rawRecords.size).toBe(2);
+  });
+
+  it("polls resumably, lands a ready dataset once, and queues ingestion", async () => {
+    const repo = createInMemoryPulseRepo();
+    const source = repo.seedSource({ slug: "caffeine-informer" });
+    repo.seedCollector({ sourceId: source.id, externalId: JUDGE_COLLECTOR_ID });
+    const queued: Array<{ name: string; payload?: Record<string, unknown> }> = [];
+    let providerPolls = 0;
+    const handlers = makeHandlers(repo, {
+      provider: {
+        async submit() {
+          return { collectionId: "j_resume123" };
+        },
+        async poll(collectionId) {
+          expect(collectionId).toBe("j_resume123");
+          providerPolls += 1;
+          return providerPolls === 1
+            ? { status: "pending" as const }
+            : {
+                status: "ready" as const,
+                rows: [{ product_name: "Alpha" }, { error: "dead page" }],
+                fingerprint: "sha256:ready-dataset",
+                manifest: {
+                  status: "done",
+                  inputs: 1,
+                  duplicateInputs: 0,
+                  lines: 1,
+                  fails: 1,
+                  pages: 2,
+                  pagesLeft: 0,
+                  success: 1,
+                  successRate: 0.5,
+                },
+              };
+        },
+      },
+      enqueue: async (input) => {
+        queued.push(input);
+        return { id: `job-${queued.length}` };
+      },
+    });
+    const submitted = await handlers["pulse.collect.discovery"]({
+      job: "pulse.collect.discovery",
+      payload: { query: "https://www.caffeineinformer.com/the-caffeine-database" },
+    });
+    const runId = submitted.status === "ok" ? String(submitted.details.runId) : "";
+
+    const pending = await handlers["pulse.collect.poll"]({
+      job: "pulse.collect.poll",
+      payload: { runId },
+    });
+    expect(pending).toMatchObject({
+      status: "ok",
+      details: { runId, providerStatus: "pending", attempts: 1 },
+    });
+    expect(await repo.getCollectionRun(runId)).toMatchObject({
+      status: "provider_wait",
+      report: { provider: { status: "pending", attempts: 1 } },
+    });
+
+    const ready = await handlers["pulse.collect.poll"]({
+      job: "pulse.collect.poll",
+      payload: { runId },
+    });
+    expect(ready).toMatchObject({
+      status: "ok",
+      details: { runId, providerStatus: "ready", rowCount: 2, attempts: 2 },
+    });
+    expect(await repo.getCollectionRun(runId)).toMatchObject({
+      status: "succeeded",
+      rowCount: 2,
+      pageFingerprint: "sha256:ready-dataset",
+      report: { provider: { status: "ready", attempts: 2 } },
+    });
+    expect(repo.__debug.rawRecords.size).toBe(2);
+    expect(queued).toContainEqual(
+      expect.objectContaining({ name: "pulse.ingest.run", payload: { runId } }),
+    );
+
+    const replay = await handlers["pulse.collect.poll"]({
+      job: "pulse.collect.poll",
+      payload: { runId, resume: true },
+    });
+    expect(replay).toMatchObject({
+      status: "ok",
+      details: { providerStatus: "ready", idempotentReplay: true },
+    });
+    expect(providerPolls).toBe(2);
+    expect(repo.__debug.rawRecords.size).toBe(2);
+  });
+
+  it("times out without losing provider identity and resumes the same run", async () => {
+    const repo = createInMemoryPulseRepo();
+    const source = repo.seedSource({ slug: "caffeine-informer" });
+    repo.seedCollector({ sourceId: source.id, externalId: JUDGE_COLLECTOR_ID });
+    let now = FIXED_NOW;
+    let providerPolls = 0;
+    const handlers = makeHandlers(repo, {
+      now: () => now,
+      provider: {
+        async submit() {
+          return { collectionId: "j_timeout123" };
+        },
+        async poll() {
+          providerPolls += 1;
+          return { status: "pending" };
+        },
+      },
+    });
+    const submitted = await handlers["pulse.collect.discovery"]({
+      job: "pulse.collect.discovery",
+      payload: {
+        query: "https://www.caffeineinformer.com/the-caffeine-database",
+        timeoutMs: 1_000,
+      },
+    });
+    const runId = submitted.status === "ok" ? String(submitted.details.runId) : "";
+
+    now = new Date(FIXED_NOW.getTime() + 1_001);
+    const timedOut = await handlers["pulse.collect.poll"]({
+      job: "pulse.collect.poll",
+      payload: { runId },
+    });
+    expect(timedOut).toMatchObject({
+      status: "ok",
+      details: { providerStatus: "timed_out", resumable: true },
+    });
+    expect(providerPolls).toBe(0);
+    expect(await repo.getCollectionRun(runId)).toMatchObject({
+      status: "provider_wait_timeout",
+      errorCode: "provider_wait_timeout",
+      report: {
+        provider: {
+          collectionId: "j_timeout123",
+          status: "timed_out",
+        },
+      },
+    });
+
+    const resumed = await handlers["pulse.collect.poll"]({
+      job: "pulse.collect.poll",
+      payload: { runId, resume: true },
+    });
+    expect(resumed).toMatchObject({
+      status: "ok",
+      details: { providerStatus: "pending", attempts: 1 },
+    });
+    expect(providerPolls).toBe(1);
+    expect(await repo.getCollectionRun(runId)).toMatchObject({
+      status: "provider_wait",
+      errorCode: null,
+      report: { provider: { collectionId: "j_timeout123", status: "pending" } },
+    });
+  });
+
+  it("persists transient poll failures and queues bounded idempotent retries", async () => {
+    const repo = createInMemoryPulseRepo();
+    const source = repo.seedSource({ slug: "caffeine-informer" });
+    repo.seedCollector({ sourceId: source.id, externalId: JUDGE_COLLECTOR_ID });
+    const queued: Array<Parameters<PulseJobRuntime["enqueue"]>[0]> = [];
+    const handlers = makeHandlers(repo, {
+      provider: {
+        async submit() {
+          return { collectionId: "j_retry123" };
+        },
+        async poll() {
+          throw new BrightDataProviderError(
+            "provider_http_503",
+            "provider temporarily unavailable",
+            true,
+          );
+        },
+      },
+      enqueue: async (input) => {
+        queued.push(input);
+        return { id: `job-${queued.length}` };
+      },
+    });
+    const submitted = await handlers["pulse.collect.discovery"]({
+      job: "pulse.collect.discovery",
+      payload: { query: "https://www.caffeineinformer.com/the-caffeine-database" },
+    });
+    const runId = submitted.status === "ok" ? String(submitted.details.runId) : "";
+
+    const retry = await handlers["pulse.collect.poll"]({
+      job: "pulse.collect.poll",
+      payload: { runId },
+    });
+    expect(retry).toMatchObject({
+      status: "ok",
+      details: { providerStatus: "retrying", attempts: 1 },
+    });
+    expect(await repo.getCollectionRun(runId)).toMatchObject({
+      status: "provider_wait",
+      errorCode: "provider_http_503",
+      report: { provider: { status: "retrying", attempts: 1 } },
+    });
+    expect(queued).toContainEqual(
+      expect.objectContaining({
+        name: "pulse.collect.poll",
+        idempotencyKey: `pulse.collect.poll:${runId}:1`,
+        scheduledFor: new Date(FIXED_NOW.getTime() + 5_000),
+      }),
+    );
   });
 
   it("accepts a bounded sample batch input file", async () => {

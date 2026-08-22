@@ -33,7 +33,10 @@ export default async function LeaderboardsPage({ searchParams }: { searchParams:
   const selectedBoard = BOARDS.find((board) => board.key === boardKey) ?? BOARDS[0];
   const categoryValue = first(raw.category);
   const category = (CANONICAL_CATEGORIES as readonly string[]).includes(categoryValue ?? "") ? categoryValue as (typeof CANONICAL_CATEGORIES)[number] : undefined;
-  const [leaderboard, categories] = await Promise.all([getLeaderboard(selectedBoard.key, 100, category), listCategories()]);
+  const [leaderboard, categories] = await Promise.all([
+    getLeaderboard(selectedBoard.key, { limit: 100, category }),
+    listCategories(),
+  ]);
 
   return (
     <div className="pr-app">

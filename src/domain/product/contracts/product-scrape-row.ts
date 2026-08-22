@@ -24,6 +24,7 @@ export type ProductScrapeRowV1 = {
   identity: {
     name: string;
     categoryLabel: string | null;
+    categoryProvenance?: "source_listing" | "source_pdp" | "legacy_broad";
     pageTitle: string | null;
   };
 

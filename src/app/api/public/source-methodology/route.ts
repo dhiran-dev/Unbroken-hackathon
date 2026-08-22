@@ -7,10 +7,12 @@
  * being imputed; extended nutrition fields gated behind a feature flag.
  */
 
+import { caffeineInformerTaxonomyManifest } from "@/server/ingestion/taxonomy";
+
 export const dynamic = "force-dynamic";
 
 const SOURCE_METHODOLOGY = {
-  schemaVersion: "1.0",
+  schemaVersion: "1.1",
   policy: {
     sources: "one-source",
     description:
@@ -32,6 +34,23 @@ const SOURCE_METHODOLOGY = {
     sparseStatesPreserved: true,
     extendedNutritionGatedByFlag: "PULSERANK_PUBLIC_EXTENDED_FIELDS",
     auditOnlyImagesSuppressed: true,
+  },
+  taxonomy: {
+    manifestId: caffeineInformerTaxonomyManifest.manifestId,
+    capturedAt: caffeineInformerTaxonomyManifest.capturedAt,
+    fingerprint: caffeineInformerTaxonomyManifest.fingerprint,
+    categoryProvenance: ["source_listing", "source_pdp", "legacy_broad"],
+    sourceCodeMapping: {
+      ED: "energy-drink",
+      C: "coffee",
+      S: "soda",
+      T: "tea",
+      ES: "energy-shot",
+      W: "water",
+      FOOD: "food",
+      GUM: "gum",
+      SUPPLEMENT: "other",
+    },
   },
 } as const;
 
