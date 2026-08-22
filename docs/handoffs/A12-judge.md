@@ -122,3 +122,14 @@ bun --bun next build  # production build compiles (turbopack)
 - Discovery-mode heal attempts remain blocked upstream ("Another refactor job
   is still in progress") — shown verbatim in the cockpit's additional-evidence
   section; retry belongs to A2/A14 once the dashboard queue clears.
+
+## PulseRank queued healing binding
+
+The worker-side `pulse.heal.preview` and `pulse.heal.verify` stages now use the
+same collector identity and the frozen V1 contract. Preview rows are validated
+before a `pulse.heal_sessions` row is stored; verification refuses to collect
+until an explicit human approval is persisted. Approval is performed through
+the token/origin-gated `POST /api/pulse/heal/{sessionId}/approve` endpoint and
+never through an automatic approval flag. The HTML-first `/judge` artifact
+cockpit remains the read-only evidence surface and its existing live demo
+actions continue to write only under `artifacts/demo/`.

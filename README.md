@@ -87,6 +87,15 @@ The production worker uses the Postgres queue claim/lease/retry path by
 default. The in-memory queue is only a test seam; rejected legacy or unknown
 jobs settle terminally and cannot be retried into a retired collector.
 
+The remaining PulseRank stages are explicit and fail-closed: change events and
+quarantine incidents are recorded atomically during promotion, raw retention is
+skipped until an owner-approved policy exists, and heal preview/verification
+use `pulse.heal_sessions`. A preview must pass the V1 contract and run checks,
+stops at `awaiting_approval`, and can be approved only through the
+origin/flag/token-gated `POST /api/pulse/heal/{sessionId}/approve` endpoint.
+Verification refuses to collect until that human approval is persisted, then
+reruns the same active collector through the normal trusted pipeline.
+
 Useful checks:
 
 ```bash
@@ -113,6 +122,7 @@ incident bodies. Use `.env.example` as the variable contract.
 | `FIREWORKS_MODEL` | Must equal the pinned Fireworks model. |
 | `FIREWORKS_REASONING_EFFORT` | Must be `high`. |
 | `INCIDENT_ARTIFACTS_DIR` | Private persistent incident/evidence directory. |
+| `PULSERANK_JUDGE_TOKEN` | Server-only token required for explicit heal approval; never expose it to the browser. |
 | `PULSERANK_*` | Fail-closed application, collection, public-field, and judge flags. |
 
 ## Deployment

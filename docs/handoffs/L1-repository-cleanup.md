@@ -26,7 +26,7 @@ needed outright deletion beyond the staged batch:
 | `src/app/page.tsx` | journey form/map/planner/catalog/public-accessibility | REWRITE: neutral PulseRank landing reading `pulserankServerFlags` |
 | `src/app/admin/layout.tsx` | `auth/session`, `sign-out-button` | Operator-auth UI removed; judge-mode state badge instead |
 | `src/app/api/admin/runs/route.ts` | `auth/session` (+ legacy queue API) | Judge-mode flag gate (503 when off) + origin check vs `NEXT_PUBLIC_APP_URL`; triggers `pulse.collect.sample`; operator_actions audit row dropped (user FK no longer satisfiable) |
-| `src/app/api/admin/incidents/[incidentId]/[action]/route.ts` | `auth/session`, `incident-jobs` | Same judge-mode gate; heal→`pulse.heal.preview`, verify→`pulse.heal.verify`; acknowledge uses free-form system actor label; audit reservation re-wiring documented follow-up |
+| `src/app/api/admin/incidents/[incidentId]/[action]/route.ts` | `auth/session`, `incident-jobs` | Legacy core incidents may be acknowledged, but heal/verify are terminally rejected; PulseRank uses the dedicated validated heal-session flow |
 | `src/server/db/schema/commute.ts` | `@/domain/commute/schedule` | Frozen mirror kept; `CommuteDay` union inlined verbatim |
 | `src/server/services/collection.ts` | collection catalog/contract/validation | Legacy elevator runtime removed; retained `CollectionOverlapError`, `expireRawPayloadBodies`, fail-closed `runCollection()` seam returning `PULSERANK_COLLECTION_BINDING_PENDING` |
 | `src/server/services/incident-workflow.ts` | `@/domain/collection/validation` (+ SFMTA env, runCollection) | Reduced to fail-closed seams (`PULSERANK_HEALING_BINDING_PENDING`); lifecycle machine lives on in `domain/incidents/machine` + `services/incidents` |

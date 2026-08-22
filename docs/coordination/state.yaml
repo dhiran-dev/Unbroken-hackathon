@@ -17,6 +17,8 @@ trusted_run_status: validated
 last_verified_at: 2026-08-22T06:31:00+05:30
 three_enabled: false
 public_extended_fields: false
+pulse_stage_handlers: complete_local_safe_outcomes
+heal_preview_binding: complete_flag_and_approval_gated
 legacy:
   government_collector_id: c_msyjsllt1r9ej5tdub # audit identity only — never invoke/heal/approve/rename
   sfmta_target: prohibited

@@ -270,8 +270,16 @@ export async function processJob(job: ClaimedJob) {
       }
       return;
     }
-    if (result.result.status === "handler_error") {
-      throw new Error(result.result.message || "PulseRank handler failed.");
+    if (
+      result.result.status === "failed" ||
+      result.result.status === "handler_error" ||
+      result.result.status === "not_implemented"
+    ) {
+      const message =
+        result.result.status === "failed" || result.result.status === "handler_error"
+          ? result.result.message
+          : `Job ${job.type} is not implemented.`;
+      throw new Error(message || "PulseRank handler failed.");
     }
     if (!(await settleClaimedJob(job, "succeeded"))) {
       throw new Error("JOB_LEASE_LOST");

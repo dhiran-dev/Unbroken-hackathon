@@ -11,7 +11,6 @@ import {
 import { IncidentStateError } from "@/domain/incidents/machine";
 import { pulserankServerFlags } from "@/config/pulserank-flags";
 import { publicEnv } from "@/lib/env";
-import { enqueuePulseJob } from "@/server/jobs/queue";
 import {
   acknowledgeIncident,
   IncidentNotFoundError,
@@ -19,23 +18,14 @@ import {
 } from "@/server/services/incidents";
 
 /**
- * Incident-action endpoint (disposition RETAIN_AND_REFACTOR): kept as the
- * pattern and re-pointed to PulseRank job names (`pulse.heal.preview`,
- * `pulse.heal.verify`). The operator-session gate went away with the
- * Better-Auth runtime, so mutations stay fail-closed behind
- * PULSERANK_JUDGE_MUTATIONS_ENABLED + origin check until the judge-mode actor
- * model lands. The legacy operator_actions audit reservation required a real
- * user FK and is intentionally not written here; re-wiring audit attribution
- * is a documented follow-up.
+ * Legacy core-incident endpoint. It may acknowledge historical records, but
+ * it must never route their heal/verify actions into the PulseRank collector.
+ * PulseRank healing starts from a validated `pulse.heal.preview` session and
+ * uses the dedicated token-gated approval endpoint instead.
  */
 
 const idSchema = z.string().uuid();
 const idempotencySchema = z.string().min(16).max(128);
-
-const PULSE_JOB_BY_ACTION = {
-  heal: "pulse.heal.preview",
-  verify: "pulse.heal.verify",
-} as const;
 
 export async function POST(
   request: Request,
@@ -67,6 +57,15 @@ export async function POST(
   if (!incidentId.success || !action.success) {
     return NextResponse.json({ error: "Unknown incident action." }, { status: 404 });
   }
+  if (action.data === "heal" || action.data === "verify") {
+    return NextResponse.json(
+      {
+        error:
+          "Legacy core incidents are quarantined and cannot route healing work. Use the PulseRank heal-session flow.",
+      },
+      { status: 410 },
+    );
+  }
   if (!idempotency.success) {
     return NextResponse.json(
       { error: "A valid Idempotency-Key header is required." },
@@ -87,12 +86,6 @@ export async function POST(
   if (!parsedBody.success) {
     return NextResponse.json(
       { error: "The incident action details are invalid." },
-      { status: 400 },
-    );
-  }
-  if (action.data === "heal" && !parsedBody.data.prompt) {
-    return NextResponse.json(
-      { error: "Describe the observed extraction problem before healing." },
       { status: 400 },
     );
   }
@@ -127,34 +120,10 @@ export async function POST(
     }
 
     await requireIncidentAction(incidentId.data, action.data);
-    const pulseName: string | undefined =
-      action.data === "heal" || action.data === "verify"
-        ? PULSE_JOB_BY_ACTION[action.data]
-        : undefined;
-    if (!pulseName) {
-      return NextResponse.json(
-        { error: "This incident action is not available in judge mode yet." },
-        { status: 503 },
-      );
-    }
-    const job = await enqueuePulseJob({
-      name: pulseName,
-      payload: {
-        incidentId: incidentId.data,
-        prompt: parsedBody.data.prompt ?? null,
-        confirmation: parsedBody.data.confirmation ?? null,
-      },
-      idempotencyKey: `${pulseName}:${incidentId.data}:${idempotency.data}`,
-    });
-
-    if (!job) {
-      return NextResponse.json(
-        { error: "This Idempotency-Key was already used for this action." },
-        { status: 409 },
-      );
-    }
-
-    return NextResponse.json({ job }, { status: 202 });
+    return NextResponse.json(
+      { error: "This legacy incident action is not available in PulseRank." },
+      { status: 410 },
+    );
   } catch (error) {
     if (error instanceof IncidentNotFoundError) {
       return NextResponse.json({ error: error.message }, { status: 404 });

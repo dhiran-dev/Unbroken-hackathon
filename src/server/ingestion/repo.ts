@@ -36,6 +36,7 @@ import {
   pulseFlavourObservations,
   pulseFlavours,
   pulseIncidents,
+  pulseHealSessions,
   pulseLeaderboardEntries,
   pulseLeaderboardSnapshots,
   pulseProductObservations,
@@ -140,6 +141,17 @@ export type IncidentRow = {
   status: string;
 };
 
+export type HealSessionRow = {
+  id: string;
+  collectorId: string;
+  prompt: string;
+  preview: JsonObject;
+  approvedAt: Date | null;
+  approvedBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type TrustedPayloadRow = {
   productId: string;
   productSlug: string;
@@ -212,6 +224,12 @@ export type OpenIncidentInput = {
   title: string;
   summary: string;
   detectedAt: Date;
+};
+
+export type InsertHealSessionInput = {
+  collectorId: string;
+  prompt: string;
+  preview: JsonObject;
 };
 
 export type InsertChangeEventInput = {
@@ -325,6 +343,12 @@ export interface PulseRepo {
   // -- promotion outputs ---------------------------------------------------------
   openIncident(input: OpenIncidentInput): Promise<IncidentRow>;
   insertChangeEvent(input: InsertChangeEventInput): Promise<void>;
+
+  // -- healing sessions -----------------------------------------------------------
+  insertHealSession(input: InsertHealSessionInput): Promise<HealSessionRow>;
+  getHealSession(sessionId: string): Promise<HealSessionRow | null>;
+  updateHealSessionPreview(sessionId: string, preview: JsonObject): Promise<void>;
+  approveHealSession(sessionId: string, approvedBy: string): Promise<void>;
 
   // -- leaderboards -----------------------------------------------------------------
   listTrustedObservationPayloads(): Promise<TrustedPayloadRow[]>;
@@ -755,6 +779,45 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
       });
     },
 
+    async insertHealSession(input) {
+      const rows = await db
+        .insert(pulseHealSessions)
+        .values({
+          collectorId: input.collectorId,
+          prompt: input.prompt,
+          preview: input.preview,
+        })
+        .returning();
+      const row = rows[0];
+      if (!row) throw new Error("insertHealSession returned no row");
+      return mapHealSession(row);
+    },
+
+    async getHealSession(sessionId) {
+      const rows = await db
+        .select()
+        .from(pulseHealSessions)
+        .where(eq(pulseHealSessions.id, sessionId))
+        .limit(1);
+      const row = rows[0];
+      return row ? mapHealSession(row) : null;
+    },
+
+    async updateHealSessionPreview(sessionId, preview) {
+      await db
+        .update(pulseHealSessions)
+        .set({ preview, updatedAt: new Date() })
+        .where(eq(pulseHealSessions.id, sessionId));
+    },
+
+    async approveHealSession(sessionId, approvedBy) {
+      const now = new Date();
+      await db
+        .update(pulseHealSessions)
+        .set({ approvedAt: now, approvedBy, updatedAt: now })
+        .where(eq(pulseHealSessions.id, sessionId));
+    },
+
     async listTrustedObservationPayloads() {
       // Trusted-only join, mirroring src/server/products/queries.ts:
       // products.current_trusted_observation_id -> observation AND status='trusted'.
@@ -809,6 +872,7 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
 type DbRunRow = typeof pulseCollectionRuns.$inferSelect;
 type DbProductRow = typeof pulseProducts.$inferSelect;
 type DbObservationRow = typeof pulseProductObservations.$inferSelect;
+type DbHealSessionRow = typeof pulseHealSessions.$inferSelect;
 
 function mapRun(row: DbRunRow): CollectionRunRow {
   return {
@@ -848,6 +912,19 @@ function mapObservation(row: DbObservationRow): ObservationRow {
   };
 }
 
+function mapHealSession(row: DbHealSessionRow): HealSessionRow {
+  return {
+    id: row.id,
+    collectorId: row.collectorId,
+    prompt: row.prompt,
+    preview: row.preview,
+    approvedAt: row.approvedAt,
+    approvedBy: row.approvedBy,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // In-memory implementation (unit-test double with constraint emulation)
 // ---------------------------------------------------------------------------
@@ -869,6 +946,7 @@ export type InMemoryPulseRepo = PulseRepo & {
     products: Map<string, ProductRow>;
     runs: Map<string, CollectionRunRow>;
     rawRecords: Map<string, RawRecordRow>;
+    healSessions: Map<string, HealSessionRow>;
   };
 };
 
@@ -890,6 +968,7 @@ export function createInMemoryPulseRepo(): InMemoryPulseRepo {
   const changeEvents: InsertChangeEventInput[] = [];
   const snapshots: Array<{ id: string; summary: JsonObject }> = [];
   const leaderboardEntries: InsertLeaderboardEntryInput[] = [];
+  const healSessions = new Map<string, HealSessionRow>();
 
   const observationKeySourceSlugObserved = (sourceId: string, slug: string, at: Date) =>
     `${sourceId}|${slug}|${toDate(at).toISOString()}`;
@@ -903,6 +982,7 @@ export function createInMemoryPulseRepo(): InMemoryPulseRepo {
     products,
     runs,
     rawRecords,
+    healSessions,
   } as InMemoryPulseRepo["__debug"];
 
   const api: InMemoryPulseRepo = {
@@ -1142,6 +1222,40 @@ export function createInMemoryPulseRepo(): InMemoryPulseRepo {
     },
     async insertChangeEvent(input) {
       changeEvents.push(input);
+    },
+
+    async insertHealSession(input) {
+      const now = new Date();
+      const row: HealSessionRow = {
+        id: freshId("heal"),
+        collectorId: input.collectorId,
+        prompt: input.prompt,
+        preview: input.preview,
+        approvedAt: null,
+        approvedBy: null,
+        createdAt: now,
+        updatedAt: now,
+      };
+      healSessions.set(row.id, row);
+      return row;
+    },
+    async getHealSession(sessionId) {
+      return healSessions.get(sessionId) ?? null;
+    },
+    async updateHealSessionPreview(sessionId, preview) {
+      const row = healSessions.get(sessionId);
+      if (!row) throw new Error(`unknown heal session ${sessionId}`);
+      healSessions.set(sessionId, { ...row, preview, updatedAt: new Date() });
+    },
+    async approveHealSession(sessionId, approvedBy) {
+      const row = healSessions.get(sessionId);
+      if (!row) throw new Error(`unknown heal session ${sessionId}`);
+      healSessions.set(sessionId, {
+        ...row,
+        approvedAt: new Date(),
+        approvedBy,
+        updatedAt: new Date(),
+      });
     },
 
     async listTrustedObservationPayloads() {

@@ -33,6 +33,7 @@ import {
   LEADERBOARD_BOARD_KEYS,
   type PulseJobRuntime,
 } from "@/server/jobs/pulse-handlers";
+import { JUDGE_COLLECTOR_ID } from "@/server/judge/to-scrape-row";
 import {
   dispatch,
   LEGACY_JOB_DENYLIST,
@@ -44,6 +45,7 @@ import {
 type RuntimeOverrides = {
   flags?: Partial<PulseJobRuntime["flags"]>;
   collect?: PulseJobRuntime["collect"];
+  healPreview?: NonNullable<PulseJobRuntime["healPreview"]>;
 };
 
 // ---------------------------------------------------------------------------
@@ -153,6 +155,7 @@ function makeRuntime(
     flags: {
       collectionEnabled: overrides.flags?.collectionEnabled ?? true,
       discoveryEnabled: overrides.flags?.discoveryEnabled ?? true,
+      judgeMutationsEnabled: overrides.flags?.judgeMutationsEnabled ?? false,
     },
     now: () => FIXED_NOW,
     collect:
@@ -160,6 +163,7 @@ function makeRuntime(
       (async () => {
         throw new Error("collect seam must not be called in this test");
       }),
+    healPreview: overrides.healPreview,
   };
 }
 
@@ -832,6 +836,145 @@ describe("pulse.collect handlers", () => {
     await expect(
       handlers["pulse.collect.discovery"]({ job: "pulse.collect.discovery", payload: {} }),
     ).resolves.toMatchObject({ status: "failed", errorCode: "invalid_payload" });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Remaining planned stages: change/incident reporting and healing
+// ---------------------------------------------------------------------------
+
+describe("complete PulseRank safety and healing stages", () => {
+  const previewEnvelope = {
+    collector_id: JUDGE_COLLECTOR_ID,
+    status: "awaiting_approval",
+    completed_steps: ["preview"],
+    prompt: "Preserve the per-item caffeine unit and do not invent volume.",
+    preview_result: [
+      {
+        product_name: "Recovered Mint",
+        product_page_url: "https://www.caffeineinformer.com/caffeine-content/recovered-mint",
+        serving_size: "1 mint",
+        caffeine_mg_per_serving: 72,
+      },
+    ],
+  };
+
+  it("reports atomic change detection and quarantine incidents without duplicating them", async () => {
+    const repo = createInMemoryPulseRepo();
+    const { run } = await seedRunWithRows(repo, [
+      makeScrapeRow({
+        slug: "quarantine-stage",
+        caffeine: { state: "unparseable", value: null, qualifier: "unknown" },
+      }),
+    ]);
+    const handlers = makeHandlers(repo);
+    await handlers["pulse.ingest.run"]({ job: "pulse.ingest.run", payload: { runId: run.id } });
+    await handlers["pulse.validate.run"]({ job: "pulse.validate.run", payload: { runId: run.id } });
+    await handlers["pulse.promote.snapshot"]({ job: "pulse.promote.snapshot", payload: { runId: run.id } });
+
+    const incident = await handlers["pulse.incident.open"]({
+      job: "pulse.incident.open",
+      payload: { runId: run.id },
+    });
+    expect(incident).toMatchObject({ status: "ok" });
+    expect(incident.status === "ok" && incident.details.opened).toBe(1);
+    expect(repo.__debug.incidents).toHaveLength(1);
+
+    const changes = await handlers["pulse.detect.changes"]({
+      job: "pulse.detect.changes",
+      payload: { runId: run.id },
+    });
+    expect(changes).toMatchObject({ status: "ok" });
+    expect(changes.status === "ok" && changes.details.idempotent).toBe(true);
+
+    const repeated = await handlers["pulse.incident.open"]({
+      job: "pulse.incident.open",
+      payload: { runId: run.id },
+    });
+    expect(repeated.status === "ok" && repeated.details.opened).toBe(1);
+    expect(repo.__debug.incidents).toHaveLength(1);
+  });
+
+  it("keeps raw retention an explicit safe skip until policy is configured", async () => {
+    const repo = createInMemoryPulseRepo();
+    const handler = makeHandlers(repo)["pulse.retention"];
+    await expect(handler({ job: "pulse.retention", payload: {} })).resolves.toMatchObject({
+      status: "skipped",
+      reason: "retention_policy_not_configured",
+    });
+    expect(repo.__debug.rawRecords.size).toBe(0);
+  });
+
+  it("validates a heal preview, persists a pending session, and refuses pre-approval verification", async () => {
+    const repo = createInMemoryPulseRepo();
+    const source = repo.seedSource({ slug: "caffeine-informer" });
+    repo.seedCollector({ sourceId: source.id, externalId: JUDGE_COLLECTOR_ID });
+    const handlers = makeHandlers(repo, {
+      flags: { judgeMutationsEnabled: true },
+      healPreview: async () => previewEnvelope,
+    });
+
+    const preview = await handlers["pulse.heal.preview"]({
+      job: "pulse.heal.preview",
+      payload: {
+        sourceUrl: "https://www.caffeineinformer.com/caffeine-content/recovered-mint",
+        prompt: "Preserve the per-item caffeine unit and do not invent volume.",
+      },
+    });
+    expect(preview).toMatchObject({ status: "ok" });
+    const sessionId = preview.status === "ok" ? String(preview.details.sessionId) : "";
+    const session = await repo.getHealSession(sessionId);
+    expect(session?.approvedAt).toBeNull();
+    expect(session?.preview.validation).toMatchObject({ ok: true, rowCount: 1 });
+
+    const verifyBeforeApproval = await handlers["pulse.heal.verify"]({
+      job: "pulse.heal.verify",
+      payload: { sessionId },
+    });
+    expect(verifyBeforeApproval).toMatchObject({
+      status: "failed",
+      errorCode: "human_approval_required",
+    });
+    expect(repo.__debug.runs.size).toBe(0);
+  });
+
+  it("reruns the same collector after approval and promotes the recovered row", async () => {
+    const repo = createInMemoryPulseRepo();
+    const source = repo.seedSource({ slug: "caffeine-informer" });
+    repo.seedCollector({ sourceId: source.id, externalId: JUDGE_COLLECTOR_ID });
+    const handlers = makeHandlers(repo, {
+      flags: { judgeMutationsEnabled: true },
+      healPreview: async () => previewEnvelope,
+      collect: async (input) => {
+        expect(input.url).toBe(
+          "https://www.caffeineinformer.com/caffeine-content/recovered-mint",
+        );
+        return {
+          rows: previewEnvelope.preview_result,
+          fingerprint: "sha256:healed-rerun",
+        };
+      },
+    });
+
+    const preview = await handlers["pulse.heal.preview"]({
+      job: "pulse.heal.preview",
+      payload: {
+        sourceUrl: "https://www.caffeineinformer.com/caffeine-content/recovered-mint",
+        prompt: "Preserve the per-item caffeine unit and do not invent volume.",
+      },
+    });
+    expect(preview.status).toBe("ok");
+    const sessionId = preview.status === "ok" ? String(preview.details.sessionId) : "";
+    await repo.approveHealSession(sessionId, "human:test-operator");
+
+    const verified = await handlers["pulse.heal.verify"]({
+      job: "pulse.heal.verify",
+      payload: { sessionId },
+    });
+    expect(verified).toMatchObject({ status: "ok" });
+    expect(verified.status === "ok" && verified.details.collectorId).toBe(JUDGE_COLLECTOR_ID);
+    expect(repo.__debug.observations.size).toBe(1);
+    expect([...repo.__debug.observations.values()][0]?.status).toBe("trusted");
   });
 });
 

@@ -1,11 +1,15 @@
-# A7b — Worker handler wiring (collection / ingest / validate / promote / leaderboards)
+# A7b/A7c — Worker handler wiring and safety stages
 
 Branch: `agent/repo-safety` · Continues A7a (`docs/handoffs/A7a-worker-skeleton.md`).
 Status: typecheck ✅ · unit tests ✅ (30 files, 433 passed) · lint ✅ (0 errors)
 
 ## What landed
 
-The seven data-bearing `pulse.*` jobs are wired to real pipeline implementations.
+All planned `pulse.*` jobs are wired to real pipeline implementations or an
+explicit safety outcome. The seven data-bearing jobs are backed by the
+deterministic pipeline, while change/incident stages read their atomic
+promotion report, retention is an append-only skip, and healing is an
+approval-gated same-collector flow.
 `dispatch()` in `src/server/jobs/pulse-jobs.ts` is **unchanged** — same
 fail-closed acceptance, same never-throws contract. The result union gained three
 additive variants (`ok`, `skipped`, `failed`) alongside the existing
@@ -16,12 +20,12 @@ additive variants (`ok`, `skipped`, `failed`) alongside the existing
 | File | Change |
 | --- | --- |
 | `src/server/jobs/pulse-handlers.ts` | NEW — handler wiring: runtime seam, seven handlers, registry factory |
-| `src/server/jobs/pulse-jobs.ts` | Registry binds the seven jobs via `createDefaultPulseJobHandlers`; result union extended; explicit stubs remain for the remaining operations |
+| `src/server/jobs/pulse-jobs.ts` | Registry binds all twelve planned jobs via `createDefaultPulseJobHandlers`; exact fail-closed dispatch remains unchanged |
 | `src/server/collection/bdata-client.ts` | SALVAGED + repaired: discovery query resolution, two new error codes |
 | `src/server/ingestion/repo.ts` | SALVAGED + completed: `CollectionRunPatch.startedAt/pageFingerprint`, typed `InMemoryPulseRepo.__debug` test introspection |
 | `src/server/products/queries.ts` | `getLeaderboard` prefers the latest snapshot tagged with `summary.boardKey` (legacy fallback kept) |
 | `tests/unit/server/jobs/pulse-handlers.test.ts` | NEW — 25 tests over the handlers + bdata client |
-| `tests/unit/server/jobs/pulse-jobs.test.ts` | Updated: stub assertions now cover only the still-unwired jobs; collect dispatch expects structured skip; worker-log expectation relaxed |
+| `tests/unit/server/jobs/pulse-jobs.test.ts` | Covers all planned jobs, legacy rejection, flag gates, and explicit safe outcomes |
 | `docs/handoffs/A7b-worker-wiring.md` | This file |
 
 ## Handler semantics
@@ -65,6 +69,28 @@ additive variants (`ok`, `skipped`, `failed`) alongside the existing
   finalizes the run BEFORE any processing; CLI failures mark the run `failed`
   with a stable code and return a structured failure.
 
+## Remaining planned stages
+
+- **`pulse.detect.changes {runId}`** reads the promotion report. Trusted-to-
+  trusted events are inserted atomically with the trusted pointer during
+  promotion, so retries cannot duplicate them.
+- **`pulse.incident.open {runId}`** reads the incident IDs recorded by the same
+  promotion transaction. Quarantined candidates therefore cannot exist without
+  an incident, and retrying this stage does not insert another one.
+- **`pulse.retention`** is an explicit skip until an owner-approved retention
+  policy exists. Raw records remain append-only; this job never deletes or
+  rewrites them.
+- **`pulse.heal.preview`** accepts only an HTTPS Caffeine Informer URL, calls
+  the configured collector's heal-preview operation only when judge mutations
+  are enabled, validates every preview row against V1 plus `validateRun`, and
+  stores a pending `pulse.heal_sessions` row. It requires the provider's
+  `awaiting_approval` status and never approves automatically.
+- **`pulse.heal.verify`** requires an approved persisted session, confirms the
+  active collector identity is still `c_mt33nlnkq376z132b`, reruns that same
+  collector, and executes raw persistence → ingest → validate → promote →
+  rebuild. Missing approval is a terminal structured failure before any
+  network call.
+
 ## Transactionality
 
 All DB-writing handlers execute inside one transaction via
@@ -76,17 +102,18 @@ in-flight or failed CLI attempt.
 ## Testability
 
 `createPulseJobHandlers(runtime, notImplemented)` builds a full registry around
-an injectable `PulseJobRuntime` (`runTransaction`, `flags`, `now`, `collect`);
-unit tests bind an `createInMemoryPulseRepo()` and canned collectors — no test
+an injectable `PulseJobRuntime` (`runTransaction`, `flags`, `now`, `collect`,
+`healPreview`); unit tests bind an `createInMemoryPulseRepo()` and canned collectors — no test
 touches postgres or spawns a process. The module-level default registry is
 never mutated by tests.
 
 ## Assumptions & notes for reviewers
 
-1. **Real-DB integration pending.** All persistence paths are unit-tested
-   against the in-memory repo (which emulates the schema unique constraints).
-   A live drizzle/postgres pass against migrated pulse tables is still to be
-   run by an agent with database access.
+1. **Real-DB healing integration is intentionally operator-gated.** The live
+   trusted collection pipeline has been exercised against the migrated pulse
+   tables; heal preview/approval/verification remain disabled by default and
+   require an owner-authorized provider run before production evidence is
+   claimed.
 2. **One snapshot PER BOARD per rebuild.** `leaderboard_entries` enforces
    `(snapshot_id, product_id)` uniqueness, so one snapshot cannot carry a
    product on two boards. Each rebuild therefore appends three snapshots, one

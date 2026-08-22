@@ -93,7 +93,7 @@ describe("pulse.* job acceptance", () => {
     }
   });
 
-  const REMAINING_STUB_JOBS = [
+  const COMPLETED_SAFETY_STAGE_JOBS = [
     "pulse.detect.changes",
     "pulse.retention",
     "pulse.incident.open",
@@ -101,18 +101,24 @@ describe("pulse.* job acceptance", () => {
     "pulse.heal.verify",
   ] as const;
 
-  it.each([...REMAINING_STUB_JOBS])(
-    "accepts %s with a not_implemented stub result (still unwired)",
+  it.each([...COMPLETED_SAFETY_STAGE_JOBS])(
+    "accepts %s with an explicit safe result",
     async (name) => {
-      const result = await dispatch({ name, payload: { any: "payload" } });
-      expect(result).toEqual({
-        accepted: true,
-        result: { status: "not_implemented", job: name },
-      });
+      const payload =
+        name === "pulse.retention"
+          ? {}
+          : name === "pulse.heal.preview" || name === "pulse.heal.verify"
+            ? { any: "payload" }
+            : { any: "payload" };
+      const result = await dispatch({ name, payload });
+      expect(result).toMatchObject({ accepted: true, result: { job: name } });
+      if (result.accepted) {
+        expect(result.result.status).not.toBe("not_implemented");
+      }
     },
   );
 
-  it("registers real handlers (not stubs) for the six A7b-wired jobs", () => {
+  it("registers real handlers for every planned PulseRank job", () => {
     for (const name of [
       "pulse.collect.sample",
       "pulse.collect.refresh-batch",
@@ -122,6 +128,9 @@ describe("pulse.* job acceptance", () => {
       "pulse.promote.snapshot",
       "pulse.rebuild.leaderboards",
     ] as const) {
+      expect(typeof pulseJobHandlers[name]).toBe("function");
+    }
+    for (const name of COMPLETED_SAFETY_STAGE_JOBS) {
       expect(typeof pulseJobHandlers[name]).toBe("function");
     }
   });
@@ -161,13 +170,14 @@ describe("pulse.* job acceptance", () => {
     });
   });
 
-  it("tolerates missing or non-object payloads on stub jobs", async () => {
+  it("tolerates missing or non-object payloads on safe-stage jobs", async () => {
     await expect(dispatch({ name: "pulse.retention" })).resolves.toMatchObject({
       accepted: true,
+      result: { status: "skipped" },
     });
     await expect(
       dispatch({ name: "pulse.retention", payload: "not-an-object" }),
-    ).resolves.toMatchObject({ accepted: true, result: { status: "not_implemented" } });
+    ).resolves.toMatchObject({ accepted: true, result: { status: "skipped" } });
   });
 });
 

@@ -1,9 +1,9 @@
 /**
  * PulseRank worker handler wiring (Agent A7b).
  *
- * Binds the six data-bearing pulse jobs to the deterministic pipeline stages
- * from `@/server/ingestion/*` and the Bright Data client, replacing their
- * `not_implemented` stubs in the dispatcher registry (`./pulse-jobs`). The
+ * Binds the complete PulseRank job set to the deterministic pipeline stages
+ * from `@/server/ingestion/*` and the Bright Data client, replacing the
+ * dispatcher stubs in the default registry (`./pulse-jobs`). The
  * dispatch contract is untouched: handlers receive
  * `{ job, payload }` and return structured results; `dispatch()` still never
  * throws.
@@ -45,6 +45,7 @@ import { z } from "zod";
 
 import { pulserankFlags } from "@/config/pulserank-flags";
 import { productScrapeRowV1Schema } from "@/domain/product/contracts/product-scrape-row.schema";
+import { brightDataHealEnvelopeSchema } from "@/domain/incidents/contract";
 import {
   BdataClientError,
   collectViaBdata,
@@ -100,6 +101,8 @@ export type PulseJobRunTransaction = <T>(
 export interface PulseJobRuntimeFlags {
   readonly collectionEnabled: boolean;
   readonly discoveryEnabled: boolean;
+  /** Heal previews are mutations and stay disabled unless explicitly enabled. */
+  readonly judgeMutationsEnabled?: boolean;
 }
 
 export interface PulseJobRuntime {
@@ -110,6 +113,8 @@ export interface PulseJobRuntime {
   readonly now: () => Date;
   /** Bright Data client seam; unit tests substitute canned output. */
   readonly collect: typeof collectViaBdata;
+  /** Bright Data heal-preview seam; approval is deliberately a separate step. */
+  readonly healPreview?: (prompt: string, sourceUrl: string) => Promise<unknown>;
 }
 
 /**
@@ -123,10 +128,17 @@ export function createDefaultPulseJobRuntime(): PulseJobRuntime {
       return {
         collectionEnabled: pulserankFlags.server.collectionEnabled,
         discoveryEnabled: pulserankFlags.server.discoveryEnabled,
+        judgeMutationsEnabled: pulserankFlags.server.judgeMutationsEnabled,
       };
     },
     now: () => new Date(),
     collect: collectViaBdata,
+    healPreview: async (prompt, sourceUrl) => {
+      const { requestBrightDataHealing } = await import(
+        "@/server/services/bright-data-healing"
+      );
+      return requestBrightDataHealing(prompt, sourceUrl);
+    },
   };
 }
 
@@ -194,6 +206,19 @@ const DISCOVERY_COLLECT_PAYLOAD_SCHEMA = z
     { message: "discovery needs a query or an inputFile" },
   );
 
+const HEAL_PREVIEW_PAYLOAD_SCHEMA = z.object({
+  sourceUrl: z.url(),
+  prompt: z.string().trim().min(10).max(2_000),
+});
+
+const HEAL_VERIFY_PAYLOAD_SCHEMA = z.object({
+  sessionId: z.string().min(1),
+});
+
+const RETENTION_PAYLOAD_SCHEMA = z.object({
+  dryRun: z.boolean().optional().default(true),
+});
+
 // ---------------------------------------------------------------------------
 // Shared pipeline helpers
 // ---------------------------------------------------------------------------
@@ -247,6 +272,93 @@ function mapCollectorPayload(
     collectorId: JUDGE_COLLECTOR_ID,
     templateFamily: "caffeine-informer-v2",
   });
+}
+
+function isAllowedCaffeineInformerUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase();
+    return (
+      url.protocol === "https:" &&
+      (hostname === "caffeineinformer.com" || hostname.endsWith(".caffeineinformer.com"))
+    );
+  } catch {
+    return false;
+  }
+}
+
+type ValidatedHealPreview = {
+  rows: ValidatableRow[];
+  rowCount: number;
+  findings: Array<{ check: string; severity: string; detail: string }>;
+};
+
+/**
+ * Validate provider preview rows with the same V1 contract and run-level
+ * checks used by a collection run. A preview that cannot pass this gate is
+ * never persisted as an approvable heal session.
+ */
+function validateHealPreview(
+  envelope: Record<string, unknown>,
+  observedAt: Date,
+): ValidatedHealPreview | { errorCode: string; message: string; details: Record<string, unknown> } {
+  const rawPreview = envelope.preview_result;
+  const previewRows = Array.isArray(rawPreview)
+    ? rawPreview
+    : isRecord(rawPreview)
+      ? [rawPreview]
+      : [];
+  if (previewRows.length === 0) {
+    return {
+      errorCode: "preview_empty",
+      message: "Bright Data returned no preview rows to validate.",
+      details: { rowCount: 0 },
+    };
+  }
+
+  const rows: ValidatableRow[] = [];
+  const issues: string[] = [];
+  for (const [index, raw] of previewRows.entries()) {
+    const mapped = mapCollectorPayload(raw, observedAt);
+    const parsed = productScrapeRowV1Schema.safeParse(mapped);
+    if (!parsed.success) {
+      issues.push(
+        `preview_result[${index}]: ${zodIssues(parsed.error).join("; ")}`,
+      );
+      continue;
+    }
+    rows.push(parsed.data as ValidatableRow);
+  }
+  if (issues.length > 0) {
+    return {
+      errorCode: "preview_contract_invalid",
+      message: "Bright Data preview rows failed the frozen V1 contract.",
+      details: { rowCount: previewRows.length, issues },
+    };
+  }
+
+  const validation = validateRun(rows);
+  if (!validation.ok) {
+    return {
+      errorCode: "preview_validation_failed",
+      message: "Bright Data preview rows failed deterministic run validation.",
+      details: { rowCount: rows.length, findings: validation.findings },
+    };
+  }
+
+  return {
+    rows,
+    rowCount: rows.length,
+    findings: validation.findings,
+  };
+}
+
+function reportSection(
+  report: JsonObject | null,
+  key: string,
+): Record<string, unknown> | null {
+  const value = report?.[key];
+  return isRecord(value) ? value : null;
 }
 
 /**
@@ -691,6 +803,7 @@ export function createPromoteSnapshotHandler(
       let quarantined = 0;
       let skippedWithoutProduct = 0;
       let changeEventsInserted = 0;
+      const incidentIds: string[] = [];
 
       for (const observation of candidateObservations) {
         const candidate = parsed.candidatesByFingerprint.get(
@@ -718,7 +831,7 @@ export function createPromoteSnapshotHandler(
           await repo.updateObservation(observation.id, {
             status: "quarantined",
           });
-          await repo.openIncident({
+          const incident = await repo.openIncident({
             collectionRunId: runId,
             title: `Promotion quarantined: ${product.slug}`,
             summary:
@@ -729,6 +842,7 @@ export function createPromoteSnapshotHandler(
                 : "promotion quarantined the candidate",
             detectedAt: runtime.now(),
           });
+          incidentIds.push(incident.id);
           quarantined += 1;
           continue;
         }
@@ -771,16 +885,416 @@ export function createPromoteSnapshotHandler(
         promoted += 1;
       }
 
-      return okResult(job, `promoted ${promoted}, quarantined ${quarantined}`, {
-        runId,
+      const promotion = {
         candidateCount: candidateObservations.length,
         promoted,
         quarantined,
         skippedWithoutProduct,
         changeEventsInserted,
+        incidentIds,
+        completedAtIso: runtime.now().toISOString(),
+      };
+      await repo.updateCollectionRun(runId, {
+        report: {
+          ...(run.report ?? {}),
+          promotion,
+        },
+      });
+
+      return okResult(job, `promoted ${promoted}, quarantined ${quarantined}`, {
+        runId,
+        ...promotion,
         unparsableRecords: parsed.unparsableRecordIds.length,
         collectorErrorRecords: parsed.collectorErrorRecordIds.length,
       });
+    });
+  };
+}
+
+// ---------------------------------------------------------------------------
+// pulse.detect.changes — report-backed, idempotent change stage
+// ---------------------------------------------------------------------------
+
+/**
+ * Promotion writes trusted-to-trusted change events in the same transaction
+ * as the pointer update. This job is the explicit downstream stage used by
+ * queue callers: it verifies that promotion completed and exposes the
+ * durable result without ever duplicating events on retry.
+ */
+export function createDetectChangesHandler(runtime: PulseJobRuntime): PulseJobHandler {
+  return async ({ payload }) => {
+    const job: PulseJobName = "pulse.detect.changes";
+    const parsedPayload = RUN_ID_PAYLOAD_SCHEMA.safeParse(payload);
+    if (!parsedPayload.success) {
+      return failedResult(job, "invalid_payload", "payload must be { runId: string }", {
+        issues: zodIssues(parsedPayload.error),
+      });
+    }
+    const runId = parsedPayload.data.runId;
+    return runtime.runTransaction(async (repo) => {
+      const run = await repo.getCollectionRun(runId);
+      if (run === null) {
+        return failedResult(job, "run_not_found", `collection run ${runId} does not exist`, {
+          runId,
+        });
+      }
+      const promotion = reportSection(run.report, "promotion");
+      if (promotion === null) {
+        return failedResult(
+          job,
+          "promotion_required",
+          "change detection requires a completed promotion stage",
+          { runId, status: run.status },
+        );
+      }
+      return okResult(
+        job,
+        "trusted-to-trusted change events were recorded during promotion",
+        {
+          runId,
+          changeEventsInserted: promotion.changeEventsInserted ?? 0,
+          trustedTransitions: promotion.promoted ?? 0,
+          idempotent: true,
+        },
+      );
+    });
+  };
+}
+
+// ---------------------------------------------------------------------------
+// pulse.retention — explicit safe no-op until a retention policy is approved
+// ---------------------------------------------------------------------------
+
+export function createRetentionHandler(runtime: PulseJobRuntime): PulseJobHandler {
+  return async ({ payload }) => {
+    const job: PulseJobName = "pulse.retention";
+    const parsedPayload = RETENTION_PAYLOAD_SCHEMA.safeParse(payload);
+    if (!parsedPayload.success) {
+      return failedResult(job, "invalid_payload", "payload must be { dryRun?: boolean }", {
+        issues: zodIssues(parsedPayload.error),
+      });
+    }
+    void runtime;
+    return skippedResult(
+      job,
+      "retention_policy_not_configured",
+      "raw PulseRank records remain append-only; no retention mutation was applied",
+      {
+        dryRun: parsedPayload.data.dryRun,
+        immutableRawRecords: true,
+        actionRequired: "configure and approve a retention trigger before expiry",
+      },
+    );
+  };
+}
+
+// ---------------------------------------------------------------------------
+// pulse.incident.open — durable incident result from promotion
+// ---------------------------------------------------------------------------
+
+/**
+ * Quarantine incidents are opened atomically by `pulse.promote.snapshot` so
+ * a candidate cannot become quarantined without an audit record. This job
+ * provides the queue-visible incident stage and is safe to retry because it
+ * reads the persisted promotion report instead of inserting duplicates.
+ */
+export function createIncidentOpenHandler(runtime: PulseJobRuntime): PulseJobHandler {
+  return async ({ payload }) => {
+    const job: PulseJobName = "pulse.incident.open";
+    const parsedPayload = RUN_ID_PAYLOAD_SCHEMA.safeParse(payload);
+    if (!parsedPayload.success) {
+      return failedResult(job, "invalid_payload", "payload must be { runId: string }", {
+        issues: zodIssues(parsedPayload.error),
+      });
+    }
+    const runId = parsedPayload.data.runId;
+    return runtime.runTransaction(async (repo) => {
+      const run = await repo.getCollectionRun(runId);
+      if (run === null) {
+        return failedResult(job, "run_not_found", `collection run ${runId} does not exist`, {
+          runId,
+        });
+      }
+      const promotion = reportSection(run.report, "promotion");
+      if (promotion === null) {
+        return failedResult(
+          job,
+          "promotion_required",
+          "incident opening requires a completed promotion stage",
+          { runId, status: run.status },
+        );
+      }
+      const incidentIds = Array.isArray(promotion.incidentIds)
+        ? promotion.incidentIds.filter((value): value is string => typeof value === "string")
+        : [];
+      return okResult(
+        job,
+        incidentIds.length > 0
+          ? `promotion opened ${incidentIds.length} quarantine incident(s)`
+          : "promotion completed without quarantine incidents",
+        {
+          runId,
+          incidentIds,
+          opened: incidentIds.length,
+          idempotent: true,
+        },
+      );
+    });
+  };
+}
+
+// ---------------------------------------------------------------------------
+// pulse.heal.preview / pulse.heal.verify — approval-gated same-collector flow
+// ---------------------------------------------------------------------------
+
+export function createHealPreviewHandler(runtime: PulseJobRuntime): PulseJobHandler {
+  return async ({ payload }) => {
+    const job: PulseJobName = "pulse.heal.preview";
+    if (runtime.flags.judgeMutationsEnabled !== true) {
+      return skippedResult(
+        job,
+        "judge_mutations_disabled",
+        "skipped: PULSERANK_JUDGE_MUTATIONS_ENABLED is disabled",
+      );
+    }
+
+    const parsedPayload = HEAL_PREVIEW_PAYLOAD_SCHEMA.safeParse(payload);
+    if (!parsedPayload.success) {
+      return failedResult(job, "invalid_payload", "payload must include sourceUrl and prompt", {
+        issues: zodIssues(parsedPayload.error),
+      });
+    }
+    const { sourceUrl, prompt } = parsedPayload.data;
+    if (!isAllowedCaffeineInformerUrl(sourceUrl)) {
+      return failedResult(
+        job,
+        "source_not_allowed",
+        "heal previews are restricted to HTTPS caffeineinformer.com pages",
+      );
+    }
+    if (runtime.healPreview === undefined) {
+      return failedResult(
+        job,
+        "healing_provider_unconfigured",
+        "the Bright Data healing provider is not configured for this worker",
+      );
+    }
+
+    let envelope: z.infer<typeof brightDataHealEnvelopeSchema>;
+    try {
+      const result = await runtime.healPreview(prompt, sourceUrl);
+      const parsedEnvelope = brightDataHealEnvelopeSchema.safeParse(result);
+      if (!parsedEnvelope.success) {
+        return failedResult(
+          job,
+          "preview_envelope_invalid",
+          "Bright Data healing returned an unexpected envelope",
+          { issues: zodIssues(parsedEnvelope.error) },
+        );
+      }
+      envelope = parsedEnvelope.data;
+    } catch (error) {
+      return failedResult(
+        job,
+        "healing_provider_failed",
+        error instanceof Error ? error.message : "Bright Data healing failed",
+      );
+    }
+
+    if (envelope.collector_id !== JUDGE_COLLECTOR_ID) {
+      return failedResult(
+        job,
+        "collector_identity_changed",
+        "the heal preview was returned for a collector other than the active PulseRank collector",
+        { collectorId: envelope.collector_id, expectedCollectorId: JUDGE_COLLECTOR_ID },
+      );
+    }
+    if (envelope.status !== "awaiting_approval") {
+      return failedResult(
+        job,
+        "approval_gate_missing",
+        "the heal provider did not stop at the required human approval gate",
+        { providerStatus: envelope.status },
+      );
+    }
+
+    const validated = validateHealPreview(envelope, runtime.now());
+    if ("errorCode" in validated) {
+      return failedResult(job, validated.errorCode, validated.message, validated.details);
+    }
+
+    try {
+      return await runtime.runTransaction(async (repo) => {
+        const collector = await repo.findActiveCollector();
+        if (collector === null) {
+          return failedResult(job, "no_active_collector", "no active PulseRank collector is registered");
+        }
+        if (collector.externalId !== JUDGE_COLLECTOR_ID) {
+          return failedResult(
+            job,
+            "collector_identity_changed",
+            "the active PulseRank collector does not match the approved healing identity",
+            { collectorId: collector.externalId, expectedCollectorId: JUDGE_COLLECTOR_ID },
+          );
+        }
+        const session = await repo.insertHealSession({
+          collectorId: collector.id,
+          prompt,
+          preview: {
+            sourceUrl,
+            prompt,
+            provider: envelope,
+            validation: {
+              ok: true,
+              rowCount: validated.rowCount,
+              findings: validated.findings,
+            },
+          },
+        });
+        return okResult(
+          job,
+          "heal preview validated and stored; explicit human approval is still required",
+          {
+            sessionId: session.id,
+            collectorId: collector.externalId,
+            collectorRowId: collector.id,
+            providerStatus: envelope.status,
+            previewRowCount: validated.rowCount,
+            approvalRequired: true,
+          },
+        );
+      });
+    } catch (error) {
+      return failedResult(
+        job,
+        "heal_session_persist_failed",
+        error instanceof Error ? error.message : "could not persist the heal session",
+      );
+    }
+  };
+}
+
+export function createHealVerifyHandler(runtime: PulseJobRuntime): PulseJobHandler {
+  return async ({ payload }) => {
+    const job: PulseJobName = "pulse.heal.verify";
+    if (runtime.flags.judgeMutationsEnabled !== true) {
+      return skippedResult(
+        job,
+        "judge_mutations_disabled",
+        "skipped: PULSERANK_JUDGE_MUTATIONS_ENABLED is disabled",
+      );
+    }
+    const parsedPayload = HEAL_VERIFY_PAYLOAD_SCHEMA.safeParse(payload);
+    if (!parsedPayload.success) {
+      return failedResult(job, "invalid_payload", "payload must include sessionId", {
+        issues: zodIssues(parsedPayload.error),
+      });
+    }
+
+    const sessionCheck = await runtime.runTransaction(async (repo) => {
+      const session = await repo.getHealSession(parsedPayload.data.sessionId);
+      if (session === null) {
+        return { ok: false as const, errorCode: "heal_session_not_found", message: "heal session does not exist" };
+      }
+      if (session.approvedAt === null) {
+        return {
+          ok: false as const,
+          errorCode: "human_approval_required",
+          message: "the heal session has not received explicit human approval",
+        };
+      }
+      const collector = await repo.findActiveCollector();
+      if (collector === null || collector.id !== session.collectorId || collector.externalId !== JUDGE_COLLECTOR_ID) {
+        return {
+          ok: false as const,
+          errorCode: "collector_identity_changed",
+          message: "the approved session no longer points at the active PulseRank collector",
+        };
+      }
+      const sourceUrl = session.preview.sourceUrl;
+      if (typeof sourceUrl !== "string" || !isAllowedCaffeineInformerUrl(sourceUrl)) {
+        return {
+          ok: false as const,
+          errorCode: "source_not_allowed",
+          message: "the approved session has no allowed Caffeine Informer source URL",
+        };
+      }
+      return { ok: true as const, sourceUrl };
+    });
+    if (!sessionCheck.ok) {
+      return failedResult(job, sessionCheck.errorCode, sessionCheck.message, {
+        sessionId: parsedPayload.data.sessionId,
+      });
+    }
+
+    const collected = await collectAndPersist(
+      runtime,
+      { mode: "sample", url: sessionCheck.sourceUrl },
+      "job:pulse.heal.verify",
+    );
+    if (!collected.ok) {
+      return failedResult(job, collected.errorCode, collected.message, {
+        sessionId: parsedPayload.data.sessionId,
+      });
+    }
+
+    const runId = collected.runId;
+    const stages: Record<string, PulseJobExecutionResult> = {};
+    const stageHandlers = {
+      "pulse.ingest.run": createIngestRunHandler(runtime),
+      "pulse.validate.run": createValidateRunHandler(runtime),
+      "pulse.promote.snapshot": createPromoteSnapshotHandler(runtime),
+      "pulse.rebuild.leaderboards": createRebuildLeaderboardsHandler(runtime),
+    } as const;
+    const stageJobs = [
+      "pulse.ingest.run",
+      "pulse.validate.run",
+      "pulse.promote.snapshot",
+      "pulse.rebuild.leaderboards",
+    ] as const;
+    for (const stageJob of stageJobs) {
+      const stage = await stageHandlers[stageJob]({
+        job: stageJob,
+        payload: stageJob === "pulse.rebuild.leaderboards" ? {} : { runId },
+      });
+      stages[stageJob] = stage;
+      if (stage.status !== "ok") {
+        return failedResult(job, "verification_stage_failed", `${stageJob} failed during heal verification`, {
+          sessionId: parsedPayload.data.sessionId,
+          runId,
+          failedStage: stageJob,
+          stage,
+        });
+      }
+      if (stageJob === "pulse.validate.run" && stage.details.validationOk !== true) {
+        return failedResult(job, "verification_validation_failed", "the approved rerun failed validation", {
+          sessionId: parsedPayload.data.sessionId,
+          runId,
+          stage,
+        });
+      }
+    }
+
+    const promotion = stages["pulse.promote.snapshot"];
+    const promotionDetails =
+      promotion !== undefined && promotion.status === "ok" ? promotion.details : null;
+    const promoted = promotionDetails?.promoted ?? 0;
+    if (promoted !== 1) {
+      return failedResult(
+        job,
+        "verification_not_recovered",
+        "the approved rerun validated but did not promote exactly one recovered observation",
+        { sessionId: parsedPayload.data.sessionId, runId, promoted, stages },
+      );
+    }
+
+    return okResult(job, "approved heal reran the same collector and recovered one trusted observation", {
+      sessionId: parsedPayload.data.sessionId,
+      runId,
+      collectorId: JUDGE_COLLECTOR_ID,
+      collectorRowId: collected.collectorId,
+      rowCount: collected.rowCount,
+      stages,
     });
   };
 }
@@ -1193,14 +1707,18 @@ function createCollectDiscoveryHandler(
 export type PulseJobStubFactory = (job: PulseJobName) => PulseJobHandler;
 
 /**
- * Build the full handler registry around a runtime. Jobs outside the A7b
- * scope fall through to the supplied stub factory, keeping the registry shape
- * identical to the dispatcher contract.
+ * Build the full handler registry around a runtime. The stub factory remains
+ * a compatibility seam for callers that want to inject an intentionally
+ * unavailable handler, but the default registry binds every planned job to a
+ * real safe outcome.
  */
 export function createPulseJobHandlers(
   runtime: PulseJobRuntime,
   notImplemented: PulseJobStubFactory,
 ): Record<PulseJobName, PulseJobHandler> {
+  // Kept as a compatibility seam for isolated tests and downstream callers;
+  // the production registry below no longer needs a stub fallback.
+  void notImplemented;
   return {
     "pulse.collect.sample": createCollectSampleHandler(runtime),
     "pulse.collect.refresh-batch": createCollectSampleHandler(
@@ -1211,12 +1729,12 @@ export function createPulseJobHandlers(
     "pulse.ingest.run": createIngestRunHandler(runtime),
     "pulse.validate.run": createValidateRunHandler(runtime),
     "pulse.promote.snapshot": createPromoteSnapshotHandler(runtime),
-    "pulse.detect.changes": notImplemented("pulse.detect.changes"),
+    "pulse.detect.changes": createDetectChangesHandler(runtime),
     "pulse.rebuild.leaderboards": createRebuildLeaderboardsHandler(runtime),
-    "pulse.retention": notImplemented("pulse.retention"),
-    "pulse.incident.open": notImplemented("pulse.incident.open"),
-    "pulse.heal.preview": notImplemented("pulse.heal.preview"),
-    "pulse.heal.verify": notImplemented("pulse.heal.verify"),
+    "pulse.retention": createRetentionHandler(runtime),
+    "pulse.incident.open": createIncidentOpenHandler(runtime),
+    "pulse.heal.preview": createHealPreviewHandler(runtime),
+    "pulse.heal.verify": createHealVerifyHandler(runtime),
   };
 }
 

@@ -11,9 +11,9 @@
  *   `{ accepted: false }` result so callers can log and move on.
  *
  * Every accepted job resolves to a handler from `pulseJobHandlers`. The
- * data-bearing pipeline handlers are real; any intentionally unavailable
- * operation remains an explicit structured result so the worker can fail and
- * retry it instead of claiming success.
+ * default registry binds the full planned job set: data stages are real,
+ * retention is an explicit immutable-data skip, and healing remains behind a
+ * human approval gate.
  *
  * Import-safety: importing this module still never opens a database connection
  * or a network socket. `./pulse-handlers` reaches the db client only through
@@ -131,12 +131,10 @@ function notImplementedHandler(job: PulseJobName): PulseJobHandler {
 }
 
 /**
- * Handler registry, one entry per PulseRank job name. The six A7b jobs are
- * bound to the real pipeline implementations from `./pulse-handlers` with the
- * default runtime (real db transactions, env flags, wall clock, Bright Data
- * client); the rest stay typed stubs. Tests build their own registry via
- * `createPulseJobHandlers(runtime, notImplementedHandler)` with an in-memory
- * repo — they never mutate this module-level default.
+ * Handler registry, one entry per PulseRank job name. The default runtime
+ * binds every planned stage in `./pulse-handlers` (real db transactions, env
+ * flags, wall clock, Bright Data client); tests may still inject a fallback
+ * factory when they need to model an unavailable dependency.
  */
 export const pulseJobHandlers: Readonly<
   Record<PulseJobName, PulseJobHandler>
