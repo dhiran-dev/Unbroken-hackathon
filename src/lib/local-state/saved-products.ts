@@ -171,7 +171,7 @@ export async function getSavedProduct(slug: string): Promise<StoredSavedProduct 
   const record = await requestToPromise(
     tx.objectStore(SAVED_PRODUCTS_STORE).get(slug),
   );
-  return record ?? null;
+  return sanitizeStoredSavedProduct(record);
 }
 
 /** True when the slug currently has a saved product. */
@@ -188,8 +188,11 @@ export async function listSavedProducts(): Promise<StoredSavedProduct[]> {
   if (!db) return [];
   const tx = db.transaction(SAVED_PRODUCTS_STORE, "readonly");
   const index = tx.objectStore(SAVED_PRODUCTS_STORE).index(SAVED_PRODUCTS_SAVED_AT_INDEX);
-  const records = (await requestToPromise(index.getAll())) as StoredSavedProduct[];
-  return records.sort((a, b) => b.savedAt - a.savedAt);
+  const records = (await requestToPromise(index.getAll())) as unknown[];
+  return records
+    .map((record) => sanitizeStoredSavedProduct(record))
+    .filter((record): record is StoredSavedProduct => record !== null)
+    .sort((a, b) => b.savedAt - a.savedAt);
 }
 
 /** Deletes every saved product. No-op on the server. */

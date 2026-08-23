@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    useTypeScriptCli: false,
+    webpackBuildWorker: false,
   },
 };
 

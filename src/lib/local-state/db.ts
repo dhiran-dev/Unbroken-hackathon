@@ -66,6 +66,22 @@ export function isIndexedDbAvailable(): boolean {
   return typeof globalThis !== "undefined" && typeof globalThis.indexedDB !== "undefined";
 }
 
+export type IndexedDbStatus = "available" | "unavailable" | "error";
+
+/** Opens the shared database while preserving unavailable vs failed states. */
+export async function inspectIndexedDb(): Promise<{ status: IndexedDbStatus; error?: Error }> {
+  if (!isIndexedDbAvailable()) return { status: "unavailable" };
+  try {
+    await openDatabase();
+    return { status: "available" };
+  } catch (error) {
+    return {
+      status: "error",
+      error: error instanceof Error ? error : new Error("IndexedDB access failed"),
+    };
+  }
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   if (!openPromise) {
     const promise = new Promise<IDBDatabase>((resolve, reject) => {

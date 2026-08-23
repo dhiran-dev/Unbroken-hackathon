@@ -1,13 +1,12 @@
 type JsonObject = Record<string, unknown>;
 
 export type LiveRunInput = {
-  id: string;
   status: string;
   trigger: string;
   rowCount: number | null;
-  errorCode: string | null;
   startedAt: Date | null;
   finishedAt: Date | null;
+  createdAt: Date;
   report: JsonObject | null;
 };
 
@@ -24,7 +23,45 @@ function integer(value: unknown): number | null {
 }
 
 function text(value: unknown): string | null {
-  return typeof value === "string" && value.trim() !== "" ? value : null;
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (normalized === "" || normalized.length > 120) return null;
+  return normalized;
+}
+
+const PUBLIC_TRIGGERS = new Set([
+  "job:pulse.collect.sample",
+  "job:pulse.collect.discovery",
+  "job:pulse.heal.verify",
+]);
+
+function publicTrigger(value: unknown): string {
+  const normalized = text(value);
+  return normalized !== null && PUBLIC_TRIGGERS.has(normalized) ? normalized : "unknown";
+}
+
+function publicRunStatus(value: unknown): string {
+  const normalized = text(value)?.toLowerCase();
+  if (!normalized) return "unknown";
+  if (normalized.includes("timeout") || normalized.includes("timed_out")) return "timed_out";
+  if (["queued", "running", "succeeded", "validated", "failed", "cancelled"].includes(normalized)) {
+    return normalized;
+  }
+  return "unknown";
+}
+
+function publicCollectionStage(value: unknown, hasProvider: boolean): string {
+  const normalized = text(value)?.toLowerCase();
+  if (!hasProvider || !normalized) return "not_applicable";
+  if (normalized.includes("timeout") || normalized.includes("timed_out")) return "timed_out";
+  if (["failed", "error", "rejected"].includes(normalized)) return "failed";
+  if (["ready", "complete", "completed", "succeeded", "validated"].includes(normalized)) {
+    return "complete";
+  }
+  if (["queued", "running", "processing", "pending", "waiting", "submitted", "retrying"].includes(normalized)) {
+    return "in_progress";
+  }
+  return "unknown";
 }
 
 export type SanitizedLiveRun = ReturnType<typeof sanitizeLiveRun>;
@@ -44,31 +81,14 @@ export function sanitizeLiveRun(input: LiveRunInput) {
   const providerStatus = text(provider?.status);
 
   return {
-    runId: input.id,
-    status: input.status,
-    trigger: input.trigger,
+    status: publicRunStatus(input.status),
+    trigger: publicTrigger(input.trigger),
     startedAt: input.startedAt?.toISOString() ?? null,
     finishedAt: input.finishedAt?.toISOString() ?? null,
-    errorCode: input.errorCode,
-    provider: provider
-      ? {
-          kind: text(provider.kind),
-          status: providerStatus,
-          attempts: integer(provider.attempts) ?? 0,
-          submittedAt: text(provider.submittedAt),
-          lastPollAt: text(provider.lastPollAt),
-          hasCollectionId:
-            typeof provider.collectionId === "string" &&
-            provider.collectionId.length > 0,
-          resumable:
-            providerStatus === "timed_out" ||
-            providerStatus === "failed" ||
-            input.status === "provider_wait_timeout",
-        }
-      : null,
+    createdAt: input.createdAt.toISOString(),
     stages: {
       submit: provider ? "complete" : "not_applicable",
-      provider: providerStatus ?? "not_applicable",
+      collect: publicCollectionStage(providerStatus, provider !== null),
       land: landing ? "complete" : "pending",
       ingest: ingestion ? "complete" : "pending",
       validate:
@@ -81,7 +101,7 @@ export function sanitizeLiveRun(input: LiveRunInput) {
       rebuild: leaderboard ? "complete" : "pending",
     },
     rowCounts: {
-      collected: input.rowCount,
+      collected: integer(input.rowCount),
       input: integer(landing?.inputRows),
       stored: integer(landing?.storedRows),
       parsed: integer(ingestion?.parsedRowCount),

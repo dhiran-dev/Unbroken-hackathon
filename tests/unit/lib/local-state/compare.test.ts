@@ -13,7 +13,7 @@ import {
   sanitizeCompareSlugs,
   toggleCompareSlug,
 } from "@/lib/local-state/compare";
-import { installBrowserStorage, uninstallBrowserStorage } from "./mock-storage";
+import { MockLocalStorage, installBrowserStorage, uninstallBrowserStorage } from "./mock-storage";
 
 describe("compare tray", () => {
   describe("on the server (SSR)", () => {
@@ -21,9 +21,9 @@ describe("compare tray", () => {
 
     it("reads empty and no-ops mutations", () => {
       expect(getCompareSlugs()).toEqual([]);
-      expect(addCompareSlug("cold-brew")).toEqual({ slugs: [], added: false });
-      expect(toggleCompareSlug("cold-brew")).toEqual({ slugs: [], added: false });
-      expect(removeCompareSlug("cold-brew").added).toBe(false);
+      expect(addCompareSlug("cold-brew")).toEqual({ slugs: [], ok: false, added: false });
+      expect(toggleCompareSlug("cold-brew")).toEqual({ slugs: [], ok: false, added: false });
+      expect(removeCompareSlug("cold-brew")).toEqual({ slugs: [], ok: false, added: false });
       expect(isInCompare("cold-brew")).toBe(false);
       expect(clearCompare()).toBe(false);
     });
@@ -37,11 +37,12 @@ describe("compare tray", () => {
     });
 
     it("adds, dedupes, and reports state", () => {
-      expect(addCompareSlug("cold-brew")).toEqual({ slugs: ["cold-brew"], added: true });
-      expect(addCompareSlug("cold-brew").added).toBe(false);
+      expect(addCompareSlug("cold-brew")).toEqual({ slugs: ["cold-brew"], ok: true, added: true });
+      expect(addCompareSlug("cold-brew")).toEqual({ slugs: ["cold-brew"], ok: true, added: false });
       expect(getCompareSlugs()).toEqual(["cold-brew"]);
       expect(addCompareSlug("espresso")).toEqual({
         slugs: ["cold-brew", "espresso"],
+        ok: true,
         added: true,
       });
       expect(storage.getItem(COMPARE_STORAGE_KEY)).toBe(
@@ -52,6 +53,7 @@ describe("compare tray", () => {
     it("enforces the hard cap of 4 without evicting", () => {
       for (const slug of ["a", "b", "c", "d"]) addCompareSlug(slug);
       const result = addCompareSlug("e");
+      expect(result.ok).toBe(true);
       expect(result.added).toBe(false);
       expect(getCompareSlugs()).toEqual(["a", "b", "c", "d"]);
       expect(MAX_COMPARE_ITEMS).toBe(4);
@@ -59,12 +61,12 @@ describe("compare tray", () => {
 
     it("removes and toggles", () => {
       for (const slug of ["a", "b"]) addCompareSlug(slug);
-      expect(removeCompareSlug("a")).toEqual({ slugs: ["b"], added: false });
-      expect(removeCompareSlug("missing").slugs).toEqual(["b"]);
+      expect(removeCompareSlug("a")).toEqual({ slugs: ["b"], ok: true, added: false });
+      expect(removeCompareSlug("missing")).toEqual({ slugs: ["b"], ok: true, added: false });
 
-      expect(toggleCompareSlug("c")).toEqual({ slugs: ["b", "c"], added: true });
-      expect(toggleCompareSlug("c")).toEqual({ slugs: ["b"], added: false });
-      expect(toggleCompareSlug("").added).toBe(false);
+      expect(toggleCompareSlug("c")).toEqual({ slugs: ["b", "c"], ok: true, added: true });
+      expect(toggleCompareSlug("c")).toEqual({ slugs: ["b"], ok: true, added: false });
+      expect(toggleCompareSlug("")).toEqual({ slugs: ["b"], ok: true, added: false });
     });
 
     it("checks membership", () => {
@@ -90,13 +92,34 @@ describe("compare tray", () => {
     });
 
     it("replaces the whole selection sanitized", () => {
-      expect(replaceCompareSlugs(["p", "p", "q", "r", "s", "t"])).toEqual([
-        "p",
-        "q",
-        "r",
-        "s",
-      ]);
+      expect(replaceCompareSlugs(["p", "p", "q", "r", "s", "t"])).toEqual({
+        ok: true,
+        slugs: ["p", "q", "r", "s"],
+      });
       expect(getCompareSlugs()).toEqual(["p", "q", "r", "s"]);
+    });
+
+    it("distinguishes a failed empty write from a successful empty selection", () => {
+      const throwing = new MockLocalStorage();
+      throwing.setItem = () => { throw new Error("QuotaExceededError"); };
+      installBrowserStorage(throwing);
+      expect(replaceCompareSlugs([])).toEqual({ ok: false, slugs: [] });
+    });
+
+    it("distinguishes storage failure from a full or duplicate no-op", () => {
+      for (const slug of ["a", "b", "c", "d"]) addCompareSlug(slug);
+      expect(addCompareSlug("e")).toEqual({
+        slugs: ["a", "b", "c", "d"],
+        ok: true,
+        added: false,
+      });
+
+      const writable = new MockLocalStorage();
+      installBrowserStorage(writable);
+      expect(addCompareSlug("existing")).toEqual({ slugs: ["existing"], ok: true, added: true });
+      writable.setItem = () => { throw new Error("QuotaExceededError"); };
+      expect(addCompareSlug("new-product")).toEqual({ slugs: ["existing"], ok: false, added: false });
+      expect(removeCompareSlug("existing")).toEqual({ slugs: ["existing"], ok: false, added: false });
     });
 
     it("clears the selection", () => {

@@ -270,12 +270,12 @@ export function TrustCallout({
   );
 }
 
-export function SourceNote({ observedAt, sourceUrl }: { observedAt: string; sourceUrl: string }) {
+export function SourceNote({ observedAt, sourceUrl }: { observedAt: string; sourceUrl: string | null }) {
   return (
     <div className="pr-source-note">
       <span><Sparkles size={14} aria-hidden="true" /> Source observation</span>
       <time dateTime={observedAt}>{new Date(observedAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</time>
-      <a href={sourceUrl} target="_blank" rel="noreferrer noopener">Caffeine Informer <ArrowRight size={13} aria-hidden="true" /></a>
+      {sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer noopener">Caffeine Informer <ArrowRight size={13} aria-hidden="true" /></a> : <span>Source URL not published</span>}
     </div>
   );
 }

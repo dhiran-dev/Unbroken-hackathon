@@ -10,7 +10,7 @@ import {
   validateLocalStateEnvelope,
 } from "@/lib/local-state/export-import";
 import { makeSavedProductRef } from "./fixtures";
-import { installBrowserStorage, uninstallBrowserStorage } from "./mock-storage";
+import { MockLocalStorage, installBrowserStorage, uninstallBrowserStorage } from "./mock-storage";
 
 const VALID_STORED_PRODUCT = { ...makeSavedProductRef(), savedAt: 1755000000000 };
 
@@ -133,15 +133,8 @@ describe("export-import", () => {
       delete (globalThis as { indexedDB?: unknown }).indexedDB;
     });
 
-    it("exports an empty envelope", async () => {
-      const exported = await exportAll();
-      expect(exported.pulserankLocalStateVersion).toBe(1);
-      expect(new Date(exported.exportedAt).toString()).not.toBe("Invalid Date");
-      expect(exported.preferences).toBeNull();
-      expect(exported.compare).toEqual([]);
-      expect(exported.savedProducts).toEqual([]);
-      expect(exported.myDay).toEqual([]);
-      expect(exported.recentlyViewed).toEqual([]);
+    it("refuses an empty backup when browser storage is unavailable", async () => {
+      await expect(exportAll()).rejects.toThrow(/Export unavailable/);
     });
 
     it("imports nothing and reports zero counts for a valid envelope", async () => {
@@ -152,6 +145,7 @@ describe("export-import", () => {
         savedProducts: 0,
         myDay: 0,
         recentlyViewed: 0,
+        errors: ["localStorage", "IndexedDB"],
       });
     });
 
@@ -191,7 +185,7 @@ describe("export-import", () => {
       expect(getCompareSlugs()).toEqual(["cold-brew", "espresso"]);
     });
 
-    it("round-trips the localStorage sections through exportAll", async () => {
+    it("refuses export when IndexedDB is unavailable", async () => {
       const summary = await importAll({
         ...baseEnvelope(),
         preferences: { theme: "system", reducedMotionOverride: "on" },
@@ -199,17 +193,23 @@ describe("export-import", () => {
       });
       expect(summary.preferences).toBe(true);
 
-      const exported = await exportAll();
-      expect(exported.preferences).toEqual({ theme: "system", reducedMotionOverride: "on" });
-      expect(exported.compare).toEqual(["matcha"]);
-      expect(validateLocalStateEnvelope(exported).ok).toBe(true);
+      await expect(exportAll()).rejects.toThrow(/IndexedDB is unavailable/);
     });
 
-    it("leaves the compare tray untouched when the section is absent or empty", async () => {
-    const { addCompareSlug } = await import("@/lib/local-state/compare");
-    addCompareSlug("kept");
-    await importAll({ ...baseEnvelope(), preferences: null });
-    expect(getCompareSlugs()).toEqual(["kept"]);
-  });
+    it("restores an explicitly empty compare tray", async () => {
+      const { addCompareSlug } = await import("@/lib/local-state/compare");
+      addCompareSlug("kept");
+      await importAll({ ...baseEnvelope(), preferences: null, compare: [] });
+      expect(getCompareSlugs()).toEqual([]);
+    });
+
+    it("reports a failed empty compare write instead of claiming success", async () => {
+      const throwing = new MockLocalStorage();
+      throwing.setItem = () => { throw new Error("QuotaExceededError"); };
+      installBrowserStorage(throwing);
+      const summary = await importAll({ ...baseEnvelope(), preferences: null, compare: [] });
+      expect(summary.compare).toBe(0);
+      expect(summary.errors).toContain("compare");
+    });
   });
 });

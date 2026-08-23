@@ -112,8 +112,11 @@ export async function listRecentlyViewed(limit?: number): Promise<RecentlyViewed
   if (!db) return [];
   const tx = db.transaction(RECENTLY_VIEWED_STORE, "readonly");
   const index = tx.objectStore(RECENTLY_VIEWED_STORE).index(RECENTLY_VIEWED_VIEWED_AT_INDEX);
-  const records = (await requestToPromise(index.getAll())) as RecentlyViewedRecord[];
-  const ordered = records.sort((a, b) => b.viewedAt - a.viewedAt);
+  const records = (await requestToPromise(index.getAll())) as unknown[];
+  const ordered = records
+    .map((record) => sanitizeRecentlyViewedRecord(record))
+    .filter((record): record is RecentlyViewedRecord => record !== null)
+    .sort((a, b) => b.viewedAt - a.viewedAt);
   if (limit !== undefined) {
     if (!Number.isInteger(limit) || limit < 0) {
       throw new TypeError(`Invalid listRecentlyViewed limit: ${String(limit)}`);

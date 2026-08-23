@@ -1,54 +1,271 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, BarChart3, Check, SlidersHorizontal } from "lucide-react";
-
-import { CANONICAL_CATEGORIES } from "@/server/ingestion/normalize";
-import { getLeaderboard, listCategories } from "@/server/products/queries";
+import Link from "next/link";
 import {
-  EmptyState,
-  PublicHeader,
-  categoryLabel,
-  formatNumber,
-} from "@/components/pulserank/public-ui";
-import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  CircleSlash2,
+  Clock3,
+  ExternalLink,
+  Info,
+  Search,
+  Sun,
+  Trophy,
+  Zap,
+} from "lucide-react";
+
+import { categoryLabel } from "@/components/pulserank/public-ui";
+import { CANONICAL_CATEGORIES, type CanonicalCategory } from "@/server/ingestion/normalize";
+import { toPublicProductDto, type PublicProductDto } from "@/server/products/dto";
+import {
+  getLeaderboard,
+  getLeaderboardFacets,
+  getTrustedProductsBySlugs,
+  listCategories,
+  type LeaderboardEntryDto,
+} from "@/server/products/queries";
+
+import {
+  LEADERBOARD_BOARDS,
+  isEligibleForBoard,
+  type LeaderboardBoardKey,
+} from "./leaderboard-model";
+import { LeaderboardResults } from "./leaderboard-results";
+import styles from "./leaderboards.module.css";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Leaderboards",
-  description: "Transparent caffeine rankings built from trusted observations.",
+  description: "Exact caffeine rankings built from trusted source observations.",
 };
 
-const BOARDS = [
-  { key: "highest-total-caffeine", label: "Highest total caffeine", detail: "mg per listed serving" },
-  { key: "highest-exact-concentration", label: "Highest exact concentration", detail: "mg per 100 ml" },
-  { key: "caffeine-free", label: "Caffeine-free", detail: "explicit zero only" },
-] as const;
-
 type SearchParams = Record<string, string | string[] | undefined>;
-function first(value: string | string[] | undefined): string | undefined { return Array.isArray(value) ? value[0] : value; }
+
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function boardHref(
+  board: LeaderboardBoardKey,
+  filters: { category: string; serving: string; completeOnly: boolean },
+): string {
+  const params = new URLSearchParams({ board });
+  if (filters.category) params.set("category", filters.category);
+  if (filters.serving) params.set("serving", filters.serving);
+  params.set("complete", filters.completeOnly ? "1" : "0");
+  return `/leaderboards?${params.toString()}`;
+}
+
+function boardIcon(board: LeaderboardBoardKey) {
+  if (board === "highest-total-caffeine") return Trophy;
+  if (board === "highest-exact-concentration") return Zap;
+  return CircleSlash2;
+}
+
+function formatRebuiltAt(value: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(value);
+}
+
+function Logo() {
+  return (
+    <span className={styles.logo}>
+      <Zap aria-hidden="true" />
+      <span>Pulse<strong>Rank</strong></span>
+    </span>
+  );
+}
+
+function LeaderboardsHeader() {
+  const nav = [
+    ["/explore", "Explore"],
+    ["/leaderboards", "Leaderboards"],
+    ["/compare", "Compare"],
+    ["/my-pulse", "My Pulse"],
+    ["/changes", "Changes"],
+  ] as const;
+
+  return (
+    <header className={styles.header}>
+      <div className={styles.headerInner}>
+        <Link href="/" className={styles.logoLink} aria-label="PulseRank home">
+          <Logo />
+        </Link>
+        <nav className={styles.navigation} aria-label="Primary navigation">
+          {nav.map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className={href === "/leaderboards" ? styles.activeNav : undefined}
+              aria-current={href === "/leaderboards" ? "page" : undefined}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <form className={styles.search} action="/explore" method="get" role="search">
+          <label className="sr-only" htmlFor="leaderboard-product-search">Search products</label>
+          <input id="leaderboard-product-search" name="search" placeholder="Search products..." />
+          <button type="submit" aria-label="Search products">
+            <Search size={20} aria-hidden="true" />
+          </button>
+        </form>
+        <button
+          className={styles.themeButton}
+          type="button"
+          aria-label="Dark theme is active"
+          title="PulseRank uses a dark-only theme"
+          disabled
+        >
+          <Sun aria-hidden="true" />
+        </button>
+      </div>
+    </header>
+  );
+}
 
 export default async function LeaderboardsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const raw = await searchParams;
-  const boardKey = first(raw.board) ?? BOARDS[0].key;
-  const selectedBoard = BOARDS.find((board) => board.key === boardKey) ?? BOARDS[0];
-  const categoryValue = first(raw.category);
-  const category = (CANONICAL_CATEGORIES as readonly string[]).includes(categoryValue ?? "") ? categoryValue as (typeof CANONICAL_CATEGORIES)[number] : undefined;
-  const [leaderboard, categories] = await Promise.all([
-    getLeaderboard(selectedBoard.key, { limit: 100, category }),
+  const requestedBoard = first(raw.board);
+  const selectedBoard = LEADERBOARD_BOARDS.find((board) => board.key === requestedBoard) ?? LEADERBOARD_BOARDS[0];
+  const categoryValue = first(raw.category) ?? "";
+  const category = (CANONICAL_CATEGORIES as readonly string[]).includes(categoryValue)
+    ? categoryValue as CanonicalCategory
+    : "";
+  const serving = first(raw.serving) ?? "";
+  const completeOnly = first(raw.complete) !== "0";
+  const requestedLimit = Number(first(raw.limit) ?? "7");
+  const visibleLimit = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(Math.trunc(requestedLimit), 7), 200)
+    : 7;
+
+  const [leaderboard, categories, facets] = await Promise.all([
+    getLeaderboard(selectedBoard.key, {
+      limit: visibleLimit,
+      category: category || undefined,
+      servingForm: serving || undefined,
+      completeOnly,
+    }),
     listCategories(),
+    getLeaderboardFacets(selectedBoard.key),
   ]);
+  const products = await getTrustedProductsBySlugs(
+    (leaderboard?.entries ?? []).map((entry) => entry.product.slug),
+  );
+  const productsBySlug = new Map(products.map((row) => {
+    const product = toPublicProductDto(row);
+    return [product.slug, product] as const;
+  }));
+
+  const initialRows = (leaderboard?.entries ?? [])
+    .map((entry) => ({ entry, product: productsBySlug.get(entry.product.slug) }))
+    .filter(
+      (row): row is { entry: LeaderboardEntryDto; product: PublicProductDto } =>
+        row.product !== undefined && isEligibleForBoard(selectedBoard.key, row.product),
+    );
+
+  const filters = { category, serving, completeOnly };
 
   return (
-    <div className="pr-app">
-      <PublicHeader active="/leaderboards" />
-      <main className="pr-shell pr-main">
-        <div className="pr-page-heading"><p className="pr-eyebrow">Ranked from trusted snapshots</p><h1>See what rises.</h1><p className="pr-page-description">Three boards, one source, explicit qualifiers. Every entry is a product that passed the board’s deterministic eligibility gate.</p></div>
-        <div className="pr-board-tabs">{BOARDS.map((board) => <a key={board.key} href={`/leaderboards?board=${board.key}${category ? `&category=${category}` : ""}`} className={`pr-board-tab${board.key === selectedBoard.key ? " is-active" : ""}`}><BarChart3 size={14} aria-hidden="true" /> {board.label}</a>)}</div>
-        <OptionalVisualStage page="leaderboards" variant="leaderboards" className="pr-route-stage pr-board-stage" />
-        <div className="pr-board-layout"><section>
-          <div className="pr-results-meta"><span>{selectedBoard.detail}</span><form action="/leaderboards" method="get"><input type="hidden" name="board" value={selectedBoard.key} /><label className="pr-inline-filter"><SlidersHorizontal size={13} aria-hidden="true" /><select name="category" defaultValue={category ?? ""}><option value="">All categories</option>{categories.map((item) => <option key={item.category} value={item.category}>{categoryLabel(item.category)} · {item.productCount}</option>)}</select><button className="pr-button pr-button-ghost" type="submit">Apply</button></label></form></div>
-          {leaderboard && leaderboard.entries.length > 0 ? <div className="pr-table-wrap"><table className="pr-data-table"><thead><tr><th>Rank</th><th>Product</th><th>Metric</th><th>Qualifier</th><th>Eligibility</th></tr></thead><tbody>{leaderboard.entries.map((entry) => <tr key={entry.productId}><td><strong className="pr-rank">{String(entry.rank).padStart(2, "0")}</strong></td><td><a href={`/products/${entry.product.slug}`} className="pr-table-product"><span><strong>{entry.product.name}</strong><small>{categoryLabel(entry.product.category)}</small></span><ArrowUpRight size={14} aria-hidden="true" /></a></td><td><strong>{formatNumber(entry.metricValue)} {selectedBoard.key === "highest-exact-concentration" ? "mg/100 ml" : "mg"}</strong></td><td><span className="pr-eligibility-chip is-eligible">{entry.eligibilityFlags.join(" · ")}</span></td><td><span className="pr-eligibility-chip is-eligible"><Check size={12} /> Eligible</span></td></tr>)}</tbody></table></div> : <EmptyState title="This board has no eligible entries" description="The board is backed by an immutable trusted snapshot. It will populate only when source observations meet its exact rules." action="Inspect live data" />}
-        </section><aside className="pr-methodology"><h2>Board method</h2><p>{selectedBoard.detail}. Exclusions stay explainable; no confidence score or health index is calculated.</p>{leaderboard ? <dl><div><dt>Snapshot rebuilt</dt><dd>{leaderboard.rebuiltAt.toLocaleString()}</dd></div><div><dt>Eligible entries</dt><dd>{leaderboard.eligibleCount}</dd></div><div><dt>Excluded trusted products</dt><dd>{leaderboard.excludedCount}</dd></div><div><dt>Schema</dt><dd>v1.0</dd></div></dl> : <p>No rebuild has produced a public snapshot yet.</p>}<a href="/api/public/source-methodology" className="pr-button pr-button-ghost">Read source policy <ArrowUpRight size={14} /></a></aside></div>
+    <div className={styles.root}>
+      <LeaderboardsHeader />
+      <main className={styles.main}>
+        <section className={styles.intro} aria-labelledby="leaderboards-title">
+          <div>
+            <h1 id="leaderboards-title">Leaderboards</h1>
+            <p>
+              Rankings you can trust. Exact data only.
+              <span className={styles.infoIcon} title="Only exact, trusted caffeine values are ranked">
+                <Info size={15} aria-hidden="true" />
+              </span>
+            </p>
+          </div>
+          <div className={styles.introActions}>
+            <div className={styles.rebuildStatus}>
+              <Clock3 aria-hidden="true" />
+              <span>
+                <small>Last rebuilt</small>
+                <strong>{leaderboard ? formatRebuiltAt(leaderboard.rebuiltAt) : "No snapshot yet"}</strong>
+              </span>
+              <em><CheckCircle2 size={13} aria-hidden="true" /> Trusted snapshot</em>
+            </div>
+            <a className={styles.methodologyButton} href="/api/public/source-methodology">
+              View methodology <ExternalLink size={16} aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+
+        <div className={styles.workspace}>
+          <aside className={styles.sidebar} aria-label="Leaderboard selection and eligibility">
+            <nav className={styles.boardSelector} aria-label="Leaderboard boards">
+              {LEADERBOARD_BOARDS.map((board) => {
+                const Icon = boardIcon(board.key);
+                const active = board.key === selectedBoard.key;
+                return (
+                  <Link
+                    key={board.key}
+                    href={boardHref(board.key, filters)}
+                    className={active ? styles.activeBoard : undefined}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <Icon aria-hidden="true" />
+                    <span><strong>{board.label}</strong><small>{board.detail}</small></span>
+                    <ChevronRight aria-hidden="true" />
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <section className={styles.eligibilityCard} aria-labelledby="eligibility-title">
+              <h2 id="eligibility-title">Ranking eligibility <span>(this board)</span></h2>
+              <dl className={styles.eligibilityTotals}>
+                <div><dt>Eligible products</dt><dd>{facets.eligibleCount.toLocaleString("en-US")}</dd></div>
+                <div><dt>Excluded products</dt><dd>{facets.excludedCount.toLocaleString("en-US")}</dd></div>
+              </dl>
+              <div className={styles.exclusionReasons}>
+                <h3>Exclusion reasons</h3>
+                {facets.reasons.length > 0 ? (
+                  <ul>
+                    {facets.reasons.map((reason) => (
+                      <li key={reason.label}>
+                        <span><i aria-hidden="true" /> {reason.label}</span>
+                        <strong>{reason.count.toLocaleString("en-US")}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <p>No trusted products are excluded from this board.</p>}
+              </div>
+              <a href="/api/public/source-methodology" className={styles.learnLink}>
+                Learn how rankings work <ArrowRight size={17} aria-hidden="true" />
+              </a>
+            </section>
+          </aside>
+
+          <section className={styles.boardContent} aria-labelledby="board-heading">
+            <h2 id="board-heading" className="sr-only">{selectedBoard.label}</h2>
+            <LeaderboardResults
+              board={selectedBoard.key}
+              category={category}
+              serving={serving}
+              completeOnly={completeOnly}
+              categories={categories.map((item) => ({ value: item.category, label: `${categoryLabel(item.category)} · ${item.productCount}` }))}
+              servingForms={facets.servingForms.map((form) => ({
+                value: form,
+                label: form.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+              }))}
+              initialRows={initialRows}
+              initialNextCursor={leaderboard?.nextCursor ?? null}
+              pageSize={visibleLimit}
+              hasSnapshot={leaderboard !== null}
+            />
+          </section>
+        </div>
       </main>
     </div>
   );

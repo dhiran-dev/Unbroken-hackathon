@@ -17,9 +17,27 @@ export function getLocalStorage(): Storage | null {
   }
 }
 
+export type BrowserStorageStatus = "available" | "unavailable" | "error";
+
+/** Distinguishes an absent localStorage API from one that throws on access. */
+export function inspectLocalStorage(): { status: BrowserStorageStatus; error?: Error } {
+  if (typeof window === "undefined") return { status: "unavailable" };
+  try {
+    if (!("localStorage" in window) || !window.localStorage) return { status: "unavailable" };
+    const storage = window.localStorage;
+    storage.getItem("pulserank:health-check");
+    return { status: "available" };
+  } catch (error) {
+    return {
+      status: "error",
+      error: error instanceof Error ? error : new Error("localStorage access failed"),
+    };
+  }
+}
+
 /** True when a writable localStorage exists in the current runtime. */
 export function hasLocalStorage(): boolean {
-  return getLocalStorage() !== null;
+  return inspectLocalStorage().status === "available";
 }
 
 /**

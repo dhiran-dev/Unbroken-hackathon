@@ -1,14 +1,32 @@
 import type { Metadata } from "next";
+import { Inter, Manrope } from "next/font/google";
 
-import { CompareWorkspace } from "@/components/pulserank/local-workspaces";
-import { PageFrame } from "@/components/pulserank/public-ui";
-import { OptionalVisualStage } from "@/components/pulserank/visual-stage/optional-stage";
+import { CompareWorkspace } from "@/components/pulserank/compare/compare-workspace";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Compare",
-  description: "Compare up to four trusted products using browser-local selection.",
+  title: "Compare products",
+  description:
+    "Compare up to four trusted caffeine products with explicit serving, field-state, source, and ranking context.",
 };
 
-export default function ComparePage() {
-  return <PageFrame active="/compare" eyebrow="Local comparison tray · four slots" title="Put the numbers side by side." description="Compare exact source fields without an account. Your tray lives in this browser; the product records remain trusted public observations."><OptionalVisualStage page="compare" variant="compare" className="pr-route-stage pr-compare-stage" /><CompareWorkspace /></PageFrame>;
+const compareBody = Inter({
+  display: "swap",
+  subsets: ["latin"],
+  variable: "--compare-font-body",
+});
+
+const compareDisplay = Manrope({
+  display: "swap",
+  subsets: ["latin"],
+  variable: "--compare-font-display",
+});
+
+export default async function ComparePage() {
+  return (
+    <CompareWorkspace
+      fontClassName={`${compareBody.variable} ${compareDisplay.variable}`}
+    />
+  );
 }

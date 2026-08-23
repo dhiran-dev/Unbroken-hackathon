@@ -1,5 +1,6 @@
 /**
- * GET /api/public/leaderboards?board=<key> — immutable leaderboard snapshots (A8).
+ * GET /api/public/leaderboards?board=<key> — immutable leaderboard snapshots
+ * with exact server-side filters and opaque cursor pagination (A8).
  *
  * Thin handler: entries come from the most recent leaderboard snapshot for
  * `board` (metric key), ordered by rank. Eligibility flags ride along so the
@@ -7,18 +8,35 @@
  * is a 404 — the endpoint never computes a board on the fly.
  */
 
-import { PUBLIC_SCHEMA_VERSION } from "@/server/products/dto";
+import {
+  PUBLIC_SCHEMA_VERSION,
+  toPublicProductDto,
+  type PublicProductDto,
+} from "@/server/products/dto";
 import { CANONICAL_CATEGORIES } from "@/server/ingestion/normalize";
 import {
   badRequest,
   jsonPublic,
   notFound,
 } from "@/server/products/request-params";
-import { getLeaderboard, InvalidCursorError } from "@/server/products/queries";
+import {
+  getLeaderboard,
+  getTrustedProductsBySlugs,
+  InvalidCursorError,
+} from "@/server/products/queries";
 
 export const dynamic = "force-dynamic";
 
 const MAX_LEADERBOARD_LIMIT = 200;
+const SERVING_FORMS = [
+  "drink",
+  "concentrate",
+  "mix",
+  "food",
+  "supplement",
+  "item",
+  "unknown",
+] as const;
 
 export async function GET(request: Request): Promise<Response> {
   const parameters = new URL(request.url).searchParams;
@@ -55,6 +73,19 @@ export async function GET(request: Request): Promise<Response> {
     return badRequest("cursor must not be empty when provided");
   }
 
+  const servingRaw = parameters.getAll("serving").at(-1)?.trim();
+  if (
+    servingRaw !== undefined &&
+    !(SERVING_FORMS as readonly string[]).includes(servingRaw)
+  ) {
+    return badRequest(`serving must be one of ${SERVING_FORMS.join("|")}`);
+  }
+
+  const completeRaw = parameters.getAll("complete").at(-1);
+  if (completeRaw !== undefined && !["0", "1"].includes(completeRaw.trim())) {
+    return badRequest("complete must be 0 or 1");
+  }
+
   let leaderboard;
   try {
     leaderboard = await getLeaderboard(board, {
@@ -63,6 +94,8 @@ export async function GET(request: Request): Promise<Response> {
       category: categoryRaw as
         | (typeof CANONICAL_CATEGORIES)[number]
         | undefined,
+      servingForm: servingRaw,
+      completeOnly: completeRaw === undefined ? false : completeRaw.trim() === "1",
     });
   } catch (error) {
     if (error instanceof InvalidCursorError) return badRequest(error.message);
@@ -73,6 +106,15 @@ export async function GET(request: Request): Promise<Response> {
       "NO_LEADERBOARD_SNAPSHOT",
       "no leaderboard snapshot has been built yet",
     );
+  }
+
+  const productRows = await getTrustedProductsBySlugs(
+    leaderboard.entries.map((entry) => entry.product.slug),
+  );
+  const products: Record<string, PublicProductDto> = {};
+  for (const row of productRows) {
+    const product = toPublicProductDto(row);
+    products[product.slug] = product;
   }
 
   return jsonPublic({
@@ -86,5 +128,6 @@ export async function GET(request: Request): Promise<Response> {
     totalCount: leaderboard.totalCount,
     nextCursor: leaderboard.nextCursor,
     entries: leaderboard.entries,
+    products,
   });
 }

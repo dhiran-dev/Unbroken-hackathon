@@ -34,6 +34,8 @@ import type {
   TrustedMetricPoint,
   TrustedProductRecord,
 } from "@/server/ingestion/promote";
+import { authorizeProductImage } from "@/server/products/image-policy";
+import { authorizeProductSourceUrl } from "@/server/products/source-policy";
 
 /** Fixed public attribution for the single registered upstream source. */
 export const SOURCE_ATTRIBUTION = "Caffeine Informer";
@@ -154,7 +156,7 @@ export type PublicProductDto = {
   image: string | null;
   sourceAttribution: typeof SOURCE_ATTRIBUTION;
   /** Canonical source page for provenance; raw page text is never exposed. */
-  sourceUrl: string;
+  sourceUrl: string | null;
   /** Extended nutrition fields — present only when extended fields are enabled. */
   calories?: PublicCaloriesDto;
   sugar?: PublicSugarDto;
@@ -218,7 +220,7 @@ function concentrationEligible(
  * through; a range NEVER collapses into `mg` (bounds ride along instead).
  */
 function displayMg(point: TrustedMetricPoint): number | null {
-  if (point.qualifier === "range" || isWellFormedRange(point)) return null;
+  if (point.state !== "present" || point.qualifier === "range") return null;
   return isFiniteNumber(point.value) ? point.value : null;
 }
 
@@ -237,9 +239,10 @@ function mapCaffeine(payload: TrustedObservationPayload): PublicCaffeineDto {
 
 function mapServing(payload: TrustedObservationPayload): PublicServingDto {
   const serving = payload.serving;
+  const published = serving.state === "present";
   return {
-    value: isFiniteNumber(serving.value) ? serving.value : null,
-    normalizedMl: isFiniteNumber(serving.normalizedMl)
+    value: published && isFiniteNumber(serving.value) ? serving.value : null,
+    normalizedMl: published && isFiniteNumber(serving.normalizedMl)
       ? serving.normalizedMl
       : null,
     unit: serving.unit,
@@ -269,7 +272,7 @@ function mapRankingEligibility(
   const reasons: string[] = [];
 
   const totalCaffeine =
-    (caffeine.state === "present" && isFiniteNumber(caffeine.value)) ||
+    (caffeine.state === "present" && caffeine.qualifier !== "range" && isFiniteNumber(caffeine.value)) ||
     isWellFormedRange(caffeine);
 
   if (!totalCaffeine) {
@@ -302,7 +305,8 @@ function mapRankingEligibility(
 }
 
 function mapImage(media: TrustedMediaBlock | null | undefined): string | null {
-  return media?.publicationState === "allowed" ? media.imageUrl : null;
+  if (media?.publicationState !== "allowed") return null;
+  return authorizeProductImage(media.imageUrl).imageUrl;
 }
 
 /**
@@ -367,7 +371,7 @@ export function toPublicProductDto(
     rankingEligibility: mapRankingEligibility(payload),
     image: mapImage(payload.media),
     sourceAttribution: SOURCE_ATTRIBUTION,
-    sourceUrl: payload.sourceUrl,
+    sourceUrl: authorizeProductSourceUrl(payload.sourceUrl),
   };
 
   if (extendedFields) {

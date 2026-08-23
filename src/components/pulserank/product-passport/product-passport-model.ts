@@ -1,6 +1,7 @@
 import type {
   PublicCaffeineDto,
   PublicProductDto,
+  PublicServingDto,
   PublicSugarDto,
 } from "@/server/products/dto";
 
@@ -42,20 +43,27 @@ export function caffeinePresentation(
   if (caffeine.state === "not_published") {
     return { state: "not-published", stateLabel: "Not published", value: "Not published", unit: null };
   }
-  if (
-    caffeine.qualifier === "range" &&
-    caffeine.min !== null &&
-    caffeine.max !== null
-  ) {
+  if (caffeine.qualifier === "range") {
+    if (
+      caffeine.min === null ||
+      caffeine.max === null ||
+      !Number.isFinite(caffeine.min) ||
+      !Number.isFinite(caffeine.max) ||
+      caffeine.min > caffeine.max
+    ) {
+      return {
+        state: "range",
+        stateLabel: "Range unavailable",
+        value: "Range unavailable",
+        unit: null,
+      };
+    }
     return {
       state: "range",
       stateLabel: "Published range",
       value: `${formatPassportNumber(caffeine.min)}–${formatPassportNumber(caffeine.max)}`,
       unit: "mg",
     };
-  }
-  if (caffeine.mg === 0) {
-    return { state: "explicit-zero", stateLabel: "Explicit zero", value: "0", unit: "mg" };
   }
   if (caffeine.mg !== null) {
     if (caffeine.qualifier === "estimated") {
@@ -74,6 +82,9 @@ export function caffeinePresentation(
         unit: "mg",
       };
     }
+    if (caffeine.mg === 0) {
+      return { state: "explicit-zero", stateLabel: "Explicit zero", value: "0", unit: "mg" };
+    }
     return {
       state: caffeine.qualifier === "exact" ? "exact" : "unknown",
       stateLabel: caffeine.qualifier === "exact" ? "Exact value" : "Published value",
@@ -82,6 +93,81 @@ export function caffeinePresentation(
     };
   }
   return { state: "unknown", stateLabel: "Unknown", value: "Unknown", unit: null };
+}
+
+export type ServingPresentation = {
+  normalizedValue: string;
+  stateLabel: string;
+  value: string;
+};
+
+export function servingPresentation(serving: PublicServingDto): ServingPresentation {
+  const stateLabel = fieldStateLabel(serving.state);
+  if (serving.state !== "present") {
+    return { normalizedValue: stateLabel, stateLabel, value: stateLabel };
+  }
+
+  if (serving.value === null) {
+    return {
+      normalizedValue: "Not normalized",
+      stateLabel: "Not published",
+      value: "Not published",
+    };
+  }
+
+  const unit = serving.unit?.replaceAll("_", " ") ?? "unit";
+  return {
+    normalizedValue: serving.normalizedMl === null
+      ? "Not normalized"
+      : `${formatPassportNumber(serving.normalizedMl)} ml`,
+    stateLabel,
+    value: `${formatPassportNumber(serving.value)} ${unit}`,
+  };
+}
+
+export type ProductActionEligibility = {
+  eligible: boolean;
+  reason: string;
+};
+
+export function saveEligibility(product: PublicProductDto): ProductActionEligibility {
+  const caffeine = product.caffeine;
+  const numericQualifier = caffeine.qualifier === "exact" ||
+    caffeine.qualifier === "approximate" ||
+    caffeine.qualifier === "estimated";
+  if (caffeine.state !== "present" || caffeine.mg === null || !numericQualifier) {
+    return {
+      eligible: false,
+      reason: "Save requires a published numeric caffeine point, not a range or uncertain field state.",
+    };
+  }
+  if (product.serving.state !== "present" || product.serving.value === null) {
+    return {
+      eligible: false,
+      reason: "Save requires a published serving value.",
+    };
+  }
+  return { eligible: true, reason: "Save this published numeric snapshot in this browser." };
+}
+
+export function myDayEligibility(product: PublicProductDto): ProductActionEligibility {
+  if (
+    product.caffeine.state !== "present" ||
+    product.caffeine.qualifier !== "exact" ||
+    product.caffeine.mg === null
+  ) {
+    return {
+      eligible: false,
+      reason: "My Day requires an exact published caffeine value.",
+    };
+  }
+  if (product.serving.state !== "present" || product.serving.value === null) {
+    return {
+      eligible: false,
+      reason: "My Day requires a published serving value.",
+    };
+  }
+  return { eligible: true, reason: "Add this exact serving to My Day in this browser." };
 }
 
 export function fieldStateLabel(state: string): string {
@@ -93,6 +179,36 @@ export function fieldStateLabel(state: string): string {
     conflicting: "Conflicting values",
   };
   return labels[state] ?? "Unknown";
+}
+
+export type OptionalNutritionPresentation = {
+  detail: string;
+  state: string;
+  value: string;
+};
+
+export function nutritionPresentation(
+  field: { state: string; value: number | null } | undefined,
+  unit: string,
+): OptionalNutritionPresentation {
+  if (field === undefined) {
+    return {
+      detail: "Not included in public view",
+      state: "omitted",
+      value: "Unavailable",
+    };
+  }
+  const label = fieldStateLabel(field.state);
+  const unavailable = field.state === "present" && field.value === null;
+  return {
+    detail: unavailable ? "Not published" : label,
+    state: unavailable ? "not_published" : field.state,
+    value: unavailable
+      ? "Not published"
+      : field.state === "present"
+        ? `${formatPassportNumber(field.value as number)}${unit}`
+        : label,
+  };
 }
 
 export function categoryProvenanceLabel(

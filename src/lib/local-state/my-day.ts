@@ -35,6 +35,16 @@ export interface MyDayRecord extends MyDayEntry {
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Canonical My Day date semantics: records are grouped by UTC calendar day. */
+export function utcDateKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/** Canonical My Day time semantics: labels are positioned on the UTC clock. */
+export function utcTimeLabel(date: Date): string {
+  return `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
+}
+
 /** True when the value is a real calendar date formatted `YYYY-MM-DD`. */
 export function isDateString(value: unknown): value is string {
   if (typeof value !== "string" || !DATE_PATTERN.test(value)) return false;
@@ -204,8 +214,12 @@ export async function listMyDayRecordsForDate(date: string): Promise<MyDayRecord
   const index = tx.objectStore(MY_DAY_STORE).index(MY_DAY_DATE_INDEX);
   const records = (await requestToPromise(
     index.getAll(IDBKeyRange.only(date)),
-  )) as MyDayRecord[];
-  return sortMyDayRecords(records);
+  )) as unknown[];
+  return sortMyDayRecords(
+    records
+      .map((record) => sanitizeMyDayRecord(record))
+      .filter((record): record is MyDayRecord => record !== null),
+  );
 }
 
 /** Lists every stored record across all dates. Empty on the server. */
@@ -215,8 +229,12 @@ export async function listMyDayRecords(): Promise<MyDayRecord[]> {
   const tx = db.transaction(MY_DAY_STORE, "readonly");
   const records = (await requestToPromise(
     tx.objectStore(MY_DAY_STORE).getAll(),
-  )) as MyDayRecord[];
-  return sortMyDayRecords(records);
+  )) as unknown[];
+  return sortMyDayRecords(
+    records
+      .map((record) => sanitizeMyDayRecord(record))
+      .filter((record): record is MyDayRecord => record !== null),
+  );
 }
 
 /** Entries for one date, ordered within the day. Empty on the server. */

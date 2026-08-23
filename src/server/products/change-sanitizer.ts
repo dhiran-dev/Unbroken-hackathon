@@ -1,4 +1,4 @@
-import type { ChangePoint } from "@/server/ingestion/change-detection";
+import { CHANGE_EVENT_TYPES, type ChangePoint, type ChangeEventType } from "@/server/ingestion/change-detection";
 
 type StoredPoint = Record<string, unknown>;
 
@@ -46,6 +46,35 @@ const EVENT_FIELDS: Readonly<Record<string, string>> = Object.freeze({
   page_missing: "source_status",
 });
 
+const EVENT_TYPE_SET = new Set<string>(CHANGE_EVENT_TYPES);
+const VARIANT_FIELD = /^variant:([^\.\r\n]{1,80})\.(availability|caffeine_mg|calories_kcal|sugar_g|serving)$/;
+const FLAVOUR_FIELD = /^flavour:([^\.\r\n]{1,80})$/;
+
+export type PublicChangeEventType = ChangeEventType | "unknown_change";
+
+export const PUBLIC_CHANGE_OBSERVATION_STATUSES = ["trusted", "superseded"] as const;
+
+export function isPublicChangeObservationStatus(status: string | null): boolean {
+  return status !== null && PUBLIC_CHANGE_OBSERVATION_STATUSES.includes(status as (typeof PUBLIC_CHANGE_OBSERVATION_STATUSES)[number]);
+}
+
+/** Keep unexpected persisted event kinds from crossing the public boundary. */
+export function sanitizeChangeEventType(value: unknown): PublicChangeEventType {
+  return typeof value === "string" && EVENT_TYPE_SET.has(value)
+    ? value as ChangeEventType
+    : "unknown_change";
+}
+
+function sanitizeFieldMarker(value: string): string | null {
+  const marker = value.replace(/[\u0000-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim();
+  if (EVENT_FIELDS[marker]) return marker;
+  const variant = marker.match(VARIANT_FIELD);
+  if (variant?.[1] && variant[2]) return `variant:${variant[1].trim()}.${variant[2]}`;
+  const flavour = marker.match(FLAVOUR_FIELD);
+  if (flavour?.[1]) return `flavour:${flavour[1].trim()}`;
+  return null;
+}
+
 /** Prefer the persisted deterministic field marker for compound event types. */
 export function changeField(
   eventType: string,
@@ -54,8 +83,8 @@ export function changeField(
 ): string {
   for (const point of [after, before]) {
     if (!isRecord(point) || typeof point.field !== "string") continue;
-    const field = point.field.trim();
-    if (field.length > 0 && field.length <= 160) return field;
+    const field = sanitizeFieldMarker(point.field);
+    if (field) return field;
   }
   return EVENT_FIELDS[eventType] ?? "unknown";
 }

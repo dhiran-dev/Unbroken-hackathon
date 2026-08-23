@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Bookmark, Check, GitCompareArrows, Plus } from "lucide-react";
 
 import type { PublicProductDto } from "@/server/products/dto";
-import { addMyDayEntry } from "@/lib/local-state/my-day";
+import { addMyDayEntry, utcDateKey, utcTimeLabel } from "@/lib/local-state/my-day";
 import { addCompareSlug, isInCompare, removeCompareSlug } from "@/lib/local-state/compare";
 import {
   isProductSaved,
@@ -77,8 +77,17 @@ export function LocalProductActionsClient({
 
   function toggleCompare() {
     const update = compared ? removeCompareSlug(product.slug) : addCompareSlug(product.slug);
+    if (!update.ok) {
+      setMessage("Could not update Compare because browser storage is unavailable.");
+      return;
+    }
     setCompared(update.slugs.includes(product.slug));
-    setMessage(update.added || compared ? (compared ? "Removed from compare" : "Added to compare") : "Compare tray is full (4 max)");
+    const nextCompared = update.slugs.includes(product.slug);
+    setMessage(
+      nextCompared !== compared
+        ? (nextCompared ? "Added to compare" : "Removed from compare")
+        : nextCompared ? "Already in compare" : "Compare tray is full (4 max)",
+    );
   }
 
   async function addToDay() {
@@ -87,8 +96,8 @@ export function LocalProductActionsClient({
       return;
     }
     const now = new Date();
-    const date = now.toISOString().slice(0, 10);
-    const timeLabel = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    const date = utcDateKey(now);
+    const timeLabel = utcTimeLabel(now);
     await addMyDayEntry(date, { slug: product.slug, name: product.name, timeLabel, caffeineMg: savedRef.caffeine.mg });
     setMessage("Added to My Day");
   }

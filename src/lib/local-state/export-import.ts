@@ -23,8 +23,9 @@
  * whole import; individual records that fail their record-level sanitizer are
  * dropped silently so one bad row cannot lose a user's whole backup.
  *
- * Every function is SSR-safe: on the server `exportAll` returns an empty
- * envelope and `importAll` is a no-op resolving zero counts.
+ * Reads remain SSR-safe, while `exportAll` deliberately throws when required
+ * browser storage is unavailable; `importAll` reports unavailable sections in
+ * its `errors` array instead of claiming a complete restore.
  */
 
 import {
@@ -33,13 +34,14 @@ import {
   SAVED_PRODUCTS_STORE,
   requestToPromise,
   transactionToPromise,
+  inspectIndexedDb,
   withDatabase,
 } from "./db";
 import { PULSERANK_LOCAL_STATE_VERSION } from "./keys";
 import type { MyDayRecord } from "./my-day";
 import { listMyDayRecords, sanitizeMyDayRecord } from "./my-day";
 import { getCompareSlugs, replaceCompareSlugs, sanitizeCompareSlugs } from "./compare";
-import { hasLocalStorage } from "./storage";
+import { inspectLocalStorage } from "./storage";
 import {
   loadPreferences,
   savePreferences,
@@ -81,6 +83,8 @@ export interface ImportSummary {
   savedProducts: number;
   myDay: number;
   recentlyViewed: number;
+  /** Store-level failures; successful sections may still have been restored. */
+  errors: string[];
 }
 
 export type EnvelopeValidationResult =
@@ -172,23 +176,39 @@ export function validateLocalStateEnvelope(value: unknown): EnvelopeValidationRe
 }
 
 /**
- * Serializes every store and preference into one versioned envelope. On the
- * server (no localStorage, no IndexedDB) every section comes back empty/null.
+ * Serializes every store and preference into one versioned envelope. A backup
+ * is refused when required browser storage is unavailable or unreadable so a
+ * successful-looking empty file can never replace a user's real data.
  */
 export async function exportAll(): Promise<PulserankLocalStateEnvelope> {
-  const storageAvailable = hasLocalStorage();
+  const local = inspectLocalStorage();
+  if (local.status !== "available") {
+    throw new Error(`Export unavailable: localStorage is ${local.status}.`);
+  }
+  const indexedDb = await inspectIndexedDb();
+  if (indexedDb.status !== "available") {
+    throw new Error(`Export unavailable: IndexedDB is ${indexedDb.status}.`);
+  }
   const db = await withDatabase();
+  if (!db) throw new Error("Export unavailable: IndexedDB could not be opened.");
 
-  const [savedProducts, myDay, recentlyViewed] = await Promise.all([
-    db ? listSavedProducts() : Promise.resolve<StoredSavedProduct[]>([]),
-    db ? listMyDayRecords() : Promise.resolve<MyDayRecord[]>([]),
-    db ? listRecentlyViewed() : Promise.resolve<RecentlyViewedRecord[]>([]),
-  ]);
+  let savedProducts: StoredSavedProduct[];
+  let myDay: MyDayRecord[];
+  let recentlyViewed: RecentlyViewedRecord[];
+  try {
+    [savedProducts, myDay, recentlyViewed] = await Promise.all([
+      listSavedProducts(),
+      listMyDayRecords(),
+      listRecentlyViewed(),
+    ]);
+  } catch {
+    throw new Error("Export unavailable: IndexedDB could not be read completely.");
+  }
 
   return {
     pulserankLocalStateVersion: PULSERANK_LOCAL_STATE_VERSION,
     exportedAt: new Date().toISOString(),
-    preferences: storageAvailable ? loadPreferences() : null,
+    preferences: loadPreferences(),
     compare: getCompareSlugs(),
     savedProducts,
     myDay,
@@ -229,16 +249,30 @@ export async function importAll(json: unknown): Promise<ImportSummary> {
     savedProducts: 0,
     myDay: 0,
     recentlyViewed: 0,
+    errors: [],
   };
 
-  const storageAvailable = hasLocalStorage();
+  const storageAvailable = inspectLocalStorage().status === "available";
   const db = await withDatabase();
+  if (!storageAvailable) summary.errors.push("localStorage");
+  if (!db) summary.errors.push("IndexedDB");
   if (!storageAvailable && !db) return summary;
 
   if (storageAvailable) {
-    if (envelope.preferences) summary.preferences = savePreferences(envelope.preferences);
-    if (envelope.compare.length > 0) {
-      summary.compare = replaceCompareSlugs(envelope.compare).length;
+    if (envelope.preferences) {
+      try {
+        summary.preferences = savePreferences(envelope.preferences);
+        if (!summary.preferences) summary.errors.push("preferences");
+      } catch {
+        summary.errors.push("preferences");
+      }
+    }
+    try {
+      const compareResult = replaceCompareSlugs(envelope.compare);
+      summary.compare = compareResult.ok ? compareResult.slugs.length : 0;
+      if (!compareResult.ok || summary.compare !== envelope.compare.length) summary.errors.push("compare");
+    } catch {
+      summary.errors.push("compare");
     }
   }
 
@@ -248,14 +282,21 @@ export async function importAll(json: unknown): Promise<ImportSummary> {
       .sort((a, b) => b.viewedAt - a.viewedAt)
       .slice(0, RECENTLY_VIEWED_CAP);
 
-    const [savedProducts, myDay, recentlyViewed] = await Promise.all([
-      rewriteStore(db, SAVED_PRODUCTS_STORE, envelope.savedProducts),
-      rewriteStore(db, MY_DAY_STORE, envelope.myDay),
-      rewriteStore(db, RECENTLY_VIEWED_STORE, restoredRecentlyViewed),
-    ]);
-    summary.savedProducts = savedProducts;
-    summary.myDay = myDay;
-    summary.recentlyViewed = recentlyViewed;
+    const stores = [
+      ["saved products", SAVED_PRODUCTS_STORE, envelope.savedProducts] as const,
+      ["My Day", MY_DAY_STORE, envelope.myDay] as const,
+      ["recent views", RECENTLY_VIEWED_STORE, restoredRecentlyViewed] as const,
+    ];
+    for (const [label, storeName, records] of stores) {
+      try {
+        const count = await rewriteStore(db, storeName, records);
+        if (storeName === SAVED_PRODUCTS_STORE) summary.savedProducts = count;
+        if (storeName === MY_DAY_STORE) summary.myDay = count;
+        if (storeName === RECENTLY_VIEWED_STORE) summary.recentlyViewed = count;
+      } catch {
+        summary.errors.push(label);
+      }
+    }
   }
 
   return summary;

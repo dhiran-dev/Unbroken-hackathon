@@ -3,36 +3,37 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BadgeCheck,
+  ArrowLeft,
   Bookmark,
-  Brackets,
+  CalendarPlus,
   Check,
-  CircleHelp,
-  CircleOff,
+  CircleX,
   ExternalLink,
-  GitCompareArrows,
-  MinusCircle,
-  Plus,
-  TriangleAlert,
-  Waves,
+  Fingerprint,
+  Info,
+  Leaf,
+  Menu,
+  Scale,
+  Search,
+  Sun,
   Zap,
 } from "lucide-react";
-import {
-  type CSSProperties,
-  useEffect,
-  useId,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import styles from "@/app/products/[slug]/product-passport.module.css";
-import { ProductViewTracker } from "@/components/pulserank/local-workspaces";
 import {
-  PublicHeader,
-  categoryLabel,
-} from "@/components/pulserank/public-ui";
+  GlassObject,
+  HoverBorderGradient,
+  LiquidMetalButton,
+  LivingGreenAccent,
+  SmoothCursor,
+} from "./product-passport-effects";
+import { ProductViewTracker } from "@/components/pulserank/local-workspaces";
+import { categoryLabel } from "@/components/pulserank/public-ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { addCompareSlug, isInCompare, removeCompareSlug } from "@/lib/local-state/compare";
-import { addMyDayEntry } from "@/lib/local-state/my-day";
+import { addMyDayEntry, utcDateKey, utcTimeLabel } from "@/lib/local-state/my-day";
 import {
   isProductSaved,
   removeSavedProduct,
@@ -44,17 +45,18 @@ import type { PublicProductDto } from "@/server/products/dto";
 import {
   caffeinePresentation,
   categoryProvenanceLabel,
-  fieldStateLabel,
   formatPassportNumber,
+  myDayEligibility,
+  nutritionPresentation,
   rankingReasonLabel,
+  saveEligibility,
+  servingPresentation,
   sourceLevelLabel,
-  sugarScale,
 } from "./product-passport-model";
 
 type ProductPassportProps = {
   fontClassName: string;
   product: PublicProductDto;
-  variations: string[];
 };
 
 function formatObservedAt(value: string): string {
@@ -70,13 +72,8 @@ function formatObservedAt(value: string): string {
   }).format(new Date(value));
 }
 
-function servingUnit(unit: PublicProductDto["serving"]["unit"]): string {
-  if (unit === null) return "";
-  return unit.replaceAll("_", " ");
-}
-
 function toSavedRef(product: PublicProductDto): SavedProductRef | null {
-  if (product.caffeine.mg === null || product.serving.value === null) return null;
+  if (!saveEligibility(product).eligible || product.caffeine.mg === null || product.serving.value === null) return null;
   return {
     slug: product.slug,
     name: product.name,
@@ -95,7 +92,63 @@ function toSavedRef(product: PublicProductDto): SavedProductRef | null {
   };
 }
 
-function ProductArtwork({ product }: { product: PublicProductDto }) {
+function Wordmark() {
+  return (
+    <Link aria-label="PulseRank home" className={styles.wordmark} href="/">
+      <Zap aria-hidden="true" />
+      <strong>Pulse<span>Rank</span></strong>
+    </Link>
+  );
+}
+
+function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <header className={styles.header}>
+      <Wordmark />
+      <nav aria-label="Primary navigation" className={styles.nav}>
+        <Link href="/explore">Explore</Link>
+        <Link href="/leaderboards">Leaderboards</Link>
+        <Link href="/compare">Compare</Link>
+        <Link href="/my-pulse">My Pulse</Link>
+        <Link href="/changes">Changes</Link>
+      </nav>
+      <div className={styles.headerTools}>
+        <form action="/explore" className={styles.searchForm} method="get" role="search">
+          <label className={styles.visuallyHidden} htmlFor="passport-search">Search products</label>
+          <input id="passport-search" name="search" placeholder="Search products…" />
+          <button aria-label="Search products" type="submit"><Search aria-hidden="true" /></button>
+        </form>
+        <Button aria-label="PulseRank uses a dark-only theme" className={styles.themeButton} disabled size="icon" title="PulseRank is dark only" variant="ghost">
+          <Sun aria-hidden="true" />
+        </Button>
+        <Button
+          aria-controls="mobile-passport-navigation"
+          aria-expanded={menuOpen}
+          aria-label="Toggle navigation"
+          className={styles.menuButton}
+          onClick={() => setMenuOpen((open) => !open)}
+          size="icon"
+          variant="ghost"
+        >
+          <Menu aria-hidden="true" />
+        </Button>
+      </div>
+      {menuOpen ? (
+        <nav aria-label="Mobile navigation" className={styles.mobileNav} id="mobile-passport-navigation">
+          <Link href="/explore">Explore</Link>
+          <Link href="/leaderboards">Leaderboards</Link>
+          <Link href="/compare">Compare</Link>
+          <Link href="/my-pulse">My Pulse</Link>
+          <Link href="/changes">Changes</Link>
+        </nav>
+      ) : null}
+    </header>
+  );
+}
+
+function ProductImage({ product }: { product: PublicProductDto }) {
   const [failed, setFailed] = useState(false);
   const initials = product.name
     .split(/\s+/)
@@ -106,475 +159,358 @@ function ProductArtwork({ product }: { product: PublicProductDto }) {
     .toUpperCase();
 
   return (
-    <div className={styles.specimenFrame} data-product-specimen>
-      <span aria-hidden="true" className={styles.specimenGrid} />
-      {product.image !== null && !failed ? (
-        <Image
-          alt={`${product.name} product packaging`}
-          className={styles.productImage}
-          fill
-          onError={() => setFailed(true)}
-          preload
-          sizes="(max-width: 760px) calc(100vw - 56px), (max-width: 1300px) 280px, 340px"
-          src={`/api/public/product-images/${encodeURIComponent(product.slug)}`}
-          unoptimized
-        />
-      ) : (
-        <div
-          aria-label={`Procedural ${categoryLabel(product.category)} artwork for ${product.name}`}
-          className={styles.proceduralArtwork}
-          role="img"
-        >
-          <span aria-hidden="true" className={styles.proceduralCap} />
-          <span aria-hidden="true" className={styles.proceduralBolt}><Zap /></span>
-          <strong>{initials || "PR"}</strong>
-          <small>{categoryLabel(product.category)}</small>
-        </div>
-      )}
+    <div className={styles.productPerspective}>
+      <span aria-hidden="true" className={styles.productLight} />
+      <div className={styles.productImage}>
+        {product.image !== null && !failed ? (
+          <Image
+            alt={`${product.name} product packaging`}
+            fill
+            onError={() => setFailed(true)}
+            preload
+            sizes="(max-width: 920px) 78vw, 27vw"
+            src={`/api/public/product-images/${encodeURIComponent(product.slug)}`}
+            unoptimized
+          />
+        ) : (
+          <div aria-label={`Procedural fallback artwork for ${product.name}`} className={styles.productFallback} role="img">
+            <Zap aria-hidden="true" />
+            <strong>{initials || "PR"}</strong>
+            <small>{categoryLabel(product.category)}</small>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function ProductBay({ product }: { product: PublicProductDto }) {
-  return (
-    <section
-      aria-label={`${product.name} product artwork`}
-      className={`${styles.instrumentPanel} ${styles.productBay}`}
-      data-product-bay
-    >
-      <ProductArtwork product={product} />
-    </section>
-  );
-}
-
-function CaffeinePanel({ product }: { product: PublicProductDto }) {
-  const metric = caffeinePresentation(product.caffeine);
-  const serving = product.serving.value === null
-    ? "Serving context not published"
-    : `per ${formatPassportNumber(product.serving.value)} ${servingUnit(product.serving.unit)} serving`;
-
-  return (
-    <section
-      aria-labelledby="caffeine-heading"
-      className={`${styles.instrumentPanel} ${styles.caffeinePanel}`}
-      data-state={metric.state}
-    >
-      <div className={styles.reticle} aria-hidden="true" />
-      <h2 id="caffeine-heading">Total caffeine <span>· {metric.stateLabel}</span></h2>
-      <div className={styles.caffeineValue} data-long={metric.value.length > 8 ? "true" : "false"}>
-        <strong>{metric.value}</strong>
-        {metric.unit ? <span>{metric.unit}</span> : null}
-      </div>
-      <p>{serving}</p>
-      <span aria-hidden="true" className={styles.datumLine} />
-    </section>
-  );
-}
-
-function MetricCell({
-  detail,
-  label,
-  state,
-  value,
-}: {
-  detail: string;
-  label: string;
-  state?: string;
-  value: string;
-}) {
-  return (
-    <div className={styles.metricCell}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{state ?? detail}</small>
-    </div>
-  );
-}
-
-function MetricStrip({ product }: { product: PublicProductDto }) {
-  const serving = product.serving.value === null
-    ? fieldStateLabel(product.serving.state)
-    : `${formatPassportNumber(product.serving.value)} ${servingUnit(product.serving.unit)}`;
-  const normalized = product.serving.normalizedMl === null
-    ? fieldStateLabel(product.serving.state)
-    : `${formatPassportNumber(product.serving.normalizedMl)} ml`;
-  const concentration = product.concentration.mgPer100Ml === null
-    ? "Not eligible"
-    : formatPassportNumber(product.concentration.mgPer100Ml);
-  const calories = product.calories?.kcal === null || product.calories === undefined
-    ? product.calories ? fieldStateLabel(product.calories.state) : "Not available"
-    : formatPassportNumber(product.calories.kcal);
-
-  return (
-    <section aria-label="Primary product metrics" className={`${styles.instrumentPanel} ${styles.metricStrip}`}>
-      <MetricCell detail={product.serving.form} label="Serving" value={serving} />
-      <MetricCell detail="Normalized volume" label="Normalized" value={normalized} />
-      <MetricCell
-        detail="mg / 100 ml"
-        label="Concentration"
-        state={product.concentration.mgPer100Ml === null ? "Exact caffeine + ml required" : undefined}
-        value={concentration}
-      />
-      <MetricCell
-        detail="kcal per serving"
-        label="Calories"
-        state={product.calories ? fieldStateLabel(product.calories.state) : "Not in public response"}
-        value={calories}
-      />
-    </section>
-  );
-}
-
-function SugarVessel({ product }: { product: PublicProductDto }) {
-  const scale = sugarScale(product.sugar);
-  const clipId = `sugar-${useId().replaceAll(":", "")}`;
-  const patternId = `${clipId}-grain`;
-  const innerTop = 144;
-  const innerBottom = 364;
-  const innerHeight = innerBottom - innerTop;
-  const fillHeight = scale.fillPercent === null ? 0 : innerHeight * scale.fillPercent / 100;
-  const fillY = innerBottom - fillHeight;
-  const serving = product.serving.value === null
-    ? "serving context not published"
-    : `per ${formatPassportNumber(product.serving.value)} ${servingUnit(product.serving.unit)} serving`;
-  const accessibleDescription = scale.fillPercent === null
-    ? `${scale.valueLabel}. No fill level is shown because a numeric sugar quantity is unavailable.`
-    : scale.fillPercent === 0
-      ? "Explicitly published as zero grams. The bottle is intentionally empty."
-      : `${scale.valueLabel} of published sugar, shown on an adaptive ${formatPassportNumber(scale.maximum ?? 0)} gram bottle scale.`;
-
-  return (
-    <section
-      aria-labelledby="sugar-heading"
-      className={`${styles.instrumentPanel} ${styles.sugarPanel}`}
-      data-state={scale.state}
-    >
-      <div className={styles.sugarCopy}>
-        <h2 id="sugar-heading">Sugar measure</h2>
-        <strong>{scale.valueLabel}</strong>
-        <p>{serving}</p>
-        <span className={styles.stateMarker}>{scale.stateLabel}</span>
-      </div>
-      <svg
-        aria-describedby="sugar-description"
-        aria-label="Sugar quantity in a glass measuring bottle"
-        className={styles.sugarVessel}
-        role="img"
-        viewBox="0 0 250 420"
-      >
-        <title>Sugar quantity in a glass measuring bottle</title>
-        <desc id="sugar-description">{accessibleDescription}</desc>
-        <defs>
-          <clipPath id={clipId}>
-            <path d="M87 30h76v58c0 13 24 20 31 48v218c0 27-17 42-43 42h-52c-26 0-43-15-43-42V136c7-28 31-35 31-48Z" />
-          </clipPath>
-          <pattern height="12" id={patternId} patternUnits="userSpaceOnUse" width="12">
-            <rect fill="#e9e7df" height="12" width="12" />
-            <circle cx="3" cy="4" fill="#fff" r="1.2" />
-            <circle cx="9" cy="9" fill="#c9c5ba" r="1" />
-            <circle cx="11" cy="2" fill="#f8f7f2" r=".8" />
-          </pattern>
-          <linearGradient id={`${clipId}-glass`} x1="0" x2="1">
-            <stop offset="0" stopColor="#c8d0d3" stopOpacity=".08" />
-            <stop offset=".18" stopColor="#fff" stopOpacity=".38" />
-            <stop offset=".34" stopColor="#fff" stopOpacity=".04" />
-            <stop offset=".76" stopColor="#8f9a9f" stopOpacity=".08" />
-            <stop offset=".9" stopColor="#fff" stopOpacity=".3" />
-            <stop offset="1" stopColor="#c8d0d3" stopOpacity=".08" />
-          </linearGradient>
-        </defs>
-        <path className={styles.bottleShadow} d="M87 30h76v58c0 13 24 20 31 48v218c0 27-17 42-43 42h-52c-26 0-43-15-43-42V136c7-28 31-35 31-48Z" />
-        <g clipPath={`url(#${clipId})`}>
-          {scale.fillPercent !== null && scale.fillPercent > 0 ? (
-            <rect
-              className={styles.sugarFill}
-              fill={`url(#${patternId})`}
-              height={fillHeight}
-              width="138"
-              x="56"
-              y={fillY}
-            />
-          ) : null}
-          {scale.fillPercent === null ? (
-            <g className={styles.unavailableFill}>
-              <path d="M74 238h102" />
-              <path d="m99 214 52 52" />
-              <path d="m151 214-52 52" />
-            </g>
-          ) : null}
-          <rect fill={`url(#${clipId}-glass)`} height="380" width="150" x="50" y="22" />
-        </g>
-        <path className={styles.bottleOutline} d="M87 30h76v58c0 13 24 20 31 48v218c0 27-17 42-43 42h-52c-26 0-43-15-43-42V136c7-28 31-35 31-48Z" />
-        <path className={styles.bottleLip} d="M82 30h86v19H82zM86 58h78" />
-        {scale.maximum !== null ? scale.ticks.map((tick) => {
-          const y = innerBottom - (tick / scale.maximum!) * innerHeight;
-          return (
-            <g className={styles.bottleTick} key={tick}>
-              <path d={`M154 ${y}h18`} />
-              <text x="178" y={y + 4}>{formatPassportNumber(tick)} g</text>
-            </g>
-          );
-        }) : null}
-      </svg>
-      <p className={styles.scaleNote}>Bottle scale represents published grams; not a recommended limit.</p>
-    </section>
-  );
-}
-
-function LocalActionRail({ product }: { product: PublicProductDto }) {
+function ProductActions({ product }: { product: PublicProductDto }) {
   const savedRef = useMemo(() => toSavedRef(product), [product]);
+  const saveGate = useMemo(() => saveEligibility(product), [product]);
+  const myDayGate = useMemo(() => myDayEligibility(product), [product]);
   const [saved, setSaved] = useState(false);
   const [compared, setCompared] = useState(false);
-  const [message, setMessage] = useState("Actions stay in this browser");
+  const [message, setMessage] = useState("Actions stay in this browser.");
+  const [interactive, setInteractive] = useState(false);
+  const localMutationVersion = useRef(0);
 
   useEffect(() => {
     let active = true;
+    const hydrationVersion = localMutationVersion.current;
     void Promise.all([
       isProductSaved(product.slug),
       Promise.resolve(isInCompare(product.slug)),
     ]).then(([nextSaved, nextCompared]) => {
       if (!active) return;
+      setInteractive(true);
+      if (localMutationVersion.current !== hydrationVersion) return;
       setSaved(nextSaved);
       setCompared(nextCompared);
+    }).catch(() => {
+      if (active) setInteractive(true);
     });
     return () => { active = false; };
   }, [product.slug]);
 
   async function toggleSaved() {
-    if (!savedRef) {
-      setMessage("Save requires a numeric caffeine value and serving.");
-      return;
+    if (!savedRef) return;
+    localMutationVersion.current += 1;
+    try {
+      if (saved) {
+        const removed = await removeSavedProduct(product.slug);
+        if (!removed) {
+          setMessage("Could not remove the saved product because browser storage is unavailable.");
+          return;
+        }
+        setSaved(false);
+        setMessage("Removed from this browser.");
+        return;
+      }
+      const stored = await saveSavedProduct(savedRef);
+      if (stored === null) {
+        setMessage("Could not save because browser storage is unavailable.");
+        return;
+      }
+      setSaved(true);
+      setMessage("Saved in this browser.");
+    } catch {
+      setMessage("Could not update Saved because browser storage failed.");
     }
-    if (saved) {
-      await removeSavedProduct(product.slug);
-      setSaved(false);
-      setMessage("Removed from this browser.");
-      return;
-    }
-    await saveSavedProduct(savedRef);
-    setSaved(true);
-    setMessage("Saved in this browser.");
   }
 
   function toggleCompare() {
-    const update = compared
-      ? removeCompareSlug(product.slug)
-      : addCompareSlug(product.slug);
-    const nowCompared = update.slugs.includes(product.slug);
-    setCompared(nowCompared);
+    localMutationVersion.current += 1;
+    const update = compared ? removeCompareSlug(product.slug) : addCompareSlug(product.slug);
+    if (!update.ok) {
+      setMessage("Could not update Compare because browser storage is unavailable.");
+      return;
+    }
+    const nextCompared = update.slugs.includes(product.slug);
+    setCompared(nextCompared);
     setMessage(
-      update.added || compared
-        ? nowCompared ? "Added to Compare." : "Removed from Compare."
-        : "Compare is full. Remove a product first.",
+      nextCompared !== compared
+        ? nextCompared ? "Added to Compare." : "Removed from Compare."
+        : nextCompared ? "Already in Compare." : "Compare is full. Remove a product first.",
     );
   }
 
-  async function addToDay() {
-    if (!savedRef) {
-      setMessage("My Day requires an exact numeric caffeine value.");
-      return;
-    }
+  async function addToMyDay() {
+    if (!myDayGate.eligible || product.caffeine.mg === null) return;
     const now = new Date();
-    await addMyDayEntry(now.toISOString().slice(0, 10), {
-      caffeineMg: savedRef.caffeine.mg,
-      name: product.name,
-      slug: product.slug,
-      timeLabel: now.toLocaleTimeString([], {
-        hour: "2-digit",
-        hour12: false,
-        minute: "2-digit",
-      }),
-    });
-    setMessage("Added to My Day in this browser.");
+    try {
+      const stored = await addMyDayEntry(utcDateKey(now), {
+        caffeineMg: product.caffeine.mg,
+        name: product.name,
+        slug: product.slug,
+        timeLabel: utcTimeLabel(now),
+      });
+      setMessage(stored === null
+        ? "Could not add to My Day because browser storage is unavailable."
+        : "Added to My Day in this browser.");
+    } catch {
+      setMessage("Could not add to My Day because browser storage failed.");
+    }
   }
 
+  const saveReasonId = `save-reason-${product.slug}`;
+  const myDayReasonId = `my-day-reason-${product.slug}`;
+
   return (
-    <aside aria-label="Local product actions" className={`${styles.instrumentPanel} ${styles.actionRail}`}>
-      <button aria-pressed={saved} className={saved ? styles.selectedAction : undefined} onClick={() => void toggleSaved()} type="button">
+    <aside aria-label="Product actions" className={styles.actions} data-interactive={interactive ? "true" : "false"}>
+      <Button
+        aria-describedby={!saveGate.eligible ? saveReasonId : undefined}
+        aria-pressed={saved}
+        className={styles.saveAction}
+        disabled={!interactive || !saveGate.eligible}
+        onClick={() => void toggleSaved()}
+        title={saveGate.reason}
+        type="button"
+        variant="default"
+      >
         {saved ? <Check aria-hidden="true" /> : <Bookmark aria-hidden="true" />}
-        <span><strong>{saved ? "Saved" : "Save"}</strong><small>Stay in this browser</small></span>
-      </button>
-      <button aria-pressed={compared} className={compared ? styles.selectedAction : undefined} onClick={toggleCompare} type="button">
-        <GitCompareArrows aria-hidden="true" />
-        <span><strong>{compared ? "In Compare" : "Compare"}</strong><small>Stay in this browser</small></span>
-      </button>
-      <button onClick={() => void addToDay()} type="button">
-        <Plus aria-hidden="true" />
-        <span><strong>Add to My Day</strong><small>Stay in this browser</small></span>
-      </button>
+        {saved ? "Saved" : "Save"}
+      </Button>
+      <HoverBorderGradient
+        aria-label={compared ? "In Compare" : "Compare"}
+        aria-pressed={compared}
+        className={styles.compareAction}
+        disabled={!interactive}
+        onClick={toggleCompare}
+      >
+        {compared ? <Check aria-hidden="true" /> : <Scale aria-hidden="true" />}
+        {compared ? "In Compare" : "Compare"}
+      </HoverBorderGradient>
+      <LiquidMetalButton
+        aria-describedby={!myDayGate.eligible ? myDayReasonId : undefined}
+        className={styles.liquidAction}
+        disabled={!interactive || !myDayGate.eligible}
+        onClick={() => void addToMyDay()}
+        title={myDayGate.reason}
+      >
+        <CalendarPlus aria-hidden="true" />
+        Add to My Day
+      </LiquidMetalButton>
+      {!saveGate.eligible || !myDayGate.eligible ? (
+        <div className={styles.actionReasons}>
+          {!saveGate.eligible ? <p id={saveReasonId}><strong>Save unavailable:</strong> {saveGate.reason}</p> : null}
+          {!myDayGate.eligible ? <p id={myDayReasonId}><strong>My Day unavailable:</strong> {myDayGate.reason}</p> : null}
+        </div>
+      ) : null}
       <p aria-live="polite" className={styles.actionMessage} role="status">{message}</p>
     </aside>
   );
 }
 
-function FactRow({ label, state, value }: { label: string; state?: string; value: string }) {
+function CompactGlassMetric({ product }: { product: PublicProductDto }) {
+  const caffeine = caffeinePresentation(product.caffeine);
+  const caffeineValue = `${caffeine.value}${caffeine.unit ? ` ${caffeine.unit}` : ""}`;
+  const serving = servingPresentation(product.serving);
+  const servingContext = product.serving.state === "present"
+    ? product.serving.value === null
+      ? "serving value: not published"
+      : "in one published serving"
+    : `serving context: ${serving.stateLabel.toLowerCase()}`;
+  const sugar = nutritionPresentation(
+    product.sugar ? { state: product.sugar.state, value: product.sugar.g } : undefined,
+    " g",
+  );
+
   return (
-    <div className={styles.factRow}>
-      <dt>{label}</dt>
-      <dd><span>{value}</span>{state ? <small>{state}</small> : null}</dd>
+    <>
+      <h2 className={styles.visuallyHidden}>Total caffeine · {caffeine.stateLabel}</h2>
+      <div
+        aria-label={`Observed values: ${caffeineValue} caffeine and ${sugar.value} sugar; ${servingContext}`}
+        className={styles.glassInstrument}
+        role="img"
+      >
+        <div aria-hidden="true" className={styles.glassAura} />
+        <GlassObject className={styles.glassObject} />
+        <div className={styles.glassReadout}>
+          <span>Total caffeine</span>
+          <strong>{caffeine.value}{caffeine.unit ? <small>{caffeine.unit}</small> : null}</strong>
+          <em data-state={caffeine.state}>{caffeine.stateLabel}</em>
+          <p><span>Sugar</span><b>{sugar.value}</b></p>
+          <small className={styles.glassNote}>No recommended target implied</small>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function MetricCell({ detail, label, state, value }: { detail: string; label: string; state: string; value: string }) {
+  return (
+    <div className={styles.metricCell} data-state={state}>
+      <span>{label}<Info aria-hidden="true" /></span>
+      <strong>{value}</strong>
+      <small>{detail}</small>
     </div>
   );
 }
 
-function ProductMetadata({ product }: { product: PublicProductDto }) {
-  return (
-    <section
-      className={`${styles.evidenceColumn} ${styles.productMetadata}`}
-      aria-labelledby="product-title"
-      data-evidence-column="product-metadata"
-    >
-      <span className={styles.evidenceEyebrow}>Product metadata</span>
-      <h1 id="product-title">{product.name}</h1>
-      <dl>
-        <FactRow label="Category" value={categoryLabel(product.category)} />
-        <FactRow label="Product type" value={categoryProvenanceLabel(product.categoryProvenance)} />
-        <FactRow label="Serving form" value={product.serving.form} />
-      </dl>
-    </section>
+function MetricBand({ product }: { product: PublicProductDto }) {
+  const sugar = nutritionPresentation(
+    product.sugar ? { state: product.sugar.state, value: product.sugar.g } : undefined,
+    " g",
   );
-}
-
-function ObservedFacts({ product }: { product: PublicProductDto }) {
-  const caffeine = caffeinePresentation(product.caffeine);
-  const serving = product.serving.value === null
-    ? fieldStateLabel(product.serving.state)
-    : `${formatPassportNumber(product.serving.value)} ${servingUnit(product.serving.unit)}`;
-  const normalized = product.serving.normalizedMl === null
-    ? fieldStateLabel(product.serving.state)
-    : `${formatPassportNumber(product.serving.normalizedMl)} ml`;
+  const serving = servingPresentation(product.serving);
   const concentration = product.concentration.mgPer100Ml === null
-    ? "Not eligible"
-    : `${formatPassportNumber(product.concentration.mgPer100Ml)} mg / 100 ml`;
-  const calories = product.calories?.kcal === null || product.calories === undefined
-    ? product.calories ? fieldStateLabel(product.calories.state) : "Not available in public response"
-    : `${formatPassportNumber(product.calories.kcal)} kcal`;
-  const sugar = product.sugar?.g === null || product.sugar === undefined
-    ? product.sugar ? fieldStateLabel(product.sugar.state) : "Not available in public response"
-    : `${formatPassportNumber(product.sugar.g)} g`;
+    ? "N/A"
+    : `${formatPassportNumber(product.concentration.mgPer100Ml)} mg`;
+  const calories = nutritionPresentation(
+    product.calories ? { state: product.calories.state, value: product.calories.kcal } : undefined,
+    " kcal",
+  );
 
   return (
-    <section className={styles.evidenceColumn} aria-labelledby="observed-facts-heading" data-evidence-column>
-      <h2 id="observed-facts-heading">Observed facts</h2>
-      <dl>
-        <FactRow label="Total caffeine" state={caffeine.stateLabel} value={`${caffeine.value}${caffeine.unit ? ` ${caffeine.unit}` : ""}`} />
-        <FactRow label="Serving size" state={product.serving.form} value={serving} />
-        <FactRow label="Serving size (normalized)" value={normalized} />
-        <FactRow label="Concentration" value={concentration} />
-        <FactRow label="Calories" state={product.calories ? fieldStateLabel(product.calories.state) : undefined} value={calories} />
-        <FactRow label="Sugar" state={product.sugar ? fieldStateLabel(product.sugar.state) : undefined} value={sugar} />
-      </dl>
+    <section aria-label="Observed product facts" className={styles.metricBand}>
+      <div className={`${styles.metricCell} ${styles.glassMetric}`}><CompactGlassMetric product={product} /></div>
+      <MetricCell detail={product.serving.form} label="Serving size" state={product.serving.state} value={serving.value} />
+      <MetricCell detail={product.concentration.mgPer100Ml === null ? "Exact caffeine + ml required" : "Per 100 ml"} label="Concentration" state={product.concentration.mgPer100Ml === null ? "not_applicable" : "present"} value={concentration} />
+      <MetricCell detail={sugar.detail} label="Sugar" state={sugar.state} value={sugar.value} />
+      <MetricCell detail={calories.detail} label="Calories" state={calories.state} value={calories.value} />
     </section>
   );
 }
 
-function SourceRecord({ product }: { product: PublicProductDto }) {
+function ValueRows({ rows }: { rows: Array<[string, ReactNode, string?]> }) {
   return (
-    <section className={styles.evidenceColumn} aria-labelledby="source-record-heading" data-evidence-column>
-      <h2 id="source-record-heading">Source record</h2>
-      <dl>
-        <FactRow label="Source" value={product.sourceAttribution} />
-        <FactRow label="Published level" value={sourceLevelLabel(product.caffeine.sourceLevel)} />
-        <FactRow label="Observed" value={formatObservedAt(product.observedAt)} />
-      </dl>
-      <a className={styles.sourceLink} href={product.sourceUrl} rel="noreferrer noopener" target="_blank">
-        <span>{product.sourceAttribution}</span>
-        <ExternalLink aria-hidden="true" size={15} />
-        <span className="sr-only"> source page (opens in a new tab)</span>
-      </a>
-    </section>
+    <dl className={styles.valueRows}>
+      {rows.map(([label, value, state]) => (
+        <div data-state={state} key={label}><dt>{label}</dt><dd>{value}</dd></div>
+      ))}
+    </dl>
   );
 }
 
-function RankingEligibility({ product }: { product: PublicProductDto }) {
+function EligibilityMark({ eligible, label }: { eligible: boolean; label: string }) {
+  const Icon = eligible ? Check : CircleX;
+  return (
+    <div className={styles.eligibilityMark} data-eligible={eligible ? "true" : "false"}>
+      <span>{label}</span>
+      <Icon aria-hidden="true" />
+      <strong>{eligible ? "Yes" : "No"}</strong>
+    </div>
+  );
+}
+
+function EvidenceBento({ product }: { product: PublicProductDto }) {
+  const caffeine = caffeinePresentation(product.caffeine);
+  const serving = servingPresentation(product.serving);
   const reasons = product.rankingEligibility.reasons.map(rankingReasonLabel);
+
   return (
-    <section className={styles.evidenceColumn} aria-labelledby="ranking-heading" data-evidence-column>
-      <h2 id="ranking-heading">Ranking eligibility</h2>
-      <div className={styles.eligibilityRow} data-eligible={product.rankingEligibility.totalCaffeine}>
-        {product.rankingEligibility.totalCaffeine ? <BadgeCheck aria-hidden="true" /> : <CircleOff aria-hidden="true" />}
-        <span>{product.rankingEligibility.totalCaffeine ? "Eligible" : "Not eligible"} for total-caffeine ranking</span>
-      </div>
-      <div className={styles.eligibilityRow} data-eligible={product.rankingEligibility.concentration}>
-        {product.rankingEligibility.concentration ? <BadgeCheck aria-hidden="true" /> : <CircleOff aria-hidden="true" />}
-        <span>{product.rankingEligibility.concentration ? "Eligible" : "Not eligible"} for concentration ranking</span>
-      </div>
-      <p className={styles.eligibilityNote}>
-        Concentration ranking requires exact caffeine and a positive serving normalized to milliliters.
-      </p>
-      {reasons.length > 0 ? (
-        <ul className={styles.reasonList}>{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
-      ) : null}
-    </section>
+    <>
+      <nav aria-label="Product Passport sections" className={styles.tabRail}>
+        <a className={styles.activeTab} href="#overview">Overview</a>
+        <a href="#source-data">Source &amp; Data</a>
+        <a href="#ranking">Ranking</a>
+      </nav>
+      <section aria-label="Product evidence" className={styles.bentoGrid} id="overview">
+        <article className={styles.bentoItem} data-bento-item>
+          <section data-evidence-column="product-metadata">
+            <h3>Product metadata</h3>
+            <ValueRows rows={[
+              ["Category", categoryLabel(product.category)],
+              ["Classification source", categoryProvenanceLabel(product.categoryProvenance)],
+              ["Serving form", product.serving.form],
+              ["Serving size", serving.value, product.serving.state],
+            ]} />
+          </section>
+          <section data-evidence-column="observed-facts">
+            <h3>Observed facts</h3>
+            <ValueRows rows={[
+              ["Caffeine", `${caffeine.value}${caffeine.unit ? ` ${caffeine.unit}` : ""}`, caffeine.state],
+              ["Serving (normalized)", serving.normalizedValue, product.serving.state],
+              ["Observed", formatObservedAt(product.observedAt)],
+            ]} />
+          </section>
+        </article>
+        <article className={styles.bentoItem} data-bento-item>
+          <section className={styles.sourceSection} data-evidence-column="source-record" id="source-data">
+            <div className={styles.livingWindow}>
+              <Leaf aria-hidden="true" />
+              <span>Trusted living source layer</span>
+            </div>
+            <div className={styles.sourceCopy}>
+              <h3>Source record</h3>
+              <ValueRows rows={[
+                ["Source", product.sourceUrl ? <a href={product.sourceUrl} key="source" rel="noreferrer noopener" target="_blank">{product.sourceAttribution}<ExternalLink aria-hidden="true" /></a> : <span key="source">Source URL not published</span>],
+                ["Published level", sourceLevelLabel(product.caffeine.sourceLevel)],
+              ]} />
+            </div>
+          </section>
+          <section data-evidence-column="ranking-eligibility" id="ranking">
+            <h3>Ranking eligibility <Info aria-hidden="true" /></h3>
+            <div className={styles.eligibilityList}>
+              <EligibilityMark eligible={product.rankingEligibility.totalCaffeine} label="Total caffeine eligible" />
+              <EligibilityMark eligible={product.rankingEligibility.concentration} label="Concentration eligible" />
+              <p>{reasons.length > 0 ? reasons.join(" ") : "No exclusion reasons."} Ranking state is not health guidance.</p>
+            </div>
+          </section>
+        </article>
+      </section>
+    </>
   );
 }
 
-const LEGEND_ITEMS = [
-  { icon: BadgeCheck, label: "Exact value", state: "exact" },
-  { icon: CircleOff, label: "Explicit zero", state: "explicit-zero" },
-  { icon: Brackets, label: "Range", state: "range" },
-  { icon: Waves, label: "Estimated", state: "estimated" },
-  { icon: TriangleAlert, label: "Conflicting", state: "conflicting" },
-  { icon: CircleHelp, label: "Unparseable", state: "unparseable" },
-  { icon: MinusCircle, label: "Not published", state: "not-published" },
-] as const;
-
-function DataStateLegend() {
-  return (
-    <section aria-labelledby="data-state-heading" className={`${styles.instrumentPanel} ${styles.stateLegend}`}>
-      <h2 id="data-state-heading">Data state legend</h2>
-      <ul>
-        {LEGEND_ITEMS.map(({ icon: Icon, label, state }) => (
-          <li data-state={state} key={state}><Icon aria-hidden="true" /><span>{label}</span></li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function Variations({ names }: { names: string[] }) {
-  if (names.length === 0) return null;
-  return (
-    <section className={`${styles.instrumentPanel} ${styles.variations}`}>
-      <h2>Listed variations</h2>
-      <p>Observed names only; no additional measurements are inferred.</p>
-      <ul>{names.map((name) => <li key={name}>{name}</li>)}</ul>
-    </section>
-  );
-}
-
-export function ProductPassport({
-  fontClassName,
-  product,
-  variations,
-}: ProductPassportProps) {
-  const style = {
-    "--passport-accent": product.caffeine.state === "present" ? "#25d8f5" : "#f2a93b",
-  } as CSSProperties;
+export function ProductPassport({ fontClassName, product }: ProductPassportProps) {
+  const caffeine = caffeinePresentation(product.caffeine);
 
   return (
-    <div className={`${styles.root} ${fontClassName} pr-app`} style={style}>
-      <a className={styles.skipLink} href="#product-passport-main">Skip to product passport</a>
-      <PublicHeader />
+    <div className={`${styles.page} ${fontClassName}`}>
+      <a className={styles.skipLink} href="#product-passport-main">Skip to Product Passport</a>
+      <SmoothCursor className={styles.smoothCursor} />
+      <LivingGreenAccent className={styles.livingPageAccent} />
+      <Header />
       <ProductViewTracker product={product} />
-      <main className={styles.main} id="product-passport-main">
-        <Link className={styles.backLink} href="/explore">← Explore trusted products</Link>
-        <div className={styles.instrument}>
-          <ProductBay product={product} />
-          <div className={styles.measurementStack}>
-            <CaffeinePanel product={product} />
-            <MetricStrip product={product} />
+      <main className={styles.shell} id="product-passport-main">
+        <Link className={styles.backLink} href="/explore"><ArrowLeft aria-hidden="true" />Product Passport</Link>
+        <section aria-labelledby="passport-title" className={styles.hero}>
+          <aside className={styles.productColumn}>
+            <div className={styles.productBay} data-product-bay>
+              <div className={styles.productSpecimen} data-product-specimen><ProductImage product={product} /></div>
+            </div>
+            <p className={styles.imageNote}><Fingerprint aria-hidden="true" />Published recognition image, rendered through PulseRank’s protected media route.</p>
+          </aside>
+          <div className={styles.passportColumn}>
+            <div className={styles.identityTopline}>
+              <Badge className={styles.categoryBadge}>{categoryLabel(product.category)}</Badge>
+              <ProductActions product={product} />
+            </div>
+            <div className={styles.titleBlock}>
+              <h1 id="passport-title">{product.name}</h1>
+              <div className={styles.truthCluster}>
+                <Badge className={styles.stateBadge} data-state={caffeine.state}>
+                  {caffeine.state === "exact" || caffeine.state === "explicit-zero" ? <Check aria-hidden="true" /> : <Info aria-hidden="true" />}
+                  {caffeine.stateLabel}
+                </Badge>
+                <p>Observed {formatObservedAt(product.observedAt)}<i aria-hidden="true" />Source: {product.sourceAttribution}</p>
+              </div>
+            </div>
+            <MetricBand product={product} />
+            <EvidenceBento product={product} />
           </div>
-          <SugarVessel product={product} />
-          <LocalActionRail product={product} />
-        </div>
-        <div className={`${styles.instrumentPanel} ${styles.evidenceDeck}`}>
-          <ProductMetadata product={product} />
-          <ObservedFacts product={product} />
-          <SourceRecord product={product} />
-          <RankingEligibility product={product} />
-        </div>
-        <DataStateLegend />
-        <Variations names={variations} />
+        </section>
       </main>
     </div>
   );

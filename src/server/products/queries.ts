@@ -24,6 +24,7 @@ import {
   eq,
   gt,
   inArray,
+  isNull,
   lt,
   or,
   sql,
@@ -52,13 +53,17 @@ import type {
 } from "@/server/products/dto";
 import {
   changeField,
+  PUBLIC_CHANGE_OBSERVATION_STATUSES,
+  sanitizeChangeEventType,
   sanitizeChangePoint,
+  type PublicChangeEventType,
 } from "@/server/products/change-sanitizer";
 import type { ChangePoint } from "@/server/ingestion/change-detection";
 import {
   sanitizeLiveRun,
   type SanitizedLiveRun,
 } from "@/server/products/live-data-sanitizer";
+import { authorizeProductSourceUrl } from "@/server/products/source-policy";
 
 // ---------------------------------------------------------------------------
 // Shared trusted-only selection
@@ -584,6 +589,19 @@ export type LeaderboardEntryDto = {
   };
 };
 
+export type LeaderboardFilterOptions = {
+  category?: CanonicalCategory;
+  servingForm?: TrustedProductRecord["serving"]["form"] | string;
+  completeOnly?: boolean;
+};
+
+export type LeaderboardFacetResult = {
+  eligibleCount: number;
+  excludedCount: number;
+  reasons: Array<{ label: string; count: number }>;
+  servingForms: string[];
+};
+
 export type LeaderboardResult = {
   snapshotId: string;
   rebuiltAt: Date;
@@ -597,10 +615,12 @@ export type LeaderboardResult = {
 };
 
 type LeaderboardCursor = {
-  v: 1;
+  v: 2;
   boardKey: string;
   snapshotId: string;
   category: CanonicalCategory | null;
+  servingForm: string | null;
+  completeOnly: boolean;
   rank: number;
 };
 
@@ -614,11 +634,13 @@ function decodeLeaderboardCursor(value: string): LeaderboardCursor | null {
       Buffer.from(value, "base64url").toString("utf8"),
     ) as Partial<LeaderboardCursor>;
     if (
-      parsed.v !== 1 ||
+      parsed.v !== 2 ||
       typeof parsed.boardKey !== "string" ||
       typeof parsed.snapshotId !== "string" ||
       !CURSOR_UUID.test(parsed.snapshotId) ||
       (parsed.category !== null && typeof parsed.category !== "string") ||
+      (parsed.servingForm !== null && typeof parsed.servingForm !== "string") ||
+      typeof parsed.completeOnly !== "boolean" ||
       typeof parsed.rank !== "number" ||
       !Number.isInteger(parsed.rank) ||
       parsed.rank < 1
@@ -629,6 +651,77 @@ function decodeLeaderboardCursor(value: string): LeaderboardCursor | null {
   } catch {
     return null;
   }
+}
+
+const LEADERBOARD_TOTAL_CAFFEINE = "highest-total-caffeine";
+const LEADERBOARD_CONCENTRATION = "highest-exact-concentration";
+const LEADERBOARD_CAFFEINE_FREE = "caffeine-free";
+
+function exactCaffeineConditions(): SQL[] {
+  return [
+    sql`${payloadColumn} -> 'caffeineMg' ->> 'state' = 'present'`,
+    sql`${payloadColumn} -> 'caffeineMg' ->> 'qualifier' = 'exact'`,
+    sql`${payloadColumn} -> 'caffeineMg' ->> 'value' is not null`,
+    sql`(${payloadColumn} -> 'caffeineMg' ->> 'value')::double precision >= 0`,
+  ];
+}
+
+function leaderboardEligibilityConditions(boardKey: string): SQL[] {
+  const exact = exactCaffeineConditions();
+  if (boardKey === LEADERBOARD_CONCENTRATION) {
+    return [
+      ...exact,
+      sql`${payloadColumn} -> 'serving' ->> 'state' = 'present'`,
+      sql`${payloadColumn} -> 'serving' ->> 'normalizedMl' is not null`,
+      sql`(${payloadColumn} -> 'serving' ->> 'normalizedMl')::double precision > 0`,
+    ];
+  }
+  if (boardKey === LEADERBOARD_CAFFEINE_FREE) {
+    return [
+      ...exact,
+      sql`(${payloadColumn} -> 'caffeineMg' ->> 'value')::double precision = 0`,
+    ];
+  }
+  if (boardKey === LEADERBOARD_TOTAL_CAFFEINE) return exact;
+  return [];
+}
+
+function leaderboardFilterConditions(
+  boardKey: string,
+  options: LeaderboardFilterOptions,
+): SQL[] {
+  const conditions = leaderboardEligibilityConditions(boardKey);
+  if (options.category !== undefined) {
+    conditions.push(sql`${payloadColumn} ->> 'category' = ${options.category}`);
+  }
+  if (options.servingForm !== undefined && options.servingForm !== "") {
+    conditions.push(sql`${payloadColumn} -> 'serving' ->> 'form' = ${options.servingForm}`);
+  }
+  if (options.completeOnly === true) {
+    conditions.push(
+      sql`${payloadColumn} -> 'serving' ->> 'state' = 'present'`,
+      sql`${payloadColumn} -> 'serving' ->> 'value' is not null`,
+      sql`${payloadColumn} -> 'serving' ->> 'unit' is not null`,
+    );
+  }
+  return conditions;
+}
+
+function leaderboardExclusionReason(boardKey: string): SQL {
+  const state = sql`${payloadColumn} -> 'caffeineMg' ->> 'state'`;
+  const qualifier = sql`${payloadColumn} -> 'caffeineMg' ->> 'qualifier'`;
+  const value = sql`${payloadColumn} -> 'caffeineMg' ->> 'value'`;
+  const concentration = boardKey === LEADERBOARD_CONCENTRATION;
+  return sql`case
+    when ${state} = 'conflicting' then 'Conflicting values'
+    when ${state} = 'unparseable' then 'Unparseable'
+    when ${state} in ('not_published', 'not_applicable') then 'Not published'
+    when ${qualifier} <> 'exact' or ${value} is null then 'Not an exact value'
+    ${concentration ? sql`when ${payloadColumn} -> 'serving' ->> 'normalizedMl' is null then 'Serving volume unavailable'
+    when (${payloadColumn} -> 'serving' ->> 'normalizedMl')::double precision <= 0 then 'Not concentration eligible'` : sql``}
+    ${boardKey === LEADERBOARD_CAFFEINE_FREE ? sql`when (${value})::double precision <> 0 then 'Contains caffeine'` : sql``}
+    else 'Not ranking eligible'
+  end`;
 }
 
 /**
@@ -645,15 +738,19 @@ export async function getLeaderboard(
   options: {
     limit?: number;
     cursor?: string | null;
-    category?: CanonicalCategory;
-  } = {},
+  } & LeaderboardFilterOptions = {},
 ): Promise<LeaderboardResult | null> {
   const limit = Math.min(Math.max(Math.trunc(options.limit ?? 25), 1), 200);
   const cursor = options.cursor ? decodeLeaderboardCursor(options.cursor) : null;
   if (options.cursor && cursor === null) throw new InvalidCursorError();
   if (
     cursor &&
-    (cursor.boardKey !== boardKey || cursor.category !== (options.category ?? null))
+    (
+      cursor.boardKey !== boardKey ||
+      cursor.category !== (options.category ?? null) ||
+      cursor.servingForm !== (options.servingForm ?? null) ||
+      cursor.completeOnly !== (options.completeOnly ?? false)
+    )
   ) {
     throw new InvalidCursorError();
   }
@@ -710,12 +807,8 @@ export async function getLeaderboard(
     eq(pulseLeaderboardEntries.snapshotId, snapshot.id),
     eq(pulseLeaderboardEntries.metricKey, boardKey),
     trustedOnlyCondition(),
+    ...leaderboardFilterConditions(boardKey, options),
   ];
-  if (options.category !== undefined) {
-    countConditions.push(
-      sql`${pulseProductObservations.normalized} ->> 'category' = ${options.category}`,
-    );
-  }
   const entryConditions = [...countConditions];
   if (cursor) entryConditions.push(gt(pulseLeaderboardEntries.rank, cursor.rank));
 
@@ -771,10 +864,12 @@ export async function getLeaderboard(
   const nextCursor =
     hasMore && last
       ? encodeLeaderboardCursor({
-          v: 1,
+          v: 2,
           boardKey,
           snapshotId: snapshot.id,
           category: options.category ?? null,
+          servingForm: options.servingForm ?? null,
+          completeOnly: options.completeOnly ?? false,
           rank: last.rank,
         })
       : null;
@@ -811,6 +906,66 @@ export async function getLeaderboard(
       },
     })),
   };
+}
+
+/**
+ * Returns the small facet set needed by the leaderboard sidebar. Counts and
+ * serving forms are computed in SQL over the trusted pointer, so the page
+ * never has to hydrate the entire catalog just to render its filters.
+ */
+export async function getLeaderboardFacets(
+  boardKey: string,
+): Promise<LeaderboardFacetResult> {
+  const eligibilityConditions = leaderboardEligibilityConditions(boardKey);
+  const eligibility = and(...eligibilityConditions) as SQL;
+  const reason = leaderboardExclusionReason(boardKey);
+  const trusted = trustedOnlyCondition();
+  const [countRows, reasonRows, servingRows] = await Promise.all([
+    db
+      .select({
+        eligibleCount: sql<number>`count(*) filter (where ${eligibility})`,
+        excludedCount: sql<number>`count(*) filter (where not (${eligibility}))`,
+      })
+      .from(pulseProducts)
+      .innerJoin(pulseProductObservations, trusted),
+    db
+      .select({ label: reason, count: sql<number>`count(*)` })
+      .from(pulseProducts)
+      .innerJoin(pulseProductObservations, trusted)
+      .where(sql`not (${eligibility})`)
+      .groupBy(reason)
+      .orderBy(desc(sql`count(*)`), asc(reason)),
+    db
+      .select({ form: sql<string>`${payloadColumn} -> 'serving' ->> 'form'` })
+      .from(pulseProducts)
+      .innerJoin(pulseProductObservations, trusted)
+      .where(eligibility)
+      .groupBy(sql`${payloadColumn} -> 'serving' ->> 'form'`)
+      .orderBy(asc(sql`${payloadColumn} -> 'serving' ->> 'form'`)),
+  ]);
+  return {
+    eligibleCount: Number(countRows[0]?.eligibleCount ?? 0),
+    excludedCount: Number(countRows[0]?.excludedCount ?? 0),
+    reasons: reasonRows.map((row) => ({ label: String(row.label), count: Number(row.count) })),
+    servingForms: servingRows
+      .map((row) => row.form)
+      .filter((form): form is string => Boolean(form)),
+  };
+}
+
+/** Enrich only the ranked rows shown on the current page through trusted DTOs. */
+export async function getTrustedProductsBySlugs(
+  slugs: readonly string[],
+): Promise<TrustedProductRow[]> {
+  const uniqueSlugs = [...new Set(slugs)].filter(Boolean).slice(0, 200);
+  if (uniqueSlugs.length === 0) return [];
+  const rows = (await db
+    .select(trustedSelect)
+    .from(pulseProducts)
+    .innerJoin(pulseProductObservations, trustedOnlyCondition())
+    .leftJoin(pulseProductMediaPublications, withPublishedMedia())
+    .where(and(trustedOnlyCondition(), inArray(pulseProducts.slug, uniqueSlugs)))) as TrustedJoinRow[];
+  return rows.map(toTrustedProductRow);
 }
 
 // -- overview -----------------------------------------------------------------
@@ -864,11 +1019,15 @@ export type ChangeEventDto = {
   id: string;
   slug: string;
   productName: string;
-  eventType: string;
+  eventType: PublicChangeEventType;
   field: string;
   before: ChangePoint | null;
   after: ChangePoint | null;
   occurredAt: string;
+  /** Exact allowlisted source page carried by the trusted observation, when valid. */
+  sourceUrl: string | null;
+  /** Trusted observation timestamp; this is not claimed to be the source access time. */
+  sourceObservationAt: string | null;
 };
 
 export type ChangeListResult = {
@@ -903,6 +1062,14 @@ export async function listChanges(
     )`);
   }
 
+  // The FK is nullable for legacy rows. Preserve those rows with no
+  // provenance, but never publish an event linked to a candidate,
+  // quarantined, rejected, or otherwise untrusted observation.
+  const publicProvenance = or(
+    isNull(pulseChangeEvents.productObservationId),
+    inArray(pulseProductObservations.status, PUBLIC_CHANGE_OBSERVATION_STATUSES),
+  );
+
   const rows = await db
     .select({
       id: pulseChangeEvents.id,
@@ -912,10 +1079,19 @@ export async function listChanges(
       before: pulseChangeEvents.before,
       after: pulseChangeEvents.after,
       occurredAt: pulseChangeEvents.occurredAt,
+      sourceUrl: sql<string | null>`${pulseProductObservations.normalized}->>'sourceUrl'`,
+      sourceObservationAt: pulseProductObservations.observedAt,
     })
     .from(pulseChangeEvents)
     .innerJoin(pulseProducts, eq(pulseChangeEvents.productId, pulseProducts.id))
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    // Change events retain the observation that was trusted when the event
+    // was created. That observation may be superseded by a later trusted
+    // snapshot, so do not filter historical events by its current status.
+    .leftJoin(
+      pulseProductObservations,
+      eq(pulseChangeEvents.productObservationId, pulseProductObservations.id),
+    )
+    .where(and(...conditions, publicProvenance))
     .orderBy(desc(pulseChangeEvents.occurredAt), desc(pulseChangeEvents.id))
     .limit(limit + 1);
 
@@ -929,18 +1105,28 @@ export async function listChanges(
   }
 
   return {
-    items: page.map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      productName: row.productName,
-      eventType: row.eventType,
-      field: changeField(row.eventType, row.before, row.after),
-      before: sanitizeChangePoint(row.before),
-      after: sanitizeChangePoint(row.after),
-      occurredAt: row.occurredAt.toISOString(),
-    })),
+    items: page.map((row) => {
+      const eventType = sanitizeChangeEventType(row.eventType);
+      return {
+        id: row.id,
+        slug: row.slug,
+        productName: row.productName,
+        eventType,
+        field: changeField(eventType, row.before, row.after),
+        before: sanitizeChangePoint(row.before),
+        after: sanitizeChangePoint(row.after),
+        occurredAt: row.occurredAt.toISOString(),
+        sourceUrl: sanitizeChangeSourceUrl(row.sourceUrl),
+        sourceObservationAt: row.sourceObservationAt?.toISOString() ?? null,
+      };
+    }),
     nextCursor,
   };
+}
+
+/** Public changes may carry only the exact HTTPS Caffeine Informer page URL. */
+function sanitizeChangeSourceUrl(value: string | null): string | null {
+  return authorizeProductSourceUrl(value);
 }
 
 type ChangesCursorPayload = { v: 1; id: string; occurredAt: string };
@@ -981,6 +1167,7 @@ function decodeChangesCursor(cursor: string): ChangesCursorPayload | null {
 // -- live data ----------------------------------------------------------------
 
 export const LIVE_DATA_SCHEMA_VERSION = "1.1";
+const PUBLIC_LIVE_DATA_SOURCE_SLUG = "caffeine-informer";
 
 function isoTimestamp(value: Date | string | null | undefined): string | null {
   if (value === null || value === undefined) return null;
@@ -1001,7 +1188,7 @@ export type LiveDataStats = {
     rejected: number;
     superseded: number;
   };
-  /** Finish time (or start time) of the most recent collection run; null when none. */
+  /** Finish, start, or creation time of the most recent eligible run; null when none. */
   lastCollectionRunAt: string | null;
   /** Count of incidents currently in `open` state. */
   openIncidentCount: number;
@@ -1010,14 +1197,12 @@ export type LiveDataStats = {
     latestTrustedObservationAt: string | null;
     latestSuccessfulCollectionAt: string | null;
   };
-  /** External ids of ACTIVE PulseRank collectors (legacy ids never register here). */
-  collectorIds: string[];
-  activeCollectors: Array<{ externalId: string; source: string }>;
+  /** Approved public source records; collector/provider identifiers stay private. */
+  activeCollectors: Array<{ source: string }>;
   lastCollectionRun: {
     status: string;
     trigger: string;
     rowCount: number | null;
-    errorCode: string | null;
     at: string | null;
   } | null;
   recentRuns: SanitizedLiveRun[];
@@ -1031,6 +1216,13 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
       count: sql<number>`count(*)::int`,
     })
     .from(pulseProductObservations)
+    .innerJoin(pulseSources, eq(pulseProductObservations.sourceId, pulseSources.id))
+    .where(
+      and(
+        eq(pulseSources.slug, PUBLIC_LIVE_DATA_SOURCE_SLUG),
+        eq(pulseSources.active, true),
+      ),
+    )
     .groupBy(pulseProductObservations.status);
 
   const observationCounts: LiveDataStats["observationCounts"] = {
@@ -1049,19 +1241,24 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
 
   const recentRunRows = await db
     .select({
-      id: pulseCollectionRuns.id,
       finishedAt: pulseCollectionRuns.finishedAt,
       startedAt: pulseCollectionRuns.startedAt,
       status: pulseCollectionRuns.status,
       trigger: pulseCollectionRuns.trigger,
       rowCount: pulseCollectionRuns.rowCount,
-      errorCode: pulseCollectionRuns.errorCode,
       report: pulseCollectionRuns.report,
       createdAt: pulseCollectionRuns.createdAt,
-      externalId: pulseCollectors.externalId,
     })
     .from(pulseCollectionRuns)
     .innerJoin(pulseCollectors, eq(pulseCollectionRuns.collectorId, pulseCollectors.id))
+    .innerJoin(pulseSources, eq(pulseCollectors.sourceId, pulseSources.id))
+    .where(
+      and(
+        eq(pulseCollectors.active, true),
+        eq(pulseSources.active, true),
+        eq(pulseSources.slug, PUBLIC_LIVE_DATA_SOURCE_SLUG),
+      ),
+    )
     .orderBy(
       desc(
         sql`coalesce(${pulseCollectionRuns.finishedAt}, ${pulseCollectionRuns.startedAt}, ${pulseCollectionRuns.createdAt})`,
@@ -1069,19 +1266,35 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
     )
     .limit(10);
   const lastRun = recentRunRows[0];
-  const lastRunMoment = lastRun?.finishedAt ?? lastRun?.startedAt ?? null;
+  const lastRunMoment = lastRun?.finishedAt ?? lastRun?.startedAt ?? lastRun?.createdAt ?? null;
 
   const incidentRows = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(pulseIncidents)
-    .where(eq(pulseIncidents.status, "open"));
+    .innerJoin(pulseCollectionRuns, eq(pulseIncidents.collectionRunId, pulseCollectionRuns.id))
+    .innerJoin(pulseCollectors, eq(pulseCollectionRuns.collectorId, pulseCollectors.id))
+    .innerJoin(pulseSources, eq(pulseCollectors.sourceId, pulseSources.id))
+    .where(
+      and(
+        eq(pulseIncidents.status, "open"),
+        eq(pulseCollectors.active, true),
+        eq(pulseSources.active, true),
+        eq(pulseSources.slug, PUBLIC_LIVE_DATA_SOURCE_SLUG),
+      ),
+    );
 
   const collectorRows = await db
-    .select({ externalId: pulseCollectors.externalId, source: pulseSources.displayName })
+    .select({ source: pulseSources.displayName })
     .from(pulseCollectors)
     .innerJoin(pulseSources, eq(pulseCollectors.sourceId, pulseSources.id))
-    .where(eq(pulseCollectors.active, true))
-    .orderBy(asc(pulseCollectors.externalId));
+    .where(
+      and(
+        eq(pulseCollectors.active, true),
+        eq(pulseSources.active, true),
+        eq(pulseSources.slug, PUBLIC_LIVE_DATA_SOURCE_SLUG),
+      ),
+    )
+    .orderBy(asc(pulseSources.displayName));
 
   const [trustedSummary] = await db
     .select({
@@ -1089,12 +1302,52 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
       latestObservedAt: sql<Date | string | null>`max(${pulseProductObservations.observedAt})`,
     })
     .from(pulseProducts)
-    .innerJoin(pulseProductObservations, trustedOnlyCondition());
-  const latestSuccessful = recentRunRows.find((run) =>
-    ["succeeded", "validated"].includes(run.status),
-  );
+    .innerJoin(pulseProductObservations, trustedOnlyCondition())
+    .innerJoin(pulseSources, eq(pulseProductObservations.sourceId, pulseSources.id))
+    .where(
+      and(
+        eq(pulseSources.slug, PUBLIC_LIVE_DATA_SOURCE_SLUG),
+        eq(pulseSources.active, true),
+      ),
+    );
+
+  const [latestSuccessful] = await db
+    .select({
+      finishedAt: pulseCollectionRuns.finishedAt,
+      startedAt: pulseCollectionRuns.startedAt,
+      createdAt: pulseCollectionRuns.createdAt,
+    })
+    .from(pulseCollectionRuns)
+    .innerJoin(pulseCollectors, eq(pulseCollectionRuns.collectorId, pulseCollectors.id))
+    .innerJoin(pulseSources, eq(pulseCollectors.sourceId, pulseSources.id))
+    .where(
+      and(
+        inArray(pulseCollectionRuns.status, ["succeeded", "validated"]),
+        eq(pulseCollectors.active, true),
+        eq(pulseSources.active, true),
+        eq(pulseSources.slug, PUBLIC_LIVE_DATA_SOURCE_SLUG),
+      ),
+    )
+    .orderBy(
+      desc(
+        sql`coalesce(${pulseCollectionRuns.finishedAt}, ${pulseCollectionRuns.startedAt}, ${pulseCollectionRuns.createdAt})`,
+      ),
+    )
+    .limit(1);
   const latestSuccessfulAt =
-    latestSuccessful?.finishedAt ?? latestSuccessful?.startedAt ?? null;
+    latestSuccessful?.finishedAt ?? latestSuccessful?.startedAt ?? latestSuccessful?.createdAt ?? null;
+  const sanitizedRecentRuns = recentRunRows.map((run) =>
+    sanitizeLiveRun({
+      status: run.status,
+      trigger: run.trigger,
+      rowCount: run.rowCount,
+      startedAt: run.startedAt,
+      finishedAt: run.finishedAt,
+      createdAt: run.createdAt,
+      report: run.report ?? null,
+    }),
+  );
+  const latestPublicRun = sanitizedRecentRuns[0] ?? null;
 
   return {
     schemaVersion: LIVE_DATA_SCHEMA_VERSION,
@@ -1107,29 +1360,16 @@ export async function getLiveDataStats(): Promise<LiveDataStats> {
         isoTimestamp(trustedSummary?.latestObservedAt),
       latestSuccessfulCollectionAt: latestSuccessfulAt?.toISOString() ?? null,
     },
-    collectorIds: collectorRows.map((row) => row.externalId),
-    activeCollectors: collectorRows.map((row) => ({ externalId: row.externalId, source: row.source })),
-    lastCollectionRun: lastRun
+    activeCollectors: collectorRows.map((row) => ({ source: row.source })),
+    lastCollectionRun: latestPublicRun
       ? {
-          status: lastRun.status,
-          trigger: lastRun.trigger,
-          rowCount: lastRun.rowCount,
-          errorCode: lastRun.errorCode,
+          status: latestPublicRun.status,
+          trigger: latestPublicRun.trigger,
+          rowCount: latestPublicRun.rowCounts.collected,
           at: lastRunMoment ? lastRunMoment.toISOString() : null,
         }
       : null,
-    recentRuns: recentRunRows.map((run) =>
-      sanitizeLiveRun({
-        id: run.id,
-        status: run.status,
-        trigger: run.trigger,
-        rowCount: run.rowCount,
-        errorCode: run.errorCode,
-        startedAt: run.startedAt,
-        finishedAt: run.finishedAt,
-        report: run.report ?? null,
-      }),
-    ),
+    recentRuns: sanitizedRecentRuns,
   };
 }
 

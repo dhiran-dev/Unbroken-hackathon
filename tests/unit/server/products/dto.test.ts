@@ -112,6 +112,13 @@ describe("toPublicProductDto — trusted-only mapping", () => {
     expect(JSON.stringify(dto)).not.toContain("80 mg per can");
   });
 
+  it("publishes null instead of an unapproved source link", () => {
+    const payload = buildPayload(standardFull);
+    payload.sourceUrl = "http://evil.example/caffeine-content/red-bull";
+
+    expect(toPublicProductDto(trustedRow(payload)).sourceUrl).toBeNull();
+  });
+
   it("carries the current public schema version constant", () => {
     expect(PUBLIC_SCHEMA_VERSION).toBe("1.1");
   });
@@ -138,6 +145,22 @@ describe("toPublicProductDto — trusted-only mapping", () => {
 // ---------------------------------------------------------------------------
 
 describe("toPublicProductDto — sparse states are data", () => {
+  it("suppresses preserved serving numbers when the serving state is not public", () => {
+    const payload = buildPayload(standardFull);
+    payload.serving = {
+      ...payload.serving,
+      state: "unparseable",
+      value: 250,
+      normalizedMl: 250,
+    };
+
+    const dto = toPublicProductDto(trustedRow(payload));
+
+    expect(dto.serving.value).toBeNull();
+    expect(dto.serving.normalizedMl).toBeNull();
+    expect(dto.serving.state).toBe("unparseable");
+  });
+
   it("publishes not_published calories as state, not zero", () => {
     const dto = toPublicProductDto(trustedRow(buildPayload(standardSparse)), {
       extendedFields: true,
@@ -301,7 +324,8 @@ describe("toPublicProductDto — extended nutrition fields are gated", () => {
 // ---------------------------------------------------------------------------
 
 describe("toPublicProductDto — images follow the publication policy", () => {
-  const url = "https://images.example/red-bull.jpg";
+  const url = "https://www.caffeineinformer.com/images/content/red-bull.jpg";
+  const offHostUrl = "https://images.example/red-bull.jpg";
 
   it("suppresses audit_only media even though the URL exists", () => {
     const dto = toPublicProductDto(
@@ -317,6 +341,14 @@ describe("toPublicProductDto — images follow the publication policy", () => {
     );
 
     expect(dto.image).toBe(url);
+  });
+
+  it("suppresses an allowed-classified URL when it fails the exact public host boundary", () => {
+    const dto = toPublicProductDto(
+      trustedRow(buildPayload(standardFull, { imageUrl: offHostUrl, publicationState: "allowed" })),
+    );
+
+    expect(dto.image).toBeNull();
   });
 
   it("suppresses blocked media", () => {

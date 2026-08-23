@@ -132,15 +132,19 @@ export function MyPulseWorkspace() {
   }, [today]);
 
   async function downloadBackup() {
-    const envelope = await exportAll();
-    const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `pulserank-local-${today}.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    setMessage("Local backup downloaded");
+    try {
+      const envelope = await exportAll();
+      const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `pulserank-local-${today}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setMessage("Local backup downloaded");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Export unavailable; no backup was created.");
+    }
   }
 
   async function importBackup(file: File) {

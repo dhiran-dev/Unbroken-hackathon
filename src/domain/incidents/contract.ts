@@ -1,16 +1,17 @@
 import { sha256Json } from "@/domain/collection/identity";
 import { z } from "zod";
 
-export const incidentActionSchema = z.enum([
-  "acknowledge",
-  "heal",
-  "review",
-  "approve",
-  "reject",
-  "verify",
-]);
+import {
+  APPROVAL_CONFIRMATION,
+  INCIDENT_ACTIONS,
+  REJECTION_CONFIRMATION,
+  type IncidentAction,
+} from "./client-contract";
 
-export type IncidentAction = z.infer<typeof incidentActionSchema>;
+export { APPROVAL_CONFIRMATION, REJECTION_CONFIRMATION } from "./client-contract";
+export type { IncidentAction } from "./client-contract";
+
+export const incidentActionSchema = z.enum(INCIDENT_ACTIONS);
 
 export const incidentActionBodySchema = z.object({
   prompt: z.string().trim().min(20).max(700).optional(),
@@ -91,9 +92,6 @@ export const fireworksReviewJsonSchema = {
     "required_human_checks",
   ],
 } as const;
-
-export const APPROVAL_CONFIRMATION = "APPROVE HEALED COLLECTOR";
-export const REJECTION_CONFIRMATION = "REJECT HEALED COLLECTOR";
 
 export function hasExactIncidentConfirmation(
   action: IncidentAction,

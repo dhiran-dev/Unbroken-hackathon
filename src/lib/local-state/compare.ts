@@ -8,7 +8,7 @@
  */
 
 import { COMPARE_STORAGE_KEY } from "./keys";
-import { readJsonStorage, removeStorageKey, writeJsonStorage } from "./storage";
+import { hasLocalStorage, readJsonStorage, removeStorageKey, writeJsonStorage } from "./storage";
 
 /** Hard cap on how many products can sit in the compare tray at once. */
 export const MAX_COMPARE_ITEMS = 4;
@@ -17,6 +17,8 @@ export const MAX_COMPARE_ITEMS = 4;
 export interface CompareUpdate {
   /** The selection after the mutation (already sanitized and capped). */
   slugs: string[];
+  /** False only when browser storage is unavailable or the write failed. */
+  ok: boolean;
   /** True only when a slug was newly added by this call. */
   added: boolean;
 }
@@ -62,11 +64,14 @@ export function getCompareSlugs(): string[] {
 }
 
 /** Replaces the whole selection with a sanitized, capped version of `slugs`. */
-export function replaceCompareSlugs(slugs: readonly string[]): string[] {
+export type ReplaceCompareResult = {
+  ok: boolean;
+  slugs: string[];
+};
+
+export function replaceCompareSlugs(slugs: readonly string[]): ReplaceCompareResult {
   const next = sanitizeCompareSlugs(slugs);
-  // Report only what was actually persisted; a failed write yields an empty
-  // selection so callers never mistake unpersisted state for stored state.
-  return writeJsonStorage(COMPARE_STORAGE_KEY, next) ? next : [];
+  return { ok: writeJsonStorage(COMPARE_STORAGE_KEY, next), slugs: next };
 }
 
 /** True when `slug` is currently in the tray. */
@@ -83,34 +88,34 @@ export function isInCompare(slug: string): boolean {
  */
 export function addCompareSlug(slug: string): CompareUpdate {
   const current = getCompareSlugs();
-  if (!isValidCompareSlug(slug)) return { slugs: current, added: false };
+  if (!isValidCompareSlug(slug)) return { slugs: current, ok: hasLocalStorage(), added: false };
   const trimmed = slug.trim();
   if (current.includes(trimmed) || current.length >= MAX_COMPARE_ITEMS) {
-    return { slugs: current, added: false };
+    return { slugs: current, ok: hasLocalStorage(), added: false };
   }
   const next = [...current, trimmed];
   if (!writeJsonStorage(COMPARE_STORAGE_KEY, next)) {
-    return { slugs: current, added: false };
+    return { slugs: current, ok: false, added: false };
   }
-  return { slugs: next, added: true };
+  return { slugs: next, ok: true, added: true };
 }
 
 /** Removes `slug` if present; otherwise a no-op. Unavailable storage leaves the selection untouched. */
 export function removeCompareSlug(slug: string): CompareUpdate {
   const current = getCompareSlugs();
   if (!isValidCompareSlug(slug) || !current.includes(slug.trim())) {
-    return { slugs: current, added: false };
+    return { slugs: current, ok: hasLocalStorage(), added: false };
   }
   const next = current.filter((item) => item !== slug.trim());
   if (!writeJsonStorage(COMPARE_STORAGE_KEY, next)) {
-    return { slugs: current, added: false };
+    return { slugs: current, ok: false, added: false };
   }
-  return { slugs: next, added: false };
+  return { slugs: next, ok: true, added: false };
 }
 
 /** Adds `slug` if absent, removes it if present. */
 export function toggleCompareSlug(slug: string): CompareUpdate {
-  if (!isValidCompareSlug(slug)) return { slugs: getCompareSlugs(), added: false };
+  if (!isValidCompareSlug(slug)) return { slugs: getCompareSlugs(), ok: hasLocalStorage(), added: false };
   const trimmed = slug.trim();
   return getCompareSlugs().includes(trimmed)
     ? removeCompareSlug(trimmed)

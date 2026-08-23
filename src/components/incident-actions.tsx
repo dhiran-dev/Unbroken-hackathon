@@ -7,7 +7,7 @@ import {
   APPROVAL_CONFIRMATION,
   REJECTION_CONFIRMATION,
   type IncidentAction,
-} from "@/domain/incidents/contract";
+} from "@/domain/incidents/client-contract";
 import type { IncidentState } from "@/domain/incidents/machine";
 
 import { Button } from "./ui/button";

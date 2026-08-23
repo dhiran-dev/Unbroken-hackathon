@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun --bun next dev",
-    "build": "node node_modules/next/dist/bin/next build",
+    "build": "node node_modules/next/dist/bin/next build --webpack",
     "start": "bun --bun next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

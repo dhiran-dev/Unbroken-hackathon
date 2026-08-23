@@ -89,7 +89,7 @@ describe("storage helpers", () => {
       };
       installBrowserStorage(throwing);
 
-      expect(hasLocalStorage()).toBe(true); // storage exists, it just fails
+      expect(hasLocalStorage()).toBe(false); // health probing treats getItem failure as unavailable
       expect(writeJsonStorage("pulserank:v1:key", 1)).toBe(false);
       expect(readJsonStorage("pulserank:v1:key")).toBeUndefined();
       expect(removeStorageKey("pulserank:v1:key")).toBe(false);
