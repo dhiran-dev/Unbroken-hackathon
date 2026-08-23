@@ -8,7 +8,6 @@ const PUBLIC_ROUTES = [
   "/my-pulse",
   "/changes",
   "/live-data",
-  "/judge",
 ] as const;
 
 test.describe("PulseRank public release smoke", () => {
@@ -20,6 +19,11 @@ test.describe("PulseRank public release smoke", () => {
       expect(response?.status(), route).toBe(200);
       await expect(page.locator("body")).not.toContainText("Application error");
     }
+  });
+
+  test("does not expose the retired judge cockpit", async ({ request }) => {
+    const response = await request.get("/judge");
+    expect(response.status()).toBe(404);
   });
 
   test("exposes the trusted catalog and a current leaderboard", async ({ request }) => {

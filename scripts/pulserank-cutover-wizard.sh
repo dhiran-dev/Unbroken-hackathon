@@ -223,7 +223,7 @@ fi
 
 stage "Public smoke and route handoff"
 say "Verify the deployment before changing the legacy hostname."
-step "Use the owner-selected HTTPS origin and check /api/health/live, /api/health/ready, /, /explore, /leaderboards, /compare, /my-pulse, /changes, /live-data, and /judge."
+step "Use the owner-selected HTTPS origin and check /api/health/live, /api/health/ready, /, /explore, /leaderboards, /compare, /my-pulse, /changes, and /live-data; confirm /judge returns 404."
 step "Confirm the public HTML is PulseRank, trusted counts are present, no government collector is configured, and rollback points to pulserank-checkpoint-1-safe."
 ask PRODUCTION_APP_URL "Owner-selected public HTTPS origin:"
 write_env PRODUCTION_APP_URL "$PRODUCTION_APP_URL"

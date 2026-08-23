@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   Activity,
@@ -37,6 +36,7 @@ import {
 } from "react";
 
 import type { PublicProductDto } from "@/server/products/dto";
+import { PublishedProductImage } from "@/components/pulserank/product-image";
 import {
   clearCompare,
   getCompareSlugs,
@@ -116,7 +116,6 @@ const NAV_ITEMS = [
   { href: "/changes", label: "Changes", icon: Activity },
   { href: "/my-pulse", label: "My Pulse", icon: Gauge },
   { href: "/live-data", label: "Live Data", icon: Activity },
-  { href: "/judge", label: "Judge Cockpit", icon: Settings2 },
 ] as const;
 
 function dateKey(date: Date): string {
@@ -192,20 +191,21 @@ function ProductThumb({
   category: string;
   product: PublicProductDto | null | undefined;
 }) {
-  const [failed, setFailed] = useState(false);
-  const hasPublishedImage = product?.image !== null && product !== null && product !== undefined;
-
   return (
     <span className={styles.productThumb} aria-hidden="true">
-      {hasPublishedImage && !failed ? (
-        <Image
+      {product ? (
+        <PublishedProductImage
           alt=""
-          src={`/api/public/product-images/${encodeURIComponent(slug)}`}
-          width={38}
+          fallback={(
+            <span className={`${styles.productFallback} ${styles[`category-${category}`] ?? ""}`}>
+              <AppIcon size={17} />
+            </span>
+          )}
           height={38}
+          name={name}
           sizes="38px"
-          unoptimized
-          onError={() => setFailed(true)}
+          slug={slug}
+          width={38}
         />
       ) : (
         <span className={`${styles.productFallback} ${styles[`category-${category}`] ?? ""}`}>

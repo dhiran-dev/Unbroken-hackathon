@@ -82,8 +82,8 @@ configuration. Keep judge mutations and automatic Bright Data approval off.
 2. Run the `ops` migration target once; do not rewrite migration history.
 3. Start web and worker services from the same commit.
 4. Verify `/api/health/live`, `/api/health/ready`, `/`, `/explore`,
-   `/leaderboards`, `/compare`, `/my-pulse`, `/changes`, `/live-data`, and
-   `/judge` from the deployment origin.
+   `/leaderboards`, `/compare`, `/my-pulse`, `/changes`, and `/live-data` from
+   the deployment origin. Confirm `/judge` returns `404`.
 5. Verify the worker private heartbeat/operations view and confirm no legacy
    job is queued.
 6. If the owner enables a bounded collection, verify the run in Live Data and

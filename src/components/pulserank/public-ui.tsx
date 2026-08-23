@@ -16,6 +16,8 @@ import type {
   PublicProductDto,
 } from "@/server/products/dto";
 import { LocalProductActionsClient } from "@/components/pulserank/local-actions";
+import { PublishedProductImage } from "@/components/pulserank/product-image";
+import productImageStyles from "@/components/pulserank/product-image.module.css";
 
 export const NAV_ITEMS = [
   { href: "/explore", label: "Explore" },
@@ -171,7 +173,15 @@ export function ProductCard({ product }: { product: PublicProductDto }) {
   return (
     <article className="pr-product-card">
       <Link href={`/products/${product.slug}`} className="pr-card-link">
-        <ProductArt category={product.category} name={product.name} />
+        <PublishedProductImage
+          className={productImageStyles.cardPhoto}
+          fallback={<ProductArt category={product.category} name={product.name} />}
+          height={360}
+          name={product.name}
+          sizes="(max-width: 520px) 100vw, (max-width: 820px) 50vw, 25vw"
+          slug={product.slug}
+          width={640}
+        />
         <div className="pr-card-body">
           <div className="pr-card-topline">
             <span className="pr-category-label">{categoryLabel(product.category)}</span>
@@ -333,7 +343,7 @@ export function ProductTable({ products }: { products: PublicProductDto[] }) {
         <tbody>
           {products.map((product) => (
             <tr key={product.slug}>
-              <td><Link href={`/products/${product.slug}`} className="pr-table-product"><ProductArt category={product.category} name={product.name} /> <span><strong>{product.name}</strong><small>{categoryLabel(product.category)}</small></span></Link></td>
+              <td><Link href={`/products/${product.slug}`} className="pr-table-product"><PublishedProductImage alt="" className={productImageStyles.tablePhoto} fallback={<ProductArt category={product.category} name={product.name} />} height={40} name={product.name} sizes="40px" slug={product.slug} width={40} /> <span><strong>{product.name}</strong><small>{categoryLabel(product.category)}</small></span></Link></td>
               <td><strong>{caffeineText(product.caffeine)}</strong><small>{product.caffeine.qualifier}</small></td>
               <td>{servingText(product)}</td>
               <td>{product.concentration.mgPer100Ml !== null ? `${formatNumber(product.concentration.mgPer100Ml)} mg / 100 ml` : "Not eligible"}</td>

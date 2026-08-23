@@ -171,7 +171,7 @@ function ProductArtwork({
     return () => observer.disconnect();
   }, [compact, shouldLoad]);
 
-  if (product.image === null || imageFailed) {
+  if (imageFailed) {
     return <ProceduralProductSpecimen compact={compact} product={product} />;
   }
 

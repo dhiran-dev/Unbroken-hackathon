@@ -59,7 +59,6 @@ const primaryNav: readonly NavItem[] = [
   { href: "/live-data", label: "Live Data", icon: Activity },
   { href: "/my-pulse", label: "My Pulse", icon: UserRound },
   { href: "/leaderboards", label: "Leaderboards", icon: Trophy },
-  { href: "/judge", label: "Judge Cockpit", icon: ShieldCheck },
 ];
 
 const summaryIcons = {

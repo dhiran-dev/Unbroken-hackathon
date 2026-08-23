@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -41,6 +40,7 @@ import {
   type SavedProductRef,
 } from "@/lib/local-state/saved-products";
 import type { PublicProductDto } from "@/server/products/dto";
+import { PublishedProductImage } from "@/components/pulserank/product-image";
 
 import {
   caffeinePresentation,
@@ -149,7 +149,6 @@ function Header() {
 }
 
 function ProductImage({ product }: { product: PublicProductDto }) {
-  const [failed, setFailed] = useState(false);
   const initials = product.name
     .split(/\s+/)
     .filter(Boolean)
@@ -162,23 +161,20 @@ function ProductImage({ product }: { product: PublicProductDto }) {
     <div className={styles.productPerspective}>
       <span aria-hidden="true" className={styles.productLight} />
       <div className={styles.productImage}>
-        {product.image !== null && !failed ? (
-          <Image
-            alt={`${product.name} product packaging`}
-            fill
-            onError={() => setFailed(true)}
-            preload
-            sizes="(max-width: 920px) 78vw, 27vw"
-            src={`/api/public/product-images/${encodeURIComponent(product.slug)}`}
-            unoptimized
-          />
-        ) : (
-          <div aria-label={`Procedural fallback artwork for ${product.name}`} className={styles.productFallback} role="img">
-            <Zap aria-hidden="true" />
-            <strong>{initials || "PR"}</strong>
-            <small>{categoryLabel(product.category)}</small>
-          </div>
-        )}
+        <PublishedProductImage
+          fallback={(
+            <div aria-label={`Procedural fallback artwork for ${product.name}`} className={styles.productFallback} role="img">
+              <Zap aria-hidden="true" />
+              <strong>{initials || "PR"}</strong>
+              <small>{categoryLabel(product.category)}</small>
+            </div>
+          )}
+          fill
+          name={product.name}
+          preload
+          sizes="(max-width: 920px) 78vw, 27vw"
+          slug={product.slug}
+        />
       </div>
     </div>
   );

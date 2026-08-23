@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   BarChart3,
@@ -27,6 +26,7 @@ import {
   replaceCompareSlugs,
 } from "@/lib/local-state/compare";
 import type { PublicProductDto } from "@/server/products/dto";
+import { PublishedProductImage } from "@/components/pulserank/product-image";
 
 import {
   caffeineMetric,
@@ -92,22 +92,18 @@ const ROWS = [
 ] as const;
 
 function ProductImage({ product }: { product: PublicProductDto }) {
-  const [failed, setFailed] = useState(false);
-  if (failed || !product.image) {
-    return (
-      <div className={styles.fallbackArt} aria-hidden="true">
-        <span>{product.name.slice(0, 2).toUpperCase()}</span>
-      </div>
-    );
-  }
   return (
-    <Image
+    <PublishedProductImage
       alt={`${product.name} product packaging`}
       className={styles.productImage}
+      fallback={(
+        <div className={styles.fallbackArt} aria-hidden="true">
+          <span>{product.name.slice(0, 2).toUpperCase()}</span>
+        </div>
+      )}
       height={112}
-      onError={() => setFailed(true)}
-      src={`/api/public/product-images/${encodeURIComponent(product.slug)}`}
-      unoptimized
+      name={product.name}
+      slug={product.slug}
       width={112}
     />
   );

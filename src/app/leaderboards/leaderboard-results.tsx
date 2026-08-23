@@ -174,7 +174,7 @@ export function LeaderboardResults({
                     <td className={styles.rank}><span className={entry.rank <= 3 ? styles.topRank : undefined}>{entry.rank}</span></td>
                     <td>
                       <Link href={`/products/${product.slug}`} className={styles.productLink}>
-                        <LeaderboardProductImage slug={product.slug} name={product.name} hasPublishedImage={product.image !== null} />
+                        <LeaderboardProductImage slug={product.slug} name={product.name} />
                         <span><strong>{product.name}</strong><small>Exact observation</small></span>
                       </Link>
                     </td>

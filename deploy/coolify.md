@@ -55,7 +55,7 @@ operator action or scheduled job, and never auto-approves a Bright Data heal.
 4. Start the worker target and verify its private heartbeat/operations view.
 5. Run a bounded Caffeine Informer collection only when the owner has enabled
    the integration flag and accepted the source terms.
-6. Check `/live-data`, `/judge`, and the public home before sharing the URL.
+6. Check `/live-data` and the public home before sharing the URL.
 
 Do not copy raw collection payloads or incident artifacts into the image or
 Git. Existing collector records and snapshots remain quarantined audit
