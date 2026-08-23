@@ -261,6 +261,7 @@ export default async function LeaderboardsPage({ searchParams }: { searchParams:
           <section className={styles.boardContent} aria-labelledby="board-heading">
             <h2 id="board-heading" className="sr-only">{selectedBoard.label}</h2>
             <LeaderboardResults
+              key={`${selectedBoard.key}:${category}:${serving}:${completeOnly ? "complete" : "all"}:${visibleLimit}`}
               board={selectedBoard.key}
               category={category}
               serving={serving}
