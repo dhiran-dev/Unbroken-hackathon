@@ -1,12 +1,16 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+import { isExactPlotProduct } from "@/components/pulserank/explore/explore-model";
+import type { PublicProductDto } from "@/server/products/dto";
+
 test.describe("PulseRank Explore", () => {
   test.setTimeout(90_000);
 
-  test("traverses the full trusted catalog through opaque cursors exactly once", async ({ request }, testInfo) => {
+  test("traverses the full trusted catalog and plots every eligible product", async ({ page, request }, testInfo) => {
     test.skip(testInfo.project.name === "mobile", "Single deterministic API traversal");
     const slugs = new Set<string>();
+    const products: PublicProductDto[] = [];
     let cursor: string | null = null;
     let totalCount: number | null = null;
 
@@ -16,7 +20,7 @@ test.describe("PulseRank Explore", () => {
       const response = await request.get(`/api/public/products?${parameters.toString()}`);
       expect(response.status()).toBe(200);
       const body = (await response.json()) as {
-        items: Array<{ slug: string }>;
+        items: PublicProductDto[];
         nextCursor: string | null;
         totalCount: number;
       };
@@ -25,11 +29,30 @@ test.describe("PulseRank Explore", () => {
       for (const item of body.items) {
         expect(slugs.has(item.slug), `duplicate slug ${item.slug}`).toBe(false);
         slugs.add(item.slug);
+        products.push(item);
       }
       cursor = body.nextCursor;
     } while (cursor);
 
     expect(slugs.size).toBe(totalCount);
+
+    const expectedPlotCount = products.filter((product) =>
+      isExactPlotProduct(product, "total"),
+    ).length;
+    const expectedConcentrationCount = products.filter((product) =>
+      isExactPlotProduct(product, "concentration"),
+    ).length;
+    await page.goto("/explore", { waitUntil: "networkidle" });
+    await expect(page.locator("[data-plot-catalog-status]"))
+      .toHaveAttribute("data-plot-catalog-status", "complete");
+    await expect(page.locator("[data-plot-point]")).toHaveCount(expectedPlotCount);
+    await expect(page.locator("[data-plot-catalog-status]"))
+      .toContainText(`${expectedPlotCount} exact points across all results`);
+
+    await page.getByRole("button", { name: "Concentration" }).click();
+    await expect(page.locator("[data-plot-point]")).toHaveCount(expectedConcentrationCount);
+    await expect(page.locator("[data-plot-catalog-status]"))
+      .toContainText(`${expectedConcentrationCount} exact points across all results`);
   });
 
   test("renders 24 trusted products, supports command search, and cursor-loads without duplicates", async ({ page }, testInfo) => {
@@ -72,10 +95,10 @@ test.describe("PulseRank Explore", () => {
     expect(secondBatch.slice(0, 24)).toEqual(firstBatch);
 
     await expect(page.getByLabel("Plot category legend")).toBeVisible();
-    const firstPoint = page.locator("[data-plot-point]").first();
-    const firstPointSlug = await firstPoint.getAttribute("data-plot-point");
-    await firstPoint.hover();
-    await expect(page.locator(`[data-point-label="${firstPointSlug}"]`)).toHaveCSS("opacity", "1");
+    const selectedPoint = page.locator("[data-plot-selected='true']");
+    const selectedPointSlug = await selectedPoint.getAttribute("data-plot-point");
+    await selectedPoint.hover();
+    await expect(page.locator(`[data-point-label="${selectedPointSlug}"]`)).toHaveCSS("opacity", "1");
 
     const overflow = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
@@ -89,11 +112,13 @@ test.describe("PulseRank Explore", () => {
     await page.goto("/explore", { waitUntil: "networkidle" });
 
     await expect(page.locator("[data-product-inspector]")).toBeHidden();
-    const firstPoint = page.locator("[data-plot-point]").first();
-    const pointBox = await firstPoint.boundingBox();
+    const selectedPoint = page.locator("[data-plot-selected='true']");
+    const selectedPointSlug = await selectedPoint.getAttribute("data-plot-point");
+    if (!selectedPointSlug) throw new Error("Selected plot point has no slug");
+    const pointBox = await selectedPoint.boundingBox();
     expect(pointBox?.width).toBeGreaterThanOrEqual(44);
     expect(pointBox?.height).toBeGreaterThanOrEqual(44);
-    await firstPoint.click();
+    await selectedPoint.click();
     const inspector = page.getByRole("dialog");
     await expect(inspector).toBeVisible();
     await expect(inspector).toHaveAttribute("aria-modal", "true");
@@ -108,7 +133,7 @@ test.describe("PulseRank Explore", () => {
     await expect(page.getByRole("button", { name: "Close product inspector", exact: true })).toBeFocused();
     await page.getByRole("button", { name: "Close product inspector", exact: true }).click();
     await expect(page.locator("[data-product-inspector]")).toHaveCount(0);
-    await expect(firstPoint).toBeFocused();
+    await expect(page.locator(`[data-plot-point="${selectedPointSlug}"]`)).toBeFocused();
     expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
 
     const filterButton = page.getByRole("button", { name: /Filters/ });

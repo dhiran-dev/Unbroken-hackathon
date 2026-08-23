@@ -76,6 +76,9 @@ type ProductsResponse = {
   nextCursor: string | null;
 };
 
+const RESULTS_PAGE_SIZE = 24;
+const PLOT_PAGE_SIZE = 100;
+
 type ExploreWorkspaceProps = {
   categories: CategoryCount[];
   initialError: string | null;
@@ -226,6 +229,20 @@ function filterHref(
   }
   const query = parameters.toString();
   return query ? `/explore?${query}` : "/explore";
+}
+
+function productListParameters(
+  filters: ExploreFilters,
+  cursor: string,
+  limit: number,
+): URLSearchParams {
+  const parameters = new URLSearchParams();
+  for (const [name, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== false) parameters.set(name, String(value));
+  }
+  parameters.set("cursor", cursor);
+  parameters.set("limit", String(limit));
+  return parameters;
 }
 
 function qualificationLabel(product: PublicProductDto): string | null {
@@ -419,11 +436,15 @@ function ActiveFilters({ filters }: { filters: ExploreFilters }) {
 }
 
 function ScatterPlot({
+  catalogTotalCount,
+  loading,
   metric,
   products,
   selectedSlug,
   onSelect,
 }: {
+  catalogTotalCount: number;
+  loading: boolean;
   metric: ExplorePlotMetric;
   products: PublicProductDto[];
   selectedSlug: string | null;
@@ -447,13 +468,19 @@ function ScatterPlot({
   const ticks = [0, 0.25, 0.5, 0.75, 1];
   const yUnit = metric === "total" ? "mg" : "mg / 100 ml";
   const legendCategories = Array.from(new Set(points.map(({ product }) => product.category)));
+  const renderedPoints = selectedSlug === null
+    ? points
+    : [
+        ...points.filter(({ product }) => product.slug !== selectedSlug),
+        ...points.filter(({ product }) => product.slug === selectedSlug),
+      ];
 
   if (points.length === 0) {
     return (
       <div className={styles.plotEmpty}>
-        <FlaskConical size={24} aria-hidden="true" />
-        <h3>No comparable points in this page</h3>
-        <p>Try a wider filter. Ranges and missing volumes stay in the results, but cannot share this exact-value plot.</p>
+        {loading ? <LoaderCircle className={styles.spinner} size={24} aria-hidden="true" /> : <FlaskConical size={24} aria-hidden="true" />}
+        <h3>{loading ? "Loading the complete plot" : "No comparable points in these results"}</h3>
+        <p>{loading ? "Collecting every matching product before reporting the final exact-point count." : "Try a wider filter. Ranges and missing volumes stay in the results, but cannot share this exact-value plot."}</p>
       </div>
     );
   }
@@ -489,7 +516,7 @@ function ScatterPlot({
         <line className={styles.axisLine} x1={left} x2={width - right} y1={height - bottom} y2={height - bottom} />
         <text className={styles.axisLabel} textAnchor="middle" transform={`translate(17 ${top + plotHeight / 2}) rotate(-90)`}>{yUnit}</text>
         <text className={styles.axisLabel} textAnchor="middle" x={left + plotWidth / 2} y={height - 3}>Normalized serving volume</text>
-        {points.map(({ product, xMl, yValue }, index) => {
+        {renderedPoints.map(({ product, xMl, yValue }, index) => {
           const x = left + (xMl / maxX) * plotWidth;
           const y = top + (1 - yValue / maxY) * plotHeight;
           const selected = product.slug === selectedSlug;
@@ -499,6 +526,7 @@ function ScatterPlot({
               className={`${styles.plotPoint}${selected ? ` ${styles.plotPointSelected}` : ""}`}
               data-category={product.category}
               data-plot-point={product.slug}
+              data-plot-selected={selected || undefined}
               key={product.slug}
               onBlur={() => setActiveLabelSlug(null)}
               onClick={(event) => {
@@ -510,7 +538,7 @@ function ScatterPlot({
               onMouseEnter={() => setActiveLabelSlug(product.slug)}
               onMouseLeave={() => setActiveLabelSlug(null)}
               role="button"
-              style={{ "--point-order": index } as CSSProperties}
+              style={{ "--point-order": Math.min(index, RESULTS_PAGE_SIZE) } as CSSProperties}
               tabIndex={0}
               transform={`translate(${x} ${y})`}
             >
@@ -543,7 +571,9 @@ function ScatterPlot({
       </div>
       <div className={styles.plotFootnote}>
         <span><Info size={14} aria-hidden="true" /> Exact caffeine + positive normalized volume only</span>
-        <span>{points.length} plotted from {products.length} loaded</span>
+        <span>{loading
+          ? `${points.length} plotted while loading ${products.length} of ${catalogTotalCount}`
+          : `${points.length} plotted from all ${products.length} matching products`}</span>
         <span className={styles.mobilePlotHint}>Swipe the plot to inspect the full axis</span>
       </div>
     </div>
@@ -666,6 +696,7 @@ export function ExploreWorkspace({
   initialTotalCount,
 }: ExploreWorkspaceProps) {
   const [products, setProducts] = useState(initialProducts);
+  const [plotProducts, setPlotProducts] = useState(initialProducts);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [selected, setSelected] = useState(initialSelected);
@@ -675,6 +706,8 @@ export function ExploreWorkspace({
   const [compactInspector, setCompactInspector] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [plotLoading, setPlotLoading] = useState(initialNextCursor !== null);
+  const [plotError, setPlotError] = useState<string | null>(null);
   const inspectorCloseRef = useRef<HTMLButtonElement>(null);
   const inspectorRef = useRef<HTMLElement>(null);
   const lastFocusRef = useRef<HTMLElement | SVGElement | null>(null);
@@ -691,9 +724,46 @@ export function ExploreWorkspace({
   }, []);
 
   const plottedCount = useMemo(
-    () => products.filter((product) => isExactPlotProduct(product, metric)).length,
-    [metric, products],
+    () => plotProducts.filter((product) => isExactPlotProduct(product, metric)).length,
+    [metric, plotProducts],
   );
+
+  useEffect(() => {
+    if (!initialNextCursor) return;
+
+    const controller = new AbortController();
+
+    async function loadCompletePlot() {
+      let cursor: string | null = initialNextCursor;
+      let collected = initialProducts;
+      const visitedCursors = new Set<string>();
+
+      try {
+        while (cursor !== null) {
+          if (visitedCursors.has(cursor)) throw new Error("Catalog cursor repeated");
+          visitedCursors.add(cursor);
+
+          const parameters = productListParameters(initialFilters, cursor, PLOT_PAGE_SIZE);
+          const response = await fetch(`/api/public/products?${parameters.toString()}`, {
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error(`Catalog returned ${response.status}`);
+          const body = (await response.json()) as ProductsResponse;
+          collected = appendUniqueProducts(collected, body.items);
+          cursor = body.nextCursor;
+          setPlotProducts(collected);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setPlotError(error instanceof Error ? error.message : "The complete plot could not be loaded");
+      } finally {
+        if (!controller.signal.aborted) setPlotLoading(false);
+      }
+    }
+
+    void loadCompletePlot();
+    return () => controller.abort();
+  }, [initialFilters, initialNextCursor, initialProducts]);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 1180px)");
@@ -763,12 +833,7 @@ export function ExploreWorkspace({
     if (!nextCursor || loading) return;
     setLoading(true);
     setLoadError(null);
-    const parameters = new URLSearchParams();
-    for (const [name, value] of Object.entries(initialFilters)) {
-      if (value !== undefined && value !== false) parameters.set(name, String(value));
-    }
-    parameters.set("cursor", nextCursor);
-    parameters.set("limit", "24");
+    const parameters = productListParameters(initialFilters, nextCursor, RESULTS_PAGE_SIZE);
 
     try {
       const response = await fetch(`/api/public/products?${parameters.toString()}`);
@@ -823,9 +888,22 @@ export function ExploreWorkspace({
           {initialError ? <div className={styles.queryError} role="status"><Info size={15} aria-hidden="true" /> {initialError}. Showing the unfiltered trusted catalog.</div> : null}
           <div className={styles.resultSummary} aria-live="polite">
             <span><strong>{totalCount.toLocaleString()}</strong> trusted {totalCount === 1 ? "result" : "results"}</span>
-            <span><i /> {plottedCount} exact points in this loaded page</span>
+            <span data-plot-catalog-status={plotLoading ? "loading" : plotError ? "partial" : "complete"}>
+              <i /> {plotLoading
+                ? `${plottedCount} exact points · loading the complete plot`
+                : plotError
+                  ? `${plottedCount} exact points loaded · complete plot unavailable`
+                  : `${plottedCount} exact points across all results`}
+            </span>
           </div>
-          <ScatterPlot metric={metric} onSelect={selectProduct} products={products} selectedSlug={selected?.slug ?? null} />
+          <ScatterPlot
+            catalogTotalCount={totalCount}
+            loading={plotLoading}
+            metric={metric}
+            onSelect={selectProduct}
+            products={plotProducts}
+            selectedSlug={selected?.slug ?? null}
+          />
           <section className={styles.resultsSection} aria-labelledby="explore-results-heading">
             <div className={styles.resultsHeading}>
               <div>
