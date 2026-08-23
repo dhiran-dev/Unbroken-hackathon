@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulseRank v2 — Style Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#04040a; --ink-raised:#0b0916;
+  --veil:rgba(16,13,28,.52); --veil-solid:#100c1c;
+  --paper:#f3efff; --muted:rgba(227,219,246,.66); --quiet:rgba(227,219,246,.42);
+  --line:rgba(222,210,255,.16); --line-bright:rgba(229,216,255,.34);
+  --violet:#a76bff; --violet-hot:#d99cff; --violet-deep:#6e2de4;
+  --success:#34d399; --warning:#fbbf24; --danger:#fb7185;
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --page-pad:clamp(22px,3.6vw,62px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--ink)}
+body{margin:0;min-width:320px;background:var(--ink);color:var(--paper);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip}
+button,a{font:inherit;color:inherit} button{border:0} a{text-decoration:none}
+img{display:block} ::selection{color:#fff;background:rgba(166,91,255,.58)}
+:focus-visible{outline:2px solid var(--violet-hot);outline-offset:4px}
+
+/* ---------- shared atoms ---------- */
+.micro{font-size:7.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--quiet)}
+.label{font-size:10px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--muted)}
+.pulse-glyph{position:relative;width:32px;height:32px;border:1px solid rgba(224,205,255,.42);border-radius:50%;
+  box-shadow:inset 0 0 18px rgba(165,88,255,.09),0 0 24px rgba(153,75,255,.12);flex:none;display:inline-block}
+.pulse-glyph::before,.pulse-glyph::after{content:"";position:absolute;left:50%;top:50%;background:var(--violet-hot);
+  box-shadow:0 0 14px rgba(196,120,255,.75)}
+.pulse-glyph::before{width:14px;height:1px;transform:translate(-50%,-50%) rotate(-52deg)}
+.pulse-glyph::after{width:8px;height:1px;transform:translate(-7px,3px) rotate(-52deg)}
+.glass{background:var(--veil);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--line);border-radius:22px;box-shadow:inset 0 1px 0 rgba(233,222,255,.18)}
+@supports not (backdrop-filter:blur(1px)){ .glass{background:var(--veil-solid)} }
+.btn{display:inline-flex;align-items:center;gap:10px;border-radius:999px;min-height:44px;padding:9px 22px;cursor:pointer;
+  transition:transform .25s var(--ease-out),box-shadow .25s var(--ease-out),border-color .25s var(--ease-out)}
+.btn:hover{transform:translateY(-1px)}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(167,107,255,.35)}
+.btn b{display:block;font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;line-height:1}
+.btn small{display:block;margin-top:4px;font-size:8px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;opacity:.46;line-height:1}
+.btn-primary{background:linear-gradient(135deg,var(--violet-deep),var(--violet));color:#fff;
+  box-shadow:0 10px 30px rgba(110,45,228,.35),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn-primary:hover{box-shadow:0 14px 38px rgba(110,45,228,.5),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn-glass{background:var(--veil);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(233,222,255,.18)}
+@supports not (backdrop-filter:blur(1px)){ .btn-glass{background:var(--veil-solid)} }
+.btn-ghost{background:transparent;border:1px solid var(--line)}
+.btn-icon{width:44px;height:44px;justify-content:center;padding:0}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;
+  font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
+.chip i{width:5px;height:5px;border-radius:50%;background:currentColor;flex:none}
+.chip-selected{background:rgba(167,107,255,.14);color:var(--violet-hot);border:1px solid rgba(167,107,255,.35)}
+.chip-present{background:rgba(52,211,153,.12);color:var(--success)}
+.chip-range{background:rgba(251,191,36,.12);color:var(--warning)}
+.chip-conflict{background:rgba(251,113,133,.12);color:var(--danger)}
+.chip-quiet{background:rgba(227,219,246,.08);color:var(--quiet)}
+
+/* ---------- page scaffolding ---------- */
+.wrap{padding:0 var(--page-pad)}
+header.site{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:14px var(--page-pad);background:linear-gradient(180deg,rgba(4,4,10,.85),rgba(4,4,10,.55));
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand b{display:block;font-family:Manrope,sans-serif;font-size:13px;font-weight:650;letter-spacing:.28em}
+.brand small{display:block;margin-top:2px;font-size:7px;letter-spacing:.3em;text-transform:uppercase;color:var(--quiet)}
+nav.main{display:flex;gap:26px}
+nav.main a{font-size:10px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--quiet);padding:6px 0;position:relative}
+nav.main a.on{color:var(--paper)}
+nav.main a.on::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--violet-hot);box-shadow:0 0 8px rgba(217,156,255,.8)}
+.bloom{position:absolute;pointer-events:none;width:min(70vw,900px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,rgba(110,45,228,.16),transparent 62%);filter:blur(10px)}
+section.block{position:relative;padding:72px 0 24px;border-top:1px solid var(--line)}
+.block-head{display:flex;align-items:baseline;gap:18px;margin-bottom:34px}
+.block-head h2{font-family:Manrope,sans-serif;font-weight:400;font-size:clamp(24px,2.25vw,38px);letter-spacing:-.04em;margin:0}
+.block-head .idx{font-family:Manrope,sans-serif;font-size:12px;letter-spacing:.26em;color:var(--quiet)}
+.grid{display:grid;gap:16px}
+footer.colophon{padding:56px var(--page-pad) 64px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:14px 40px;justify-content:space-between}
+
+/* ---------- specimens ---------- */
+.swatches{grid-template-columns:repeat(auto-fill,minmax(148px,1fr))}
+.swatch{border-radius:14px;border:1px solid var(--line);overflow:hidden}
+.swatch .fill{height:64px}
+.swatch .meta{padding:10px 12px;background:var(--veil);backdrop-filter:blur(18px)}
+.swatch .meta b{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+.swatch .meta span{display:block;margin-top:3px;font-size:9px;color:var(--quiet);letter-spacing:.06em}
+.type-display{font-family:Manrope,sans-serif;font-weight:500;font-size:clamp(54px,6.35vw,108px);line-height:.91;letter-spacing:-.055em;margin:0}
+.type-display em{font-style:normal;background:linear-gradient(108deg,#fff 10%,#dcc7ff 48%,#a96bff 88%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.type-h{font-family:Manrope,sans-serif;font-weight:400;font-size:clamp(24px,2.25vw,38px);letter-spacing:-.04em;margin:0}
+.type-title{font-family:Manrope,sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em;margin:0}
+.type-metric{font-family:Manrope,sans-serif;font-weight:500;font-size:clamp(44px,4vw,76px);line-height:1;letter-spacing:-.045em;margin:0}
+.type-metric sup{font-size:.32em;letter-spacing:.08em;color:var(--muted);vertical-align:super}
+.tspec{display:grid;grid-template-columns:150px 1fr;gap:8px 24px;align-items:center}
+.tspec>div:nth-child(odd){font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--quiet)}
+.panel-demo{padding:24px;position:relative}
+.panel-demo .corner{position:absolute;top:14px;right:16px}
+.track{position:relative;height:2px;background:var(--line);border-radius:2px;margin:26px 0 8px}
+.track .comet{position:absolute;top:50%;width:26px;height:2px;transform:translateY(-50%);
+  background:linear-gradient(90deg,transparent,var(--violet));border-radius:2px}
+.track .dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;
+  background:var(--violet);box-shadow:0 0 0 3px rgba(167,107,255,.18),0 0 14px rgba(167,107,255,.65)}
+.track .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#fff}
+.track .diamond{position:absolute;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:9px;height:9px;background:var(--warning);box-shadow:0 0 10px rgba(251,191,36,.5)}
+.track .ends{position:absolute;inset:0;display:flex;justify-content:space-between;transform:translateY(14px)}
+.vessels{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end}
+.vessel{width:96px;height:120px;display:grid;place-items:end center;border-radius:14px;border:1px solid var(--line);padding-bottom:10px}
+.note{font-size:11px;line-height:1.7;color:var(--quiet);max-width:68ch}
+code.tok{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--violet-hot)}
+@media(max-width:900px){nav.main{display:none}.tspec{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site">
+  <a class="brand" href="#">
+    <i class="pulse-glyph" aria-hidden="true"></i>
+    <span><b>PULSERANK</b><small>Verified product signals</small></span>
+  </a>
+  <nav class="main" aria-label="Style guide sections">
+    <a class="on" href="#color">Color</a><a href="#type">Type</a><a href="#buttons">Actions</a><a href="#data">Data</a><a href="#objects">Objects</a>
+  </nav>
+  <span class="micro">Design system v2 · Instrument room</span>
+</header>
+
+<main class="wrap">
+
+<!-- ================= COLOR ================= -->
+<section class="block" id="color" style="border-top:none">
+  <div class="block-head"><span class="idx">01</span><h2>Ink &amp; violet light.</h2></div>
+  <div class="bloom" style="top:-180px;right:-220px"></div>
+  <div class="grid swatches">
+    <div class="swatch"><div class="fill" style="background:#04040a"></div><div class="meta"><b>Ink</b><span>#04040a · canvas</span></div></div>
+    <div class="swatch"><div class="fill" style="background:#0b0916"></div><div class="meta"><b>Ink Raised</b><span>#0b0916 · fields</span></div></div>
+    <div class="swatch"><div class="fill" style="background:linear-gradient(135deg,#100c1c,#241a3e)"></div><div class="meta"><b>Veil</b><span>rgba(16,13,28,.52)</span></div></div>
+    <div class="swatch"><div class="fill" style="background:radial-gradient(circle at 40% 40%,#c9a4ff,#6e2de4 60%,#2a1650)"></div><div class="meta"><b>Violet</b><span>#a76bff · signal</span></div></div>
+    <div class="swatch"><div class="fill" style="background:#d99cff"></div><div class="meta"><b>Violet Hot</b><span>#d99cff · tips</span></div></div>
+    <div class="swatch"><div class="fill" style="background:#6e2de4"></div><div class="meta"><b>Violet Deep</b><span>#6e2de4 · ground</span></div></div>
+    <div class="swatch"><div class="fill" style="background:#f3efff"></div><div class="meta"><b>Paper</b><span>#f3efff · text</span></div></div>
+    <div class="swatch"><div class="fill" style="background:#34d399"></div><div class="meta"><b>Verified</b><span>#34d399 · present</span></div></div>
+    <div class="swatch"><div class="fill" style="background:#fbbf24"></div><div class="meta"><b>Caution</b><span>#fbbf24 · ranged</span></div></div>
+    <div class="swatch"><div class="fill" style="background:#fb7185"></div><div class="meta"><b>Conflict</b><span>#fb7185 · rose</span></div></div>
+    <div class="swatch"><div class="fill" style="background:repeating-linear-gradient(90deg,rgba(222,210,255,.16) 0 1px,transparent 1px 8px) #04040a"></div><div class="meta"><b>Hairlines</b><span>rgba(222,210,255,.16)</span></div></div>
+  </div>
+  <p class="note" style="margin-top:22px">Signal rarity: violet marks what is alive — action, selection, measured value. At most one atmospheric bloom per viewport. Green / amber / rose are data-only states.</p>
+</section>
+
+<!-- ================= TYPE ================= -->
+<section class="block" id="type">
+  <div class="block-head"><span class="idx">02</span><h2>The type contract.</h2></div>
+  <p class="micro" style="margin-bottom:14px">From the landing page · binding</p>
+  <h1 class="type-display">The number,<br><em>and its proof.</em></h1>
+  <p class="note" style="margin-top:18px">Display — Manrope <b>500, never bold</b> · tracking −.055em · line-height .91 · one gradient <code class="tok">&lt;em&gt;</code> word max.</p>
+
+  <div style="height:42px"></div>
+  <div class="tspec">
+    <div>Headline · M400 −.04em</div><h3 class="type-h">Every milligram carries its source, state, and moment in time.</h3>
+    <div>Metric · M500 −.045em</div>
+      <div><span class="type-metric">160<sup>MG / 12 FL OZ</sup></span>&nbsp;&nbsp;<span class="chip chip-range"><i></i>Range</span></div>
+    <div>Title · M600 −.02em</div><p class="type-title" style="margin:0">Celsius Sparkling Orange</p>
+    <div>Body · Inter 1.72</div><p class="note" style="margin:0">PulseRank turns live product observations into transparent rankings. Body copy stays Inter, low-contrast violet-grey, generous leading, ≈65–75ch blocks.</p>
+    <div>Label · 10px .17em</div><span class="label">Mg per serving · exact values only</span>
+    <div>Micro · 7.5px .28em</div><span class="micro">Source checked · trust preserved</span>
+    <div>Numerals</div><span style="font-feature-settings:'tnum' 1;font-weight:600">1,240 · 86.4 · 09:41:07 — tabular figures align data columns</span>
+  </div>
+  <p class="note" style="margin-top:22px">Law: anything ≤10px is uppercase with wide tracking (.12–.34em). Buttons use the two-line pattern — bold tracked label over an 8px quiet sub-label.</p>
+</section>
+
+<!-- ================= BUTTONS ================= -->
+<section class="block" id="buttons">
+  <div class="block-head"><span class="idx">03</span><h2>Glass pill actions.</h2></div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-primary"><span><b>Save to My Pulse</b><small>Stored in this browser</small></span></button>
+    <button class="btn btn-glass btn"><span><b>Add to compare</b><small>Up to four products</small></span></button>
+    <button class="btn btn-ghost"><span><b>Methodology</b><small>How rankings work</small></span></button>
+    <button class="btn btn-glass btn-icon" aria-label="Play film"><svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M11.2 7 1 13V1l10.2 6Z" fill="currentColor"/></svg></button>
+    <button class="btn btn-primary" disabled style="opacity:.45;cursor:not-allowed"><span><b>Saving…</b><small>Writing locally</small></span></button>
+  </div>
+  <p class="note" style="margin-top:22px">Primary = violet-deep→violet gradient, white text, <b>one per view</b>. Glass = veil + blur + inner top highlight, the default secondary. Ghost = transparent + hairline. Pills, ≥44px, magnetic hover, focus ring <code class="tok">0 0 0 3px rgba(167,107,255,.35)</code>.</p>
+</section>
+
+<!-- ================= DATA ================= -->
+<section class="block" id="data">
+  <div class="block-head"><span class="idx">04</span><h2>Data states &amp; instruments.</h2></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px">
+    <span class="chip chip-selected"><i></i>Selected filter</span>
+    <span class="chip chip-present"><i></i>Present · verified</span>
+    <span class="chip chip-range"><i></i>RANGE 180–220 MG</span>
+    <span class="chip chip-range"><i></i>APPROX.</span>
+    <span class="chip chip-conflict"><i></i>Conflict · ineligible</span>
+    <span class="chip chip-quiet"><i></i>Not published</span>
+    <span class="chip chip-quiet"><i></i>Not applicable</span>
+  </div>
+
+  <div class="glass panel-demo" style="max-width:720px">
+    <span class="corner micro">Instrument · pulse track</span>
+    <div class="label" style="margin-bottom:4px">Caffeine position across catalog</div>
+    <div class="track">
+      <span class="comet" style="left:34%"></span>
+      <span class="dot" style="left:38%"></span>
+      <span class="diamond" style="left:71%"></span>
+      <span class="ends micro"><span>0 mg</span><span>400 mg</span></span>
+    </div>
+    <div style="height:26px"></div>
+    <div style="display:flex;gap:26px;flex-wrap:wrap">
+      <div><span class="micro">Exact value</span><div class="type-title" style="font-feature-settings:'tnum' 1">142 mg <span style="color:var(--quiet);font-size:10px;letter-spacing:.14em">/ 12 FL OZ</span></div></div>
+      <div><span class="micro">Ranged value</span><div class="type-title" style="font-feature-settings:'tnum' 1">180–220 mg <span class="chip chip-range" style="transform:translateY(-2px)"><i></i>Range</span></div></div>
+      <div><span class="micro">Absent value</span><div class="type-title" style="color:var(--quiet)">— <span class="chip chip-quiet" style="transform:translateY(-2px)"><i></i>Not published</span></div></div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:20px">A missing value is never styled as zero; a range is never collapsed; conflicting caffeine is rank-ineligible. Serving size stays within 24px of every milligram figure. Six field states keep label + color + written explanation.</p>
+</section>
+
+<!-- ================= OBJECTS ================= -->
+<section class="block" id="objects">
+  <div class="block-head"><span class="idx">05</span><h2>Vessels &amp; the glass enhancement.</h2></div>
+  <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:16px" class="obj-grid">
+    <div class="glass panel-demo" style="min-height:260px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap">
+      <div>
+        <span class="micro">Category glyph art · original SVG</span>
+        <p class="note" style="margin:8px 0 0">Orientation cues, never evidence. No fabricated packaging, no audit-only media.</p>
+      </div>
+      <div class="vessels">
+        <div class="vessel" style="background:linear-gradient(180deg,transparent,rgba(110,45,228,.14))">
+          <svg width="34" height="58" viewBox="0 0 34 58" fill="none"><rect x="9" y="4" width="16" height="48" rx="4" stroke="#c9a4ff" stroke-width="1.4"/><path d="M9 12h16M9 46h16" stroke="rgba(201,164,255,.4)"/><path d="M19 20l-6 10h5l-3 9 9-12h-5l3-7z" fill="#d99cff"/></svg>
+        </div>
+        <div class="vessel" style="background:linear-gradient(180deg,transparent,rgba(110,45,228,.14))">
+          <svg width="26" height="60" viewBox="0 0 26 60" fill="none"><path d="M9 2h8v10c4 2 6 6 6 10v30a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6V22c0-4 2-8 6-10V2z" stroke="#c9a4ff" stroke-width="1.4"/><circle cx="13" cy="34" r="7" stroke="#d99cff" stroke-width="1.2"/></svg>
+        </div>
+        <div class="vessel" style="background:linear-gradient(180deg,transparent,rgba(110,45,228,.14))">
+          <svg width="40" height="48" viewBox="0 0 40 48" fill="none"><path d="M6 10h22v22a10 10 0 0 1-10 10h-2A10 10 0 0 1 6 32V10z" stroke="#c9a4ff" stroke-width="1.4"/><path d="M28 14h4a6 6 0 0 1 0 12h-4" stroke="#c9a4ff" stroke-width="1.4"/><path d="M12 20l-3 7h4l-2 6 6-8h-4l2-5z" fill="#d99cff"/></svg>
+        </div>
+        <div class="vessel" style="background:linear-gradient(180deg,transparent,rgba(110,45,228,.14))">
+          <svg width="30" height="46" viewBox="0 0 30 46" fill="none"><ellipse cx="15" cy="8" rx="10" ry="4" stroke="#c9a4ff" stroke-width="1.4"/><path d="M5 8c0 14 2 24 4 30 1 3 11 3 12 0 2-6 4-16 4-30" stroke="#c9a4ff" stroke-width="1.4"/><path d="M16 20l-4 7h3l-2 6 6-8h-3l2-5z" fill="#d99cff"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="glass panel-demo">
+      <span class="corner micro">Enhancement · flagged</span>
+      <div class="label">Canvas UI · glass-object</div>
+      <p class="note" style="margin:12px 0 18px">Passport heroes and empty states may render their glyph as a refracting glass object — <code class="tok">tint #6e2de4</code>, <code class="tok">highlight #d99cff</code>, <code class="tok">ior ≈ 1.6</code>, <code class="tok">dispersion ≈ 1.2</code>. Static glyph art remains the SSR / reduced-motion / no-WebGL fallback. The glass never carries data or copy.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <span class="chip chip-selected"><i></i>Flag on · passport</span>
+        <span class="chip chip-quiet"><i></i>Fallback · static glyph</span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="colophon">
+  <span class="micro">Pulserank design system v2 · instrument room</span>
+  <span class="micro">Source · Caffeine Informer · attributed at page level</span>
+  <span class="micro">Mockups: A explore · B leaderboard · C passport</span>
+</footer>
+<style>@media(max-width:900px){.obj-grid{grid-template-columns:1fr!important}}</style>
+</body>
+</html>

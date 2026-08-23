@@ -5,7 +5,7 @@
  * `PublicProductDto`. Pure functions only: no database access, no network,
  * no clock reads — identical input always yields identical output.
  *
- * Plan reference: PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §"Agent A8 —
+ * Plan reference: docs/plans/pulserank-master-implementation-plan.md §"Agent A8 —
  * Public API → DTO rules":
  * - trusted records only (the caller feeds rows obtained through
  *   `queries.ts`, which follows `products.current_trusted_observation_id`

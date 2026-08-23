@@ -5,7 +5,7 @@
  * reads. `validateRun` is a pure function of its inputs; identical input always
  * yields identical output.
  *
- * Implements PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §"Agent A5" →
+ * Implements docs/plans/pulserank-master-implementation-plan.md §"Agent A5" →
  * "Run-level checks":
  *
  * | Check                  | Severity | Trigger                                   |

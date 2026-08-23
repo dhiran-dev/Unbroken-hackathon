@@ -3,7 +3,7 @@
 **Status: COMPLETE — all pure ingestion logic implemented, tested, and committed.**
 
 Branch `agent/validation` (worktree `.worktrees/validation`). This agent completed
-the A5 pipeline stage of `PULSERANK_MASTER_IMPLEMENTATION_PLAN.md` §"Agent A5":
+the A5 pipeline stage of `docs/plans/pulserank-master-implementation-plan.md` §"Agent A5":
 
 ```text
 parsed V1 rows → run validation → deterministic normalization

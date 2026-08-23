@@ -10,6 +10,10 @@ test-results
 *.log
 *.tsbuildinfo
 /backups/
+/docs/archive/sessions/
+/docs/design/mockups/examples/
+/docs/design/references/
 /docs/plans/
+/docs/presentations/
 /artifacts/incidents/
 /@session/

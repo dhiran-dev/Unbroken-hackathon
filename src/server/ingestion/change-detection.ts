@@ -6,7 +6,7 @@
  * observation timestamp is always a parameter — there is no `Date.now` (or any
  * other clock read) anywhere in the ingestion module.
  *
- * Implements PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §"Agent A5" →
+ * Implements docs/plans/pulserank-master-implementation-plan.md §"Agent A5" →
  * "Change events": only trusted-to-trusted transitions may create events, of
  * exactly these types:
  *

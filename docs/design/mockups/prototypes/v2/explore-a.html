@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulseRank v2 · Mockup A — Explore · Component Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pulsekit.css">
+<style>
+/* page-local composition */
+.hero{position:relative;padding:54px 0 26px}
+.hero h1{font-family:Manrope,sans-serif;font-weight:500;font-size:clamp(40px,4.6vw,76px);line-height:.93;letter-spacing:-.05em;margin:12px 0 0}
+.hero h1 em{font-style:normal;background:linear-gradient(108deg,#fff 10%,#dcc7ff 48%,#a96bff 88%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{max-width:56ch;font-size:clamp(13px,.92vw,15px);line-height:1.72;color:var(--muted);margin:16px 0 0}
+.rail-copy{position:absolute;right:0;top:70px;writing-mode:vertical-rl;font-size:8px;letter-spacing:.26em;
+  text-transform:uppercase;color:var(--quiet);display:none}
+@media(min-width:1280px){.rail-copy{display:block}}
+
+.searchrow{display:flex;gap:12px;margin-top:24px;align-items:center}
+.searchpill{flex:1;display:flex;height:52px;align-items:center;gap:12px;border-radius:999px;border:1px solid var(--line);
+  background:var(--ink-raised);padding:0 12px 0 20px;transition:border-color .2s,box-shadow .2s}
+.searchpill:focus-within{border-color:rgba(167,107,255,.55);box-shadow:0 0 0 3px rgba(167,107,255,.22)}
+.searchpill input{flex:1;background:transparent;border:0;color:var(--paper);font:inherit;font-size:13px;outline:none;min-width:0}
+.searchpill input::placeholder{text-transform:uppercase;font-size:10px;letter-spacing:.2em;color:var(--quiet)}
+@media(max-width:640px){.searchrow{flex-wrap:wrap}.searchpill{flex:1 1 100%}.searchrow .btn-scn{width:100%;justify-content:center}}
+
+.workspace{display:grid;grid-template-columns:240px minmax(0,1fr) 336px;gap:16px;align-items:start;padding:10px 0 90px}
+@media(max-width:1180px){.workspace{grid-template-columns:230px minmax(0,1fr)}.inspector{grid-column:1/-1}}
+@media(max-width:760px){.workspace{grid-template-columns:1fr}.facets{order:2}.plotzone{order:1}}
+.facets{position:sticky;top:86px}
+.facet+.facet{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.facet h3{margin:0 0 11px;font-size:9px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--quiet)}
+.count-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:20px}
+.count-row b{font-family:Manrope,sans-serif;font-weight:500;font-size:32px;letter-spacing:-.03em}
+
+.plotzone{min-width:0;display:flex;flex-direction:column;gap:16px}
+.plot-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.plot-head h2{font-family:Manrope,sans-serif;font-weight:400;font-size:clamp(22px,1.9vw,30px);letter-spacing:-.03em;margin:4px 0 0}
+.legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--quiet)}
+.lg-dot{width:7px;height:7px;border-radius:50%;background:var(--violet);box-shadow:0 0 8px rgba(167,107,255,.7)}
+.lg-dia{width:7px;height:7px;background:var(--warning);transform:rotate(45deg)}
+
+.plot{padding:20px 20px 12px}
+.svgplot{width:100%;height:auto;display:block}
+.axis-label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;fill:rgba(227,219,246,.6);font-family:Inter,sans-serif}
+.gridline{stroke:rgba(222,210,255,.07)} .axisline{stroke:rgba(222,210,255,.16)}
+.pt{fill:rgba(167,107,255,.16);stroke:var(--violet);stroke-width:1.2}
+.pt.hot{fill:var(--violet)} .pt-core{fill:#fff} .pt-dia{fill:var(--warning)}
+.hovercard{position:absolute;left:auto;right:18px;top:16px;width:216px;padding:14px 16px;border-radius:14px;z-index:5}
+.hovercard .nm{font-family:Manrope,sans-serif;font-weight:600;font-size:13px}
+.hovercard .val{font-feature-settings:'tnum' 1;font-weight:600;font-size:20px;margin-top:4px}
+.hovercard .val small{font-size:9px;letter-spacing:.14em;color:var(--quiet);text-transform:uppercase;font-weight:500}
+
+.rows{padding:6px 0}
+.rowhead{display:flex;justify-content:space-between;align-items:center;padding:14px 22px 10px;border-bottom:1px solid var(--line)}
+.prow{display:grid;grid-template-columns:36px minmax(0,1fr) auto auto;gap:16px;align-items:center;
+  padding:13px 22px;border-bottom:1px solid var(--line);transition:background .25s var(--ease-out)}
+.prow:last-child{border-bottom:0}
+.prow:hover{background:rgba(167,107,255,.05)}
+.prow .rk{font-family:Manrope,sans-serif;font-weight:500;font-size:19px;letter-spacing:-.02em;color:var(--quiet);font-feature-settings:'tnum' 1}
+.prow:first-of-type .rk{color:var(--paper)}
+.pname b{display:block;font-family:Manrope,sans-serif;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pname span{display:block;margin-top:3px;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--quiet)}
+.ptrack{width:min(180px,26vw)}
+.pval{text-align:right;min-width:120px}
+.pval b{font-feature-settings:'tnum' 1;font-weight:600;font-size:14px}
+.pval small{display:block;margin-top:3px;font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--quiet)}
+
+.inspector{position:sticky;top:86px}
+.stage{position:relative;height:190px;border-radius:16px;border:1px solid var(--line);overflow:hidden;
+  background:radial-gradient(ellipse at 50% 88%,rgba(110,45,228,.28),transparent 60%),linear-gradient(180deg,rgba(11,9,22,.4),transparent)}
+.stage .floor{position:absolute;left:12%;right:12%;bottom:22px;height:1px;background:var(--line-bright);box-shadow:0 0 12px rgba(217,156,255,.35)}
+.stage>svg.can{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);filter:drop-shadow(0 6px 18px rgba(110,45,228,.45))}
+.insp-name{font-family:Manrope,sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em;margin:16px 0 2px}
+.metric-big{font-family:Manrope,sans-serif;font-weight:500;font-size:clamp(44px,3.6vw,64px);line-height:1;letter-spacing:-.045em;margin-top:12px}
+.metric-big sup{font-size:.3em;letter-spacing:.1em;color:var(--muted);vertical-align:super}
+.state-line{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.spec{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:12px}
+.spec dt{color:var(--quiet);font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding-top:2px}
+.spec dd{margin:0;font-feature-settings:'tnum' 1;font-weight:600;text-align:right}
+.insp-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.src-note{margin-top:16px;font-size:10.5px;line-height:1.7;color:var(--quiet)}
+</style>
+</head>
+<body>
+<header class="site">
+  <a class="brand" href="#">
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14.5" stroke="rgba(224,205,255,.42)"/><path d="M21 10l-6.5 8h5L15 24l7-9h-5l4-5z" fill="#d99cff"/></svg>
+    <span><b>PULSERANK</b><small>Verified product signals</small></span>
+  </a>
+  <nav class="main" aria-label="Primary">
+    <a class="on" href="#">Explore</a><a href="#">Leaderboards</a><a href="#">Compare</a><a href="#">My Pulse</a><a href="#">Changes</a><a href="#">Live data</a>
+  </nav>
+  <button class="btn-scn btn-secondary">My Pulse</button>
+</header>
+
+<main class="wrap">
+  <div class="bloom" style="top:-260px;left:-180px"></div>
+
+  <section class="hero blurfade" aria-labelledby="h1">
+    <div class="micro">Explore · trusted catalog · live observation</div>
+    <h1 id="h1">Every can,<br><em>measured.</em></h1>
+    <p>Search the trusted catalog and read exact caffeine values with their serving, qualifier, and moment of observation. Nothing here is inferred — absent fields stay visibly absent.</p>
+    <div class="searchrow">
+      <label class="searchpill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#cbb8f5" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="#cbb8f5" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search the trusted catalog…" aria-label="Search products">
+        <kbd class="micro" style="border:1px solid var(--line);border-radius:6px;padding:3px 7px">⌘K</kbd>
+      </label>
+      <button class="btn-scn btn-primary shimmer">Search</button>
+    </div>
+    <span class="rail-copy">Chapter 01 · Catalog signal</span>
+  </section>
+
+  <div class="workspace">
+    <!-- ======== FACETS · shadcn toggle-group ======== -->
+    <aside class="facets panel" aria-label="Filters">
+      <div class="panel-title"><span class="label">Filters</span><span class="srctag l1"><i></i>toggle-group</span></div>
+      <div class="facet">
+        <h3>Category</h3>
+        <div class="toggle-row">
+          <button class="tgl on">Energy</button><button class="tgl">Coffee</button><button class="tgl">Tea</button>
+          <button class="tgl">Shot</button><button class="tgl">Soda</button>
+        </div>
+      </div>
+      <div class="facet">
+        <h3>Caffeine state</h3>
+        <div class="toggle-row"><button class="tgl on">Exact</button><button class="tgl">Ranged</button><button class="tgl">Any</button></div>
+      </div>
+      <div class="facet">
+        <h3>Sort</h3>
+        <div class="toggle-row"><button class="tgl on">Mg ↓</button><button class="tgl">Name</button><button class="tgl">Observed</button></div>
+      </div>
+      <div class="count-row">
+        <span class="label">Products</span>
+        <b data-tick="1247">1,247</b>
+      </div>
+      <div class="micro" style="margin-top:6px">Of 2,310 observed · exact values only in plot</div>
+    </aside>
+
+    <!-- ======== MEASUREMENT ZONE ======== -->
+    <section class="plotzone" aria-label="Caffeine plot">
+      <div class="plot-head">
+        <div>
+          <div class="micro">Instrument · concentration field</div>
+          <h2>Caffeine per serving</h2>
+        </div>
+        <div class="legend">
+          <span><i class="lg-dot"></i>Exact</span><span><i class="lg-dia"></i>Ranged</span>
+          <span class="srctag l3"><i></i>bento-grid cell</span>
+        </div>
+      </div>
+
+      <div class="panel dots-bg plot">
+        <svg class="svgplot" viewBox="0 0 720 380" role="img" aria-label="Scatter plot of caffeine per serving against concentration">
+          <line class="gridline" x1="46" y1="60"  x2="706" y2="60"/>
+          <line class="gridline" x1="46" y1="130" x2="706" y2="130"/>
+          <line class="gridline" x1="46" y1="200" x2="706" y2="200"/>
+          <line class="gridline" x1="46" y1="270" x2="706" y2="270"/>
+          <line class="axisline" x1="46" y1="330" x2="706" y2="330"/>
+          <line class="axisline" x1="46" y1="40"  x2="46"  y2="330"/>
+          <text class="axis-label" x="46" y="350">0</text>
+          <text class="axis-label" x="240" y="350">100 MG</text>
+          <text class="axis-label" x="430" y="350">200 MG</text>
+          <text class="axis-label" x="620" y="350">300 MG</text>
+          <ellipse cx="360" cy="215" rx="290" ry="76" fill="rgba(110,45,228,.06)"/>
+          <circle class="pt" cx="132" cy="252" r="6"/><circle class="pt-core" cx="132" cy="252" r="1.8"/>
+          <circle class="pt" cx="178" cy="216" r="7"/><circle class="pt-core" cx="178" cy="216" r="2"/>
+          <circle class="pt" cx="214" cy="286" r="5"/><circle class="pt-core" cx="214" cy="286" r="1.6"/>
+          <circle class="pt hot" cx="330" cy="150" r="9"/><circle class="pt-core" cx="330" cy="150" r="2.6"/>
+          <circle class="pt" cx="420" cy="188" r="6"/><circle class="pt-core" cx="420" cy="188" r="1.8"/>
+          <circle class="pt-dia" cx="492" cy="96" r="6"/><circle class="pt-core" cx="492" cy="96" r="1.6"/>
+          <rect class="pt-dia" x="536" y="212" width="9" height="9" transform="rotate(45 540.5 216.5)"/>
+          <circle class="pt" cx="566" cy="160" r="7"/><circle class="pt-core" cx="566" cy="160" r="2"/>
+          <circle class="pt" cx="636" cy="230" r="5"/><circle class="pt-core" cx="636" cy="230" r="1.6"/>
+        </svg>
+        <div class="hovercard panel" aria-hidden="true">
+          <div class="nm">Volt Reserve · Original</div>
+          <div class="val">200 <small>mg / 12 fl oz</small></div>
+          <div class="state-line"><span class="badge b-success"><i></i>Present · verified</span></div>
+          <div class="micro" style="margin-top:8px">Observed Aug 21 · Caffeine Informer</div>
+        </div>
+      </div>
+
+      <div class="rows panel">
+        <div class="rowhead">
+          <span class="label">Top of 1,247</span>
+          <span class="micro"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--violet);vertical-align:middle;margin-right:5px"></span>Exact&nbsp;&nbsp;<span style="display:inline-block;width:6px;height:6px;background:var(--warning);transform:rotate(45deg);vertical-align:middle;margin-right:5px"></span>Ranged</span>
+        </div>
+        <div class="prow">
+          <span class="rk">01</span>
+          <span class="pname"><b>Volt Reserve · Original</b><span>Energy · 12 fl oz</span></span>
+          <span class="ptrack"><span class="track"><span class="dot-m" style="left:63%"></span></span></span>
+          <span class="pval"><b>200 mg</b><small>Exact · verified</small></span>
+        </div>
+        <div class="prow">
+          <span class="rk">02</span>
+          <span class="pname"><b>Nitro Peak Cold Brew</b><span>Coffee · 11 fl oz</span></span>
+          <span class="ptrack"><span class="track"><span class="diamond" style="left:78%"></span></span></span>
+          <span class="pval"><b>180–220 mg</b><small>Range · source spans</small></span>
+        </div>
+        <div class="prow">
+          <span class="rk">03</span>
+          <span class="pname"><b>Ash &amp; Ember Double Shot</b><span>Espresso · 6.5 fl oz</span></span>
+          <span class="ptrack"><span class="track"><span class="dot-m" style="left:41%"></span></span></span>
+          <span class="pval"><b>128 mg</b><small>Exact · verified</small></span>
+        </div>
+        <div class="prow">
+          <span class="rk">04</span>
+          <span class="pname"><b>Glacier Mint Zero</b><span>Energy · 16 fl oz</span></span>
+          <span class="ptrack"><span class="track"><span class="dot-m" style="left:84%"></span></span></span>
+          <span class="pval"><b>— mg</b><small>Not published</small></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== INSPECTOR ======== -->
+    <aside class="inspector panel" aria-label="Selected product">
+      <div class="panel-title"><span class="label">Inspector</span><span class="srctag l2"><i></i>number-ticker</span></div>
+      <div class="stage">
+        <span class="badge b-outline" style="position:absolute;top:10px;left:10px;z-index:4"><i></i>Glass flag on · static fallback</span>
+        <span class="floor" aria-hidden="true"></span>
+        <svg class="can" width="52" height="92" viewBox="0 0 34 58" fill="none" role="img" aria-label="Category glyph vessel">
+          <rect x="9" y="4" width="16" height="48" rx="4" stroke="#c9a4ff" stroke-width="1.4"/>
+          <path d="M9 12h16M9 46h16" stroke="rgba(201,164,255,.4)"/>
+          <path d="M19 20l-6 10h5l-3 9 9-12h-5l3-7z" fill="#d99cff"/>
+        </svg>
+      </div>
+      <div class="insp-name">Volt Reserve · Original</div>
+      <div class="micro">Energy · 12 fl oz can</div>
+      <div class="metric-big"><span data-tick="200">200</span><sup>MG CAFFEINE</sup></div>
+      <div class="state-line">
+        <span class="badge b-success"><i></i>Present · verified</span>
+        <span class="micro">Aug 21 · 09:41 IST</span>
+      </div>
+      <dl style="margin:18px 0 0">
+        <div class="spec"><dt>Serving</dt><dd>12 fl oz</dd></div>
+        <div class="spec"><dt>Concentration</dt><dd>16.7 mg / fl oz</dd></div>
+        <div class="spec"><dt>Sugar</dt><dd>0 g</dd></div>
+        <div class="spec"><dt>Calories</dt><dd>10 kcal</dd></div>
+        <div class="spec"><dt>Sodium</dt><dd style="color:var(--quiet);font-weight:500">—</dd></div>
+      </dl>
+      <p class="note" style="margin-top:8px;font-size:10px">Sodium is unpublished on the source. Absent stays absent — never rendered as zero.</p>
+      <div class="insp-actions">
+        <button class="btn-scn btn-primary shimmer">Save to My Pulse</button>
+        <button class="btn-scn btn-secondary">Compare +</button>
+      </div>
+      <p class="src-note">Source: <u>Caffeine Informer</u>, observed through the trusted pipeline. Qualifiers travel with every number.</p>
+    </aside>
+  </div>
+</main>
+
+<footer class="colophon">
+  <span class="micro">Pulserank · mockup A · explore · component edition</span>
+  <span class="micro">shadcn foundation · magicui reveals · aceternity bento</span>
+  <span class="micro">Source · Caffeine Informer · attributed at page level</span>
+</footer>
+
+<script>
+(function(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-tick]').forEach(el=>{
+    const target=parseFloat(el.getAttribute('data-tick'));
+    if(reduce){el.textContent=target.toLocaleString('en-US');return}
+    const t0=performance.now();
+    function step(t){const p=Math.min((t-t0)/1300,1);
+      el.textContent=Math.round(target*(1-Math.pow(1-p,3))).toLocaleString('en-US');
+      if(p<1)requestAnimationFrame(step)}
+    requestAnimationFrame(step);
+  });
+})();
+</script>
+</body>
+</html>

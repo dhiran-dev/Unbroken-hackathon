@@ -7,7 +7,7 @@
  * reads. Every value below is a pure function of its input; identical input
  * always yields identical output.
  *
- * Rules implemented (PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §"Agent A5",
+ * Rules implemented (docs/plans/pulserank-master-implementation-plan.md §"Agent A5",
  * deterministic normalization step):
  * - Slug identity is stable: `{ sourceId, slug }` identifies a product across
  *   runs; the slug is never rewritten here.

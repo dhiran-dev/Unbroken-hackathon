@@ -1,7 +1,7 @@
 /**
  * PulseRank V1 product scrape row.
  *
- * Source of truth: PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §8.5 (copied verbatim).
+ * Source of truth: docs/plans/pulserank-master-implementation-plan.md §8.5 (copied verbatim).
  *
  * PROVISIONAL contract: frozen only at G3, pending the A1 page-shape matrix and
  * real A2 collector output. See docs/handoffs/A3-contract.md.

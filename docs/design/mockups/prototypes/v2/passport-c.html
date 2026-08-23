@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulseRank v2 · Mockup C — Product Passport · Component Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pulsekit.css">
+<style>
+/* page-local composition */
+.crumbs{display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--quiet)}
+.crumbs b{color:var(--paper);font-weight:500}
+
+.passport{display:grid;grid-template-columns:minmax(320px,450px) minmax(0,1fr);gap:16px;margin-top:24px}
+@media(max-width:980px){.passport{grid-template-columns:1fr}}
+
+.stage{position:relative;min-height:430px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:52px;overflow:hidden}
+.stage .floor{position:absolute;left:14%;right:14%;bottom:44px;height:1px;background:var(--line-bright);box-shadow:0 0 16px rgba(217,156,255,.45)}
+.stage .pool{position:absolute;left:50%;bottom:38px;width:280px;height:26px;transform:translateX(-50%);
+  background:radial-gradient(ellipse at center,rgba(110,45,228,.35),transparent 70%)}
+.stage>svg.can{position:absolute;left:50%;bottom:45px;transform:translateX(-50%);z-index:3;
+  filter:drop-shadow(0 14px 34px rgba(110,45,228,.5))}
+.stage .flagtag{position:absolute;top:14px;left:14px;z-index:5}
+.stage .orbit-hint{position:absolute;right:16px;bottom:16px;z-index:5}
+.orbit-stage{position:absolute;inset:0}
+.orbit-stage .orbit{width:300px;height:300px;left:50%;top:50%;margin:-150px 0 0 -150px}
+
+.idblock{padding:28px 30px}
+.idblock h1{font-family:Manrope,sans-serif;font-weight:500;font-size:clamp(32px,3.4vw,54px);line-height:.95;letter-spacing:-.05em;margin:12px 0 0}
+.idblock h1 em{font-style:normal;background:linear-gradient(108deg,#fff 10%,#dcc7ff 48%,#a96bff 88%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.metric-row{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap;margin-top:22px}
+.metric{font-family:Manrope,sans-serif;font-weight:500;font-size:clamp(60px,6vw,96px);line-height:.92;letter-spacing:-.05em;font-feature-settings:'tnum' 1}
+.metric sup{font-size:.22em;letter-spacing:.12em;color:var(--muted);vertical-align:super}
+.serving-lock{display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+.ruler{position:relative;width:220px;height:18px}
+.ruler .rail{position:absolute;top:8px;left:0;right:0;height:1px;background:var(--line-bright)}
+.ruler .tick{position:absolute;top:5px;width:1px;height:7px;background:var(--line)}
+.ruler .mark{position:absolute;top:2px;width:13px;height:13px;border-radius:50%;border:1px solid var(--violet-hot);
+  background:radial-gradient(circle,rgba(217,156,255,.9),rgba(167,107,255,.25));box-shadow:0 0 14px rgba(167,107,255,.8)}
+.state-line{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+
+.idtabs{display:flex;gap:6px;margin-top:22px;padding-bottom:18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ledger{margin-top:6px}
+.spec{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:14px;align-items:center;
+  padding:12px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.spec:last-child{border-bottom:0}
+.spec dt{color:var(--quiet);font-size:9px;letter-spacing:.22em;text-transform:uppercase}
+.spec dd{margin:0;font-feature-settings:'tnum' 1;font-weight:600}
+.spec .note-cell{grid-column:2/4;margin-top:-6px;font-size:10.5px;line-height:1.6;color:var(--quiet);font-weight:400}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+.below{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:16px;padding-bottom:90px}
+@media(max-width:980px){.below{grid-template-columns:1fr}}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.panel-head h2{font-family:Manrope,sans-serif;font-weight:400;font-size:21px;letter-spacing:-.03em;margin:0}
+
+.track-lg{position:relative;height:3px;background:var(--line);border-radius:3px;margin:36px 0 10px}
+.track-lg .band{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,transparent,rgba(167,107,255,.55));border-radius:3px}
+.track-lg .dot-big{position:absolute;top:50%;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;
+  background:var(--violet);box-shadow:0 0 0 5px rgba(167,107,255,.16),0 0 22px rgba(167,107,255,.75)}
+.track-lg .dot-big::after{content:"";position:absolute;inset:4.5px;border-radius:50%;background:#fff}
+.track-lg .pct{position:absolute;top:-26px;font-family:Manrope,sans-serif;font-weight:500;font-size:17px;letter-spacing:-.02em;transform:translate(-135%,0)}
+.ends{display:flex;justify-content:space-between}
+.cmp{display:grid;grid-template-columns:minmax(0,1fr) 120px 74px;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line);font-size:12px}
+.cmp .tnum{font-feature-settings:'tnum' 1;font-weight:600;text-align:right}
+.mini-track{position:relative;height:2px;background:var(--line)}
+.mini-track span{position:absolute;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:7px;height:7px;border-radius:50%;background:var(--violet)}
+
+.timeline{list-style:none;margin:0;padding:0}
+.tl{display:grid;grid-template-columns:86px 14px minmax(0,1fr);gap:12px;align-items:start}
+.tl time{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--quiet);padding-top:3px;font-feature-settings:'tnum' 1}
+.tl .node{position:relative;display:flex;justify-content:center}
+.tl .node i{width:9px;height:9px;border-radius:50%;background:var(--violet);box-shadow:0 0 10px rgba(167,107,255,.7);margin-top:4px}
+.tl:first-child .node i{background:var(--violet-hot)}
+.tl .stem{position:absolute;top:14px;bottom:-18px;width:1px;background:var(--line)}
+.tl:last-of-type .stem{display:none}
+.tl .body{padding-bottom:20px}
+.tl .body b{display:block;font-family:Manrope,sans-serif;font-weight:600;font-size:13px}
+.tl .body p{margin:5px 0 0;font-size:11.5px;line-height:1.65;color:var(--quiet)}
+</style>
+</head>
+<body>
+<header class="site">
+  <a class="brand" href="#">
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14.5" stroke="rgba(224,205,255,.42)"/><path d="M21 10l-6.5 8h5L15 24l7-9h-5l4-5z" fill="#d99cff"/></svg>
+    <span><b>PULSERANK</b><small>Verified product signals</small></span>
+  </a>
+  <div class="crumbs">Explore <span aria-hidden="true">/</span> Energy <span aria-hidden="true">/</span> <b>Volt Reserve · Original</b></div>
+  <button class="btn-scn btn-secondary">My Pulse</button>
+</header>
+
+<main class="wrap">
+  <div class="bloom" style="top:-160px;left:30vw"></div>
+
+  <!-- ============ PASSPORT ============ -->
+  <section class="passport" aria-label="Product passport">
+    <!-- vessel stage -->
+    <div class="stage panel dots-bg">
+      <span class="flagtag badge b-outline"><i></i>Glass flag on · static fallback shown</span>
+      <div class="orbit-stage" aria-hidden="true">
+        <div class="orbit">
+          <span class="sat"><span class="badge b-success"><i></i>Present · verified</span></span>
+          <span class="sat s2"><span class="badge b-default"><i></i>Source ↗ Caffeine Informer</span></span>
+        </div>
+      </div>
+      <div class="pool" aria-hidden="true"></div>
+      <div class="floor" aria-hidden="true"></div>
+      <svg class="can" width="118" height="206" viewBox="0 0 34 58" fill="none" role="img" aria-label="Category glyph vessel — energy can silhouette">
+        <defs><linearGradient id="gcan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(217,156,255,.8)"/><stop offset=".55" stop-color="rgba(167,107,255,.25)"/><stop offset="1" stop-color="rgba(110,45,228,.55)"/></linearGradient></defs>
+        <ellipse cx="17" cy="54" rx="10" ry="2.4" fill="rgba(167,107,255,.18)"/>
+        <rect x="9" y="4" width="16" height="48" rx="4" fill="url(#gcan)" fill-opacity=".35" stroke="#dcc7ff" stroke-width="1"/>
+        <path d="M9 12h16M9 46h16" stroke="rgba(201,164,255,.4)"/>
+        <path d="M19 20l-6 10h5l-3 9 9-12h-5l3-7z" fill="#e9d5ff"/>
+      </svg>
+      <span class="orbit-hint micro">Drag to orbit · when enhanced</span>
+    </div>
+
+    <!-- identity -->
+    <div class="idblock panel blurfade">
+      <div class="panel-title" style="margin-bottom:6px">
+        <span class="micro" style="color:var(--paper)">Passport · chapter 03 · one product, fully witnessed</span>
+        <span class="srctag l4"><i></i>glass-object slot</span>
+      </div>
+      <h1>Volt Reserve <em>Original</em></h1>
+
+      <div class="metric-row">
+        <div class="metric"><span data-tick="200">200</span><sup>MG CAFFEINE</sup></div>
+        <div class="serving-lock">
+          <span class="micro" style="letter-spacing:.22em">Serving lock · within 24px by law</span>
+          <div class="ruler" role="img" aria-label="Serving size marker at 12 fluid ounces on a scale from 8 to 16">
+            <span class="rail"></span>
+            <span class="tick" style="left:0"></span><span class="tick" style="left:25%"></span>
+            <span class="tick" style="left:50%"></span><span class="tick" style="left:75%"></span>
+            <span class="tick" style="left:100%"></span>
+            <span class="mark" style="left:calc(50% - 6.5px)"></span>
+            <span class="micro" style="position:absolute;left:0;top:100%;transform:translateY(4px)">8</span>
+            <span class="micro" style="position:absolute;left:50%;top:100%;transform:translate(-50%,4px)">12 fl oz</span>
+            <span class="micro" style="position:absolute;right:0;top:100%;transform:translateY(4px)">16</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-line">
+        <span class="badge b-success"><i></i>Present · verified</span>
+        <span class="micro">Observed Aug 21 · 09:41 IST · exact value</span>
+      </div>
+
+      <div class="idtabs">
+        <div class="tabs-scn" role="tablist"><button class="tabbtn on">Overview</button><button class="tabbtn">History</button><button class="tabbtn">Source evidence</button></div>
+      </div>
+
+      <dl class="ledger">
+        <div class="spec"><dt>Concentration</dt><dd>16.7 mg / fl oz</dd></div>
+        <div class="spec"><dt>Sugar</dt><dd>0 g</dd></div>
+        <div class="spec"><dt>Calories</dt><dd>10 kcal</dd></div>
+        <div class="spec">
+          <dt>Sodium</dt><dd style="color:var(--quiet);font-weight:500">—</dd>
+          <span class="badge b-outline"><i></i>Not published</span>
+          <p class="note-cell">The source lists no sodium figure for this product. Absent stays absent — it is never rendered as zero.</p>
+        </div>
+      </dl>
+
+      <div class="actions">
+        <button class="btn-scn btn-primary shimmer">Save to My Pulse</button>
+        <button class="btn-scn btn-secondary">Add to compare</button>
+        <button class="btn-scn btn-outline btn-icon-s" aria-label="Share passport">↗</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BELOW ============ -->
+  <section class="below">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Where it sits in the catalog.</h2>
+        <span class="micro">Energy · n = 214 plotted exact values</span>
+      </div>
+      <div class="track-lg">
+        <span class="band" style="left:0;width:63%"></span>
+        <span class="pct" style="left:63%">Top 37%</span>
+        <span class="dot-big" style="left:63%"></span>
+      </div>
+      <div class="ends"><span class="micro">0 mg</span><span class="micro">400 mg</span></div>
+      <p class="note" style="margin-top:16px;max-width:60ch">Position is computed only across exact, verified values. Ranged products appear as amber diamonds and never displace this dot's meaning.</p>
+
+      <div style="margin-top:22px">
+        <div class="cmp"><span>Frost Line Ultra · 16 fl oz</span><span class="mini-track"><span style="left:88%;transform:translate(-50%,-50%)"></span></span><span class="tnum">180 mg</span></div>
+        <div class="cmp"><span>Nitro Peak Cold Brew · 11 fl oz</span><span class="mini-track"><span style="left:78%;background:var(--warning)"></span></span><span class="tnum">180–220</span></div>
+        <div class="cmp"><span>Ash &amp; Ember Double Shot · 6.5 fl oz</span><span class="mini-track"><span style="left:41%;transform:translate(-50%,-50%)"></span></span><span class="tnum">128 mg</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Provenance ledger.</h2>
+        <span class="srctag l1"><i></i>immutable observations</span>
+      </div>
+      <ol class="timeline">
+        <li class="tl">
+          <time>Aug 21 · 09:41</time>
+          <span class="node"><i></i><span class="stem"></span></span>
+          <div class="body"><b>Caffeine confirmed at 200 mg / 12 fl oz</b>
+          <p>Exact value re-verified through the trusted pipeline. State: present. No qualifiers attached.</p></div>
+        </li>
+        <li class="tl">
+          <time>Jul 30 · 22:12</time>
+          <span class="node"><i></i><span class="stem"></span></span>
+          <div class="body"><b>Formula revision observed</b>
+          <p>Serving statement changed on source page; caffeine value unchanged. Rank unaffected.</p></div>
+        </li>
+        <li class="tl">
+          <time>Jun 08 · 14:03</time>
+          <span class="node"><i></i><span class="stem"></span></span>
+          <div class="body"><b>First trusted observation recorded</b>
+          <p>Product entered the catalog. Sodium has been unpublished since entry; shown as absent throughout.</p></div>
+        </li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer class="colophon">
+  <span class="micro">Pulserank · mockup C · product passport · component edition</span>
+  <span class="micro">Source · Caffeine Informer · attributed at page level</span>
+  <span class="micro">Copied source prose is never published</span>
+</footer>
+
+<script>
+(function(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-tick]').forEach(el=>{
+    const target=parseFloat(el.getAttribute('data-tick'));
+    if(reduce){el.textContent=target.toLocaleString('en-US');return}
+    const t0=performance.now();
+    function step(t){const p=Math.min((t-t0)/1300,1);
+      el.textContent=Math.round(target*(1-Math.pow(1-p,3))).toLocaleString('en-US');
+      if(p<1)requestAnimationFrame(step)}
+    requestAnimationFrame(step);
+  });
+})();
+</script>
+</body>
+</html>

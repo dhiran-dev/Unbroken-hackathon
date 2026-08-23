@@ -11,7 +11,7 @@
  *
  * Read-only: this module never INSERTs, UPDATEs, or DELETEs.
  *
- * Plan reference: PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §"Agent A8 —
+ * Plan reference: docs/plans/pulserank-master-implementation-plan.md §"Agent A8 —
  * Public API" (endpoints, required pagination and filters). Pagination is
  * keyset-based; cursors are opaque base64url strings carrying the sort value
  * plus a tiebreaker id, so pages stay stable across concurrent inserts.

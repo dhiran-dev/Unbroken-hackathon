@@ -42,7 +42,7 @@ waves:
   completed: [A4-database, A5-validation, A6-fixtures, A7-worker, A8-api, A9-design, A10-frontend, A11-local-state, A12-judge, A13-qa, A14-docs]
   pending: [deployment-cutover]
 mockups:
-  style_source: example_mockups/ (dark product-studio, purple accent, approved by owner as visual language)
+  style_source: docs/design/mockups/examples/ (dark product-studio, purple accent, approved by owner as visual language)
   generator: orchestrator via Codex imagegen, one screen at a time, owner approves each
   approved: [home, explore, product-passport, leaderboards, compare, changes, my-pulse, live-data]
-  pending: [judge]
+  pending: []

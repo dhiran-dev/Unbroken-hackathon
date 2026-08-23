@@ -3,7 +3,7 @@
  *
  * Mirrors the static types in field-states.ts, observations.ts, and
  * product-scrape-row.ts, which are copied verbatim from
- * PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §8.2–§8.5.
+ * docs/plans/pulserank-master-implementation-plan.md §8.2–§8.5.
  *
  * PROVISIONAL contract: frozen only at G3, pending the A1 page-shape matrix and
  * real A2 collector output. See docs/handoffs/A3-contract.md.

@@ -1,7 +1,7 @@
 /**
  * PulseRank V1 observation shapes.
  *
- * Source of truth: PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §8.3 (NumberObservation)
+ * Source of truth: docs/plans/pulserank-master-implementation-plan.md §8.3 (NumberObservation)
  * and §8.4 (ServingObservation), copied verbatim.
  *
  * PROVISIONAL contract: frozen only at G3, pending the A1 page-shape matrix and

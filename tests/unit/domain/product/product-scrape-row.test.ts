@@ -4,7 +4,7 @@
  * Every positive fixture under src/domain/product/fixtures/ must parse against
  * productScrapeRowV1Schema; the two negative fixtures must be rejected for the
  * specific reason their name describes. Fixture classes follow
- * PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §8.6.
+ * docs/plans/pulserank-master-implementation-plan.md §8.6.
  */
 
 import { describe, expect, it } from "vitest";

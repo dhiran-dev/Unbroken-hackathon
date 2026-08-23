@@ -5,7 +5,7 @@
  * reads. `promoteCandidate` is a pure function of the normalized candidate and
  * its context; identical input always yields identical output.
  *
- * Implements PULSERANK_MASTER_IMPLEMENTATION_PLAN.md §"Agent A5" →
+ * Implements docs/plans/pulserank-master-implementation-plan.md §"Agent A5" →
  * "Field-level behavior", exactly:
  *
  * | Condition                    | Decision                                        |

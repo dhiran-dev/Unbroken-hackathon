@@ -14,7 +14,6 @@ The public experience is deliberately transparent:
   exact concentration, and explicit caffeine-free products.
 - Compare, My Pulse, recent products, and My Day stay in the user’s browser.
 - Changes and Live Data show trusted history and real pipeline counters.
-- Judge is a read-only-by-default HTML-first evidence cockpit.
 
 No product model, generated brand image, confidence score, or fabricated
 catalog row is used. The optional Checkpoint 2 visual enhancement is implemented
@@ -25,6 +24,19 @@ Approved product photographs are served through a local, policy-checked renderer
 Its deterministic [edge-matting technique](docs/source/product-image-edge-matting.md)
 removes only light canvas pixels connected to the image border, preserving enclosed
 white labels and package details.
+
+## Documentation map
+
+- [Product context](PRODUCT.md), [design system](DESIGN.md), and
+  [contribution guide](CONTRIBUTING.md) remain at the repository root because
+  tools and contributors expect those conventional locations.
+- [Documentation index](docs/README.md) links the maintained source, collector,
+  handoff, deployment, and design references.
+- [Approved mockups](docs/design/mockups/README.md) are grouped by status instead
+  of being spread across root-level folders.
+- Local plans, working references, presentation projects, and session notes are
+  organized under `docs/` but remain ignored so they do not become release
+  artifacts.
 
 ## Trust contract
 

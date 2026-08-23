@@ -3,7 +3,7 @@
 **Status: FROZEN at G3 — the V1 contract is the production boundary for
 PulseRank ranking, persistence, and public DTOs.**
 
-This contract is drafted from §8.2–§8.6 of `PULSERANK_MASTER_IMPLEMENTATION_PLAN.md`
+This contract is drafted from §8.2–§8.6 of `docs/plans/pulserank-master-implementation-plan.md`
 and was pending two inputs before freeze at G3:
 
 1. **A1 page-shape matrix** — the real set of caffeineinformer page layouts may
