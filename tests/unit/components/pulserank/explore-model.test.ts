@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   appendUniqueProducts,
+  exploreVolumeAxisTicks,
+  exploreVolumePosition,
   isExactPlotProduct,
   niceAxisMaximum,
   toExplorePlotPoint,
@@ -98,6 +100,13 @@ describe("Explore exact-value plot model", () => {
     expect(niceAxisMaximum(0)).toBe(1);
     expect(niceAxisMaximum(114)).toBe(200);
     expect(niceAxisMaximum(501)).toBe(1000);
+  });
+
+  it("spreads typical servings across a logarithmic axis without hiding outliers", () => {
+    expect(exploreVolumePosition(0, 20_000)).toBe(0);
+    expect(exploreVolumePosition(250, 20_000)).toBeGreaterThan(0.5);
+    expect(exploreVolumePosition(20_000, 20_000)).toBe(1);
+    expect(exploreVolumeAxisTicks(20_000)).toEqual([0, 250, 1_000, 5_000, 20_000]);
   });
 
   it("defensively removes replayed products while preserving cursor order", () => {

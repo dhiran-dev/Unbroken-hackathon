@@ -47,6 +47,8 @@ import type { PublicProductDto } from "@/server/products/dto";
 import styles from "@/app/explore/explore.module.css";
 import {
   appendUniqueProducts,
+  exploreVolumeAxisTicks,
+  exploreVolumePosition,
   type ExplorePlotMetric,
   isExactPlotProduct,
   niceAxisMaximum,
@@ -465,7 +467,8 @@ function ScatterPlot({
   const bottom = 55;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
-  const ticks = [0, 0.25, 0.5, 0.75, 1];
+  const yTicks = [0, 0.25, 0.5, 0.75, 1];
+  const xTicks = exploreVolumeAxisTicks(maxX);
   const yUnit = metric === "total" ? "mg" : "mg / 100 ml";
   const legendCategories = Array.from(new Set(points.map(({ product }) => product.category)));
   const renderedPoints = selectedSlug === null
@@ -498,26 +501,32 @@ function ScatterPlot({
         <svg aria-labelledby="explore-plot-title explore-plot-description" className={styles.plot} role="group" viewBox={`0 0 ${width} ${height}`}>
         <title id="explore-plot-title">Caffeine products plotted by normalized serving volume</title>
         <desc id="explore-plot-description">
-          {points.length} exact products. Horizontal position is serving volume in milliliters. Vertical position is {metric === "total" ? "total caffeine" : "caffeine concentration"}.
+          {points.length} exact products. Horizontal position uses a logarithmic serving-volume scale in milliliters so large outliers remain visible without compressing typical servings. Vertical position is {metric === "total" ? "total caffeine" : "caffeine concentration"}.
         </desc>
-        {ticks.map((tick) => {
-          const x = left + tick * plotWidth;
+        {yTicks.map((tick) => {
           const y = top + (1 - tick) * plotHeight;
           return (
-            <g key={tick}>
+            <g key={`y-${tick}`}>
               <line className={styles.gridLine} x1={left} x2={width - right} y1={y} y2={y} />
-              <line className={styles.gridLine} x1={x} x2={x} y1={top} y2={height - bottom} />
               <text className={styles.axisText} textAnchor="end" x={left - 12} y={y + 4}>{formatNumber(tick * maxY)}</text>
-              <text className={styles.axisText} textAnchor={tick === 0 ? "start" : tick === 1 ? "end" : "middle"} x={x} y={height - 24}>{formatNumber(tick * maxX)} ml</text>
+            </g>
+          );
+        })}
+        {xTicks.map((tick, index) => {
+          const x = left + exploreVolumePosition(tick, maxX) * plotWidth;
+          return (
+            <g key={`x-${tick}`}>
+              <line className={styles.gridLine} x1={x} x2={x} y1={top} y2={height - bottom} />
+              <text className={styles.axisText} textAnchor={index === 0 ? "start" : index === xTicks.length - 1 ? "end" : "middle"} x={x} y={height - 24}>{formatNumber(tick)} ml</text>
             </g>
           );
         })}
         <line className={styles.axisLine} x1={left} x2={left} y1={top} y2={height - bottom} />
         <line className={styles.axisLine} x1={left} x2={width - right} y1={height - bottom} y2={height - bottom} />
         <text className={styles.axisLabel} textAnchor="middle" transform={`translate(17 ${top + plotHeight / 2}) rotate(-90)`}>{yUnit}</text>
-        <text className={styles.axisLabel} textAnchor="middle" x={left + plotWidth / 2} y={height - 3}>Normalized serving volume</text>
+        <text className={styles.axisLabel} textAnchor="middle" x={left + plotWidth / 2} y={height - 3}>Normalized serving volume · logarithmic scale</text>
         {renderedPoints.map(({ product, xMl, yValue }, index) => {
-          const x = left + (xMl / maxX) * plotWidth;
+          const x = left + exploreVolumePosition(xMl, maxX) * plotWidth;
           const y = top + (1 - yValue / maxY) * plotHeight;
           const selected = product.slug === selectedSlug;
           return (
@@ -550,7 +559,7 @@ function ScatterPlot({
         })}
         {points.flatMap(({ product, xMl, yValue }) => {
           if (product.slug !== (activeLabelSlug ?? selectedSlug)) return [];
-          const x = left + (xMl / maxX) * plotWidth;
+          const x = left + exploreVolumePosition(xMl, maxX) * plotWidth;
           const y = top + (1 - yValue / maxY) * plotHeight;
           const labelX = x > width - right - 190 ? x - 183 : x + 13;
           const labelY = y < top + 52 ? y + 14 : y - 15;
@@ -570,7 +579,7 @@ function ScatterPlot({
         ))}
       </div>
       <div className={styles.plotFootnote}>
-        <span><Info size={14} aria-hidden="true" /> Exact caffeine + positive normalized volume only</span>
+        <span><Info size={14} aria-hidden="true" /> Log volume scale keeps typical servings and outliers readable</span>
         <span>{loading
           ? `${points.length} plotted while loading ${products.length} of ${catalogTotalCount}`
           : `${points.length} plotted from all ${products.length} matching products`}</span>

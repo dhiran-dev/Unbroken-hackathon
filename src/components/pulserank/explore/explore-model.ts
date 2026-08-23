@@ -53,6 +53,31 @@ export function niceAxisMaximum(value: number): number {
   return step * magnitude;
 }
 
+export function exploreVolumePosition(volumeMl: number, axisMaximumMl: number): number {
+  if (!Number.isFinite(volumeMl) || volumeMl <= 0) return 0;
+  const maximum = Number.isFinite(axisMaximumMl) && axisMaximumMl > 0
+    ? axisMaximumMl
+    : 1;
+  return Math.min(1, Math.log1p(volumeMl) / Math.log1p(maximum));
+}
+
+export function exploreVolumeAxisTicks(axisMaximumMl: number): number[] {
+  const maximum = Math.max(1, axisMaximumMl);
+  const candidates = maximum <= 100
+    ? [0, 25, 50, 75, maximum]
+    : maximum <= 500
+      ? [0, 50, 100, 250, maximum]
+      : maximum <= 1_000
+        ? [0, 100, 250, 500, maximum]
+        : maximum <= 5_000
+          ? [0, 250, 1_000, 2_500, maximum]
+          : maximum <= 25_000
+            ? [0, 250, 1_000, 5_000, maximum]
+            : [0, 500, 2_500, 10_000, maximum];
+
+  return [...new Set(candidates.filter((tick) => tick >= 0 && tick <= maximum))];
+}
+
 export function appendUniqueProducts(
   current: PublicProductDto[],
   incoming: PublicProductDto[],
