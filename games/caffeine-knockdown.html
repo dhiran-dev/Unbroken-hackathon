@@ -147,6 +147,7 @@ scene.background = new THREE.Color(0x05060a);
 scene.fog = new THREE.Fog(0x05060a, 12, 27);
 
 const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 60);
+const BASE_FOV = 52;
 camera.position.set(0, 1.74, 6.05);
 const LOOK_DEFAULT = new THREE.Vector3(0, 1.56, -1.2);
 const lookTarget = LOOK_DEFAULT.clone();
@@ -734,6 +735,94 @@ function pullCur(rec){
   rec.curQ.set(r.x, r.y, r.z, r.w);
 }
 
+/* ---------------- juice: sound, sparks, slow-mo ---------------- */
+let AC = null;
+function audio(){
+  if (!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch { /* no audio */ } }
+  if (AC && AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(f0, f1, dur, type = 'sine', g = 0.16){
+  const ac = audio(); if (!ac) return;
+  const o = ac.createOscillator(), ga = ac.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(Math.max(f0, 1), ac.currentTime);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), ac.currentTime + dur);
+  ga.gain.setValueAtTime(g, ac.currentTime);
+  ga.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+  o.connect(ga).connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + dur + 0.03);
+}
+function noiseBurst(dur, f0, f1, g = 0.1){
+  const ac = audio(); if (!ac) return;
+  const n = Math.floor(ac.sampleRate * dur);
+  const buf = ac.createBuffer(1, n, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const src = ac.createBufferSource(); src.buffer = buf;
+  const flt = ac.createBiquadFilter(); flt.type = 'bandpass'; flt.Q.value = 0.9;
+  flt.frequency.setValueAtTime(f0, ac.currentTime);
+  flt.frequency.exponentialRampToValueAtTime(f1, ac.currentTime + dur);
+  const ga = ac.createGain(); ga.gain.value = g;
+  src.connect(flt).connect(ga).connect(ac.destination);
+  src.start();
+}
+const sfx = {
+  whoosh(){ noiseBurst(0.28, 320, 1500, 0.11); },
+  thunk(){ tone(170, 62, 0.11, 'triangle', 0.22); noiseBurst(0.06, 900, 500, 0.08); },
+  pop(combo){ tone(480 + Math.min(combo, 6) * 75, 840 + Math.min(combo, 6) * 95, 0.09, 'square', 0.1); },
+  buzz(){ tone(150, 88, 0.34, 'sawtooth', 0.18); },
+  fanfare(){ [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, f, 0.15, 'triangle', 0.13), i * 95)); },
+};
+
+const SPARKS_N = 150;
+const sparkGeo = new THREE.BufferGeometry();
+const sPos = new Float32Array(SPARKS_N * 3), sCol = new Float32Array(SPARKS_N * 3);
+for (let i = 0; i < SPARKS_N; i++) sPos[i * 3 + 1] = -100;
+sparkGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+sparkGeo.setAttribute('color', new THREE.BufferAttribute(sCol, 3));
+const sparkPts = new THREE.Points(sparkGeo, new THREE.PointsMaterial({
+  size: 0.05, vertexColors: true, transparent: true, opacity: 0.95,
+  blending: THREE.AdditiveBlending, depthWrite: false }));
+sparkPts.frustumCulled = false;
+scene.add(sparkPts);
+const sparks = new Array(SPARKS_N).fill(null);
+let sparkCursor = 0;
+const SPARK_GREEN = new THREE.Color(0x9fe870), SPARK_RED = new THREE.Color(0xff5d5d),
+      SPARK_AMBER = new THREE.Color(0xffb347);
+function burst(p, color, n = 14, power = 1){
+  for (let k = 0; k < n; k++){
+    const i = sparkCursor++ % SPARKS_N;
+    sparks[i] = {
+      life: 0.5 + Math.random() * 0.2,
+      r: color.r, g: color.g, b: color.b,
+      vx: (Math.random() - 0.5) * 2.6 * power,
+      vy: (0.8 + Math.random() * 2.2) * power,
+      vz: (Math.random() - 0.5) * 2.6 * power,
+      x: p.x, y: p.y, z: p.z,
+    };
+  }
+}
+function updateSparks(dt){
+  for (let i = 0; i < SPARKS_N; i++){
+    const s = sparks[i];
+    if (!s || s.life <= 0) continue;
+    s.life -= dt;
+    s.vy -= 7.5 * dt;
+    s.x += s.vx * dt; s.y += s.vy * dt; s.z += s.vz * dt;
+    const f = Math.max(s.life / 0.6, 0);
+    sPos[i * 3] = s.x; sPos[i * 3 + 1] = s.y; sPos[i * 3 + 2] = s.z;
+    sCol[i * 3] = s.r * f; sCol[i * 3 + 1] = s.g * f; sCol[i * 3 + 2] = s.b * f;
+    if (s.life <= 0) sPos[i * 3 + 1] = -100;
+  }
+  sparkGeo.attributes.position.needsUpdate = true;
+  sparkGeo.attributes.color.needsUpdate = true;
+}
+
+let timeScale = 1, slowmoT = 0, punchT = 0;
+function triggerSlowmo(){ slowmoT = 1.0; }
+function triggerPunch(){ punchT = 1.0; }
+
 /* ---------------- cans & racks (logic unchanged) ---------------- */
 const cans = [];
 let cansLeft = 0, cansTotal = 0;
@@ -892,12 +981,17 @@ function checkFalls(){
       popup('DECAF −150', true);
       decafFlash();
       bumpDopamine(-0.22);
+      sfx.buzz();
+      burst(p, SPARK_RED, 12, 0.9);
     } else {
       combo++;
       const pts = 100 * combo;
       score += pts;
       popup('+' + pts + (combo > 1 ? '  ×' + combo : ''));
       bumpDopamine(0.09 + Math.min(combo, 5) * 0.02);
+      sfx.pop(combo);
+      burst(p, SPARK_GREEN, 12, 1);
+      if (combo >= 3) triggerPunch();
     }
     hud();
     if (cansLeft <= 0 && !rackDone){
@@ -906,6 +1000,9 @@ function checkFalls(){
       popup('RACK BONUS +500');
       banner('RACK CLEARED  +500', 1500);
       bumpDopamine(0.25);
+      sfx.fanfare();
+      triggerSlowmo();
+      burst(p, SPARK_AMBER, 24, 1.5);
       hud();
       scheduleNextRack();
     }
@@ -934,6 +1031,7 @@ function throwBall(v){
   ballAge = 0; slowTimer = 0;
   ball.body.setLinvel({ x: v.x, y: v.y, z: v.z }, true);
   ball.body.setAngvel({ x: -Math.hypot(v.y, v.z) * 2.2, y: 0, z: 0 }, true);
+  sfx.whoosh();
   hud();
 }
 
@@ -1051,6 +1149,7 @@ function aimVelocity(dx, dy){
 }
 
 cv.addEventListener('pointerdown', e => {
+  audio();                                   // unlock sound on first interaction
   if (!ballReady) return;
   aiming = true;
   aimStart = { x: e.clientX, y: e.clientY };
@@ -1127,7 +1226,11 @@ function frame(){
   window.__frames = (window.__frames || 0) + 1;
   requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), 0.1);
-  acc += dt;
+  // juice timers: slow-mo eases sim back to full speed
+  let ts = 1;
+  if (slowmoT > 0){ slowmoT -= dt; ts = slowmoT > 0 ? 0.35 : 1; }
+  timeScale = ts;
+  acc += dt * ts;
   let steps = 0;
   while (acc >= FIXED_DT && steps < 5){
     simStep();
@@ -1142,7 +1245,13 @@ function frame(){
   for (const c of cans) lerpRec(c.rec);
   if (ball) lerpRec(ball);
   updateCamera();
+  if (punchT > 0){
+    punchT = Math.max(punchT - dt * 2.6, 0);
+    camera.fov = BASE_FOV + Math.sin((1 - punchT) * Math.PI) * 2.5;
+    camera.updateProjectionMatrix();
+  }
   updateMeter(dt);
+  updateSparks(dt);
   renderer.render(scene, camera);
 }
 
