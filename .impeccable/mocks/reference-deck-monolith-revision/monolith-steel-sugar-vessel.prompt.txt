@@ -1,0 +1,17 @@
+Edit the supplied PulseRank Product Passport desktop mockup with only these focused refinements. Preserve the exact composition, dark-only palette, Mega Monster product image, 240 mg exact caffeine data, 81 g sugar glass vessel and fill level, typography system, navigation, metric strip, lower evidence panels, data-state legend, and all factual text.
+
+1. RESTORE THE EARLIER STEEL MATERIALITY:
+- Introduce sophisticated dark brushed-steel texture across the structural chassis, outer frame, specimen bay, panel rails, metric dividers, and the central metric slab surround.
+- Give the giant "240" numerals a restrained pale machined-steel surface: fine directional grain, subtle edge highlights, and controlled realistic reflections, while keeping the Manrope-like squared neo-grotesk letterform perfectly crisp and highly legible.
+- Add small stainless hardware details such as flush screws, thin beveled seams, and metal edge catching, comparable to a premium scientific measuring instrument.
+- Keep the interior reading surfaces near-black and calm. Texture must be tactile and visible, but never noisy, rusty, distressed, grungy, embossed wallpaper, or steampunk.
+- Preserve cyan as the exact-data/datum accent and purple only for the saved action edge glow. Do not turn the interface silver overall.
+- The glass sugar vessel must remain the signature object and should gain only physically plausible reflections from the steel surroundings.
+
+2. REMOVE THE OPEN SOURCE ACTION BUTTON:
+- Delete the entire "Open source / External site" button from the right sticky action rail.
+- Keep exactly three browser-local actions there: Save, Compare, Add to My Day.
+- Rebalance those three controls vertically with generous spacing; do not leave an obvious empty fourth-button slot.
+- Preserve source attribution in the lower SOURCE RECORD panel, including the Caffeine Informer source name. Do not remove provenance or the source record.
+
+Do not redesign or recompose any other area. Do not change any values or state labels. Do not add health guidance, targets, warnings, new charts, or extra controls. No browser chrome, annotations, or device frame. Output only the complete revised web page mockup.

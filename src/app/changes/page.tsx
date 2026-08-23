@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownToLine, Bell, CalendarDays, ChevronDown, CircleHelp, Database, Menu, Search, ShieldCheck, UserCircle, Zap } from "lucide-react";
+import { ArrowDownToLine, Bell, CalendarDays, ChevronDown, CircleHelp, Database, Gamepad2, Menu, Search, ShieldCheck, UserCircle, Zap } from "lucide-react";
 
 import { InvalidCursorError, listChanges } from "@/server/products/queries";
 
 import { ChangesEmptyState, ChangesLedger } from "@/components/pulserank/changes/changes-ledger";
 import { CHANGE_GROUPS, changeGroupForEventType, countChangeGroups, formatObservedAt } from "@/components/pulserank/changes/changes-model";
+import { PulseLogo } from "@/components/pulserank/pulse-logo";
 import styles from "@/components/pulserank/changes/changes.module.css";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { href: "/changes", label: "Changes", icon: ArrowDownToLine },
   { href: "/my-pulse", label: "My Pulse", icon: UserCircle },
   { href: "/live-data", label: "Live Data", icon: Database },
+  { href: "/game", label: "Arcade", icon: Gamepad2 },
 ] as const;
 
 function getOneParam(value: string | string[] | undefined): string | undefined {
@@ -44,9 +46,7 @@ function ChangesHeader() {
       <div className={styles.headerInner}>
         <Link href="/" className={styles.brand} aria-label="PulseRank home">
           <span className={styles.brandMark} aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none" role="presentation">
-              <path d="M1 17h5l2.5-8 4.5 16 4.5-21 3.5 13H31" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <PulseLogo size={27} />
           </span>
           <span className={styles.wordmark}>PulseRank</span>
         </Link>

@@ -18,7 +18,7 @@ RUN DATABASE_URL=postgres://build:build@127.0.0.1:5432/pulserank_build?sslmode=r
   FIREWORKS_MODEL=accounts/fireworks/models/deepseek-v4-flash-0731 \
   FIREWORKS_REASONING_EFFORT=high \
   NEXT_PUBLIC_APP_URL=https://example.invalid \
-  node node_modules/next/dist/bin/next build
+  bun run build
 RUN bun build src/worker/index.ts --target=bun --outfile=dist/worker.js
 
 # Private one-off target for forward-only migrations.
@@ -50,6 +50,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 CMD ["bun", "dist/worker.js"]
 
 FROM runtime-base AS runtime
+COPY --from=builder --chown=pulserank:pulserank /app/public ./public
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD bun -e "fetch('http://127.0.0.1:3000/api/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"

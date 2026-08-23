@@ -1,0 +1,10 @@
+Use case: ui-mockup
+Asset type: high-fidelity desktop web app design comp, 1440x900
+Primary request: Design a new Product Passport page for PulseRank in a CONSUMER FIELD GUIDE visual system. Make it feel like a contemporary natural-history specimen folio and independent editorial field guide: deep aubergine ink ground, matte parchment observation sheets, electric violet index tabs used sparingly, fine annotation leaders, editorial serif display paired with a legible humanist sans and tabular numerals. Avoid generic dashboard cards, glassmorphism, neon glow, gradients, bento grids, and fake science decoration.
+Input images: Image 1 is the exact authorized product image to display unchanged as the hero specimen. Image 2 is structure/content reference only; retain hero, actions, metric strip, evidence, and eligibility, but do not copy styling, invented prose, or claims.
+Structure: compact PulseRank header and search; asymmetrical opening spread with large product specimen left, product title and provenance center, sticky local action rail right; five-part indexed observation ribbon; evidence folio; ranking eligibility; vertical field-state index.
+Real product content: 10 Hour Energy Shot; Other / unclassified; Product type · Not classified; 422 mg total caffeine; 57 ml serving and normalized volume; 740.4 mg / 100 ml concentration; Calories and Sugar not published; Caffeine Informer; observed 22 Aug 2026, 00:39 UTC; eligible for total-caffeine and concentration ranking.
+Truth rules: exact values have no Exact badge; only qualified, uncertain, or absent states receive written tags; ranking eligibility is not a wellness score; no quality rating, medical advice, recommended target, ingredients, source prose, fabricated claims, raw/provider IDs, or hotlink notation.
+Interaction: controls are 44px+ with visible focus; Save, Compare, and My Day are browser-local; Open source opens Caffeine Informer in a new tab.
+
+Correction applied: replace package-claim annotations with neutral image/serving annotations, relabel source, and correct local/external action copy.

@@ -4,6 +4,16 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   poweredByHeader: false,
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: "/", destination: "/landing/index.html" },
+        { source: "/game", destination: "/games/caffeine-knockdown.html" },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async headers() {
     return [
       {

@@ -1,0 +1,7 @@
+{
+  "approved": false,
+  "rejected": true,
+  "direction": "Signal Bench",
+  "promptFile": "signal-bench.prompt.txt",
+  "referenceProduct": "10-hour-eternal-shot"
+}

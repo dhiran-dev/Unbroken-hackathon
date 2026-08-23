@@ -1,0 +1,8 @@
+{
+  "approved": false,
+  "direction": "Reference Deck",
+  "composition": "Monolith",
+  "promptFile": "monolith.prompt.txt",
+  "referenceProduct": "10-hour-eternal-shot",
+  "theme": "dark-only"
+}

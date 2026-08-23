@@ -1,0 +1,2 @@
+Edit target: supplied corrected Reference Deck Datum Drawer PulseRank UI mockup.
+Remove only the sun/theme-toggle icon at the far right of the header because PulseRank is dark-only. Let the Search products field extend or leave clean dark space. Preserve every other pixel-level composition, navigation link, product fact, drawer, action, focus style, material, and text unchanged. Do not add a replacement control.

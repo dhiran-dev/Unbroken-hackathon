@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -76,7 +77,15 @@ function formatRebuiltAt(value: Date): string {
 function Logo() {
   return (
     <span className={styles.logo}>
-      <Zap aria-hidden="true" />
+      <Image
+        alt=""
+        aria-hidden="true"
+        height={44}
+        priority
+        src="/pulserank/logo.png"
+        style={{ height: 38, objectFit: "contain", width: 38 }}
+        width={44}
+      />
       <span>Pulse<strong>Rank</strong></span>
     </span>
   );
@@ -84,11 +93,13 @@ function Logo() {
 
 function LeaderboardsHeader() {
   const nav = [
+    ["/", "Home"],
     ["/explore", "Explore"],
     ["/leaderboards", "Leaderboards"],
     ["/compare", "Compare"],
     ["/my-pulse", "My Pulse"],
     ["/changes", "Changes"],
+    ["/game", "Arcade"],
   ] as const;
 
   return (

@@ -1,0 +1,6 @@
+Edit target: supplied Reference Deck Measurement Spine PulseRank UI mockup.
+Preserve the dark anodized world, large product viewport, vertical spine architecture, right identity/action field, lower evidence plate, state legend, focus treatment, all values, and spacing. Make only these corrections:
+1. Restore compact persistent header navigation between PulseRank and Search products: Explore, Leaderboards, Compare, My Pulse, Changes, Live Data. No theme toggle.
+2. Keep exactly five measurement-spine stops but correct them to: 01 Total caffeine — 422 mg; 02 Serving — 57 ml with small '57 ml normalized' context; 03 Concentration — 740.4 mg / 100 ml; 04 Calories — Not published; 05 Sugar — Not published. Do not combine Calories and Sugar. Remove the old separate Normalized stop.
+3. In Ranking Eligibility, replace the two-sentence explanation with: 'Eligibility determines whether observed data can enter each leaderboard. It does not imply quality or health.'
+Do not change anything else.

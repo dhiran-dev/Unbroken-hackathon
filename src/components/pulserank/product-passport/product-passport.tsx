@@ -28,6 +28,7 @@ import {
   SmoothCursor,
 } from "./product-passport-effects";
 import { ProductViewTracker } from "@/components/pulserank/local-workspaces";
+import { PulseLogo } from "@/components/pulserank/pulse-logo";
 import { categoryLabel } from "@/components/pulserank/public-ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ function toSavedRef(product: PublicProductDto): SavedProductRef | null {
 function Wordmark() {
   return (
     <Link aria-label="PulseRank home" className={styles.wordmark} href="/">
-      <Zap aria-hidden="true" />
+      <PulseLogo size={30} />
       <strong>Pulse<span>Rank</span></strong>
     </Link>
   );
@@ -113,6 +114,7 @@ function Header() {
         <Link href="/compare">Compare</Link>
         <Link href="/my-pulse">My Pulse</Link>
         <Link href="/changes">Changes</Link>
+        <Link href="/game">Arcade</Link>
       </nav>
       <div className={styles.headerTools}>
         <form action="/explore" className={styles.searchForm} method="get" role="search">
@@ -142,6 +144,7 @@ function Header() {
           <Link href="/compare">Compare</Link>
           <Link href="/my-pulse">My Pulse</Link>
           <Link href="/changes">Changes</Link>
+          <Link href="/game">Arcade</Link>
         </nav>
       ) : null}
     </header>

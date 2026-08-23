@@ -1,0 +1,5 @@
+Edit target: supplied Obsidian Registry PulseRank Product Passport UI mockup.
+Preserve the complete dark composition, product image, type, spacing, metrics, action rail, evidence panels, state legend, and all real facts. Make only these corrections:
+1. Remove the entire fabricated ACCESSION label and PR-2026-08-05739 identifier. Leave that upper-right hero area empty.
+2. Remove the redundant word 'Exact' beneath 422 mg, 57 ml, and 740.4 mg / 100 ml in the metric band. Leave the exact numeric values and metric labels unchanged. Do not replace those words with badges or qualifiers.
+Do not change anything else or add new text.

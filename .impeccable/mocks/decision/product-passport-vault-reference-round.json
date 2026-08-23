@@ -1,0 +1,73 @@
+{
+  "title": "Choose the Product Passport composition",
+  "question": "All three keep the trusted Product Passport content and the dark, depth-led reference language. Which composition should become the production direction?",
+  "options": [
+    {
+      "id": "vault-transfer",
+      "label": "Vault Transfer",
+      "kicker": "THE ROLL",
+      "lineage": "A linked glass exchange chamber",
+      "thesis": "The product and its primary measurement read as two sides of one transparent transfer surface.",
+      "palette": [
+        "#060704",
+        "#262715",
+        "#e7ee38",
+        "#f2f4e8"
+      ],
+      "materials": [
+        "smoked glass",
+        "olive light bloom",
+        "powder-coated black"
+      ],
+      "viewport": "A complete left product bay faces one large right-side glass chamber linking 240 mg to its 709 ml serving; actions float above and the four-column evidence ledger anchors the bottom.",
+      "risk": "The transfer metaphor must remain descriptive and never imply a recommendation or conversion.",
+      "comp": ".impeccable/mocks/decision/product-passport-vault-transfer.png"
+    },
+    {
+      "id": "cinematic-shelf",
+      "label": "Cinematic Shelf",
+      "lineage": "A wide optical readout with an open data field",
+      "thesis": "The product image is the physical anchor while one oversized number occupies a quiet, borderless field of depth.",
+      "palette": [
+        "#070806",
+        "#171a12",
+        "#dfe83b",
+        "#f4f5eb"
+      ],
+      "materials": [
+        "matte black",
+        "soft-focus optics",
+        "frosted measurement film"
+      ],
+      "viewport": "The complete left image bay runs the full hero height; the right side is mostly open space with the product name, a monumental 240 mg readout, a slim metric shelf, and the evidence columns below.",
+      "risk": "The open composition needs disciplined contrast so quiet metadata does not disappear into atmosphere.",
+      "comp": ".impeccable/mocks/decision/product-passport-cinematic-shelf.png"
+    },
+    {
+      "id": "lens-stack",
+      "label": "Lens Stack",
+      "lineage": "Overlapping focus planes from an optical instrument",
+      "thesis": "Three shallow glass planes let caffeine, serving context, and sugar resolve one layer at a time without hiding their labels.",
+      "palette": [
+        "#050605",
+        "#1d2217",
+        "#ecf442",
+        "#eff3e7"
+      ],
+      "materials": [
+        "layered optical glass",
+        "green-black haze",
+        "acid-yellow calibration marks"
+      ],
+      "viewport": "A complete product bay holds the left half while three offset measurement panes stack on the right; the active front pane carries 240 mg, and a single four-column information band remains fully legible below.",
+      "risk": "Layering must create hierarchy, not make factual states appear unavailable or blurred.",
+      "comp": ".impeccable/mocks/decision/product-passport-lens-stack.png"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {
+    "value": "comp",
+    "toggle": true
+  },
+  "steer": true
+}

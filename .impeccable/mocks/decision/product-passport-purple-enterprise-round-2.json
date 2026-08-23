@@ -1,0 +1,76 @@
+{
+  "title": "Choose the revised Product Passport composition",
+  "question": "The first hand is discarded. These three use an enterprise typographic system, a restrained glossy-purple optical accent, and only shadcn/ui, Magic UI, or Aceternity UI primitives. Which composition should become the production direction?",
+  "options": [
+    {
+      "id": "prism-rail",
+      "label": "Prism Rail",
+      "kicker": "THE ROLL",
+      "lineage": "shadcn primitives · Magic UI Shine Border · Aceternity Spotlight New",
+      "thesis": "A single vertical amethyst light rail turns the product and its evidence into one precision instrument.",
+      "palette": [
+        "#050409",
+        "#111019",
+        "#8b5cf6",
+        "#dac7ff",
+        "#f7f4ff"
+      ],
+      "materials": [
+        "polished black glass",
+        "amethyst edge light",
+        "satin graphite"
+      ],
+      "viewport": "The complete product-image bay fills the left half. A thin vertical purple-glass rail divides it from a wide editorial measurement field where 240 mg crosses the rail; the action group sits in one quiet top dock and the required four-column evidence ledger continues on shared baselines below.",
+      "risk": "The light rail must remain a structural anchor and never become a decorative neon divider.",
+      "comp": ".impeccable/mocks/decision/product-passport-r2-prism-rail.png"
+    },
+    {
+      "id": "executive-dossier",
+      "label": "Executive Dossier",
+      "lineage": "shadcn Button Group + Tooltip · Magic UI Number Ticker · Aceternity Spotlight New",
+      "thesis": "One uninterrupted black-glass dossier replaces dashboard cards with the hierarchy of an institutional report.",
+      "palette": [
+        "#040407",
+        "#0d0b13",
+        "#9d6cff",
+        "#e2d5ff",
+        "#faf8ff"
+      ],
+      "materials": [
+        "smoked optical glass",
+        "violet caustic reflection",
+        "ink-black aluminum"
+      ],
+      "viewport": "A single edge-to-edge dossier surface contains a generous complete left product bay and a right-side record set like a premium annual report: wide title, oversized 240 mg, serving context, and flush facts. One inset action capsule is embedded in the upper edge; the lower four columns read as a continuous ledger, not four cards.",
+      "risk": "The monolithic surface needs exact spacing and hairline hierarchy so it feels authored rather than empty.",
+      "comp": ".impeccable/mocks/decision/product-passport-r2-executive-dossier.png"
+    },
+    {
+      "id": "amethyst-index",
+      "label": "Amethyst Index",
+      "lineage": "shadcn Button + Badge + Separator · Magic UI Blur Fade · Aceternity Card Spotlight",
+      "thesis": "A luxury editorial index makes typography the interface while one glossy violet lens marks the active measurement.",
+      "palette": [
+        "#050508",
+        "#14111b",
+        "#7c3cff",
+        "#c7a7ff",
+        "#f4f1f8"
+      ],
+      "materials": [
+        "charcoal lacquer",
+        "violet glass lens",
+        "cool white ink"
+      ],
+      "viewport": "The product owns the full left hero bay. On the right, the name, 240 mg, serving, and observed facts are composed as a wide neo-grotesk editorial index with no enclosing cards; a single shallow purple-glass lens sits behind the active measurement and the four evidence columns form a compact typographic footer.",
+      "risk": "The fashion-editorial voice must still scan like a trustworthy record rather than campaign art.",
+      "comp": ".impeccable/mocks/decision/product-passport-r2-amethyst-index.png"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {
+    "value": "comp",
+    "toggle": true
+  },
+  "steer": true
+}

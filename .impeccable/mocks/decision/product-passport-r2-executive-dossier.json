@@ -1,0 +1,14 @@
+{
+  "prompt": "Targeted correction to the same Executive Dossier asset: the lower `Product metadata` and `Observed facts` columns are visually empty, which fails the required information architecture. Regenerate/edit only to populate those two ledger columns with readable trusted rows while preserving the existing composition, typography, can, action dock, violet restraint, Source record, and Ranking eligibility. Product metadata rows: `709 ml serving`, `Drink`, `Energy drink`. Observed facts rows: `240 mg caffeine`, `33.9 mg / 100 ml`, `320 kcal · 81 g sugar`. Do not introduce cards, new effects, or any other visual change. Overwrite the same PNG and update the same prompt/provenance sidecars with the exact correction prompt. Inspect at 1440×900 and return QA.",
+  "approved": false,
+  "variant": "r2-executive-dossier",
+  "operation": "targeted-edit",
+  "editTarget": "/home/dhiran/Dhiran/brightdata_hackathon/.impeccable/mocks/decision/product-passport-r2-executive-dossier.png",
+  "sourceReferences": [
+    "/tmp/codex-clipboard-d9fdbdf0-bd12-4694-aa36-528c8b75f098.png",
+    "/tmp/codex-clipboard-49225374-df20-43d5-bbeb-c543c4968c43.png",
+    "/tmp/codex-clipboard-eff4e03b-59f5-4cb1-8175-d4587385294d.png",
+    "/tmp/codex-clipboard-6a32e782-5f04-44dc-b770-20c0c7d45e25.png",
+    "/home/dhiran/Dhiran/brightdata_hackathon/.impeccable/review/product-passport-desktop-1440x900.png"
+  ]
+}

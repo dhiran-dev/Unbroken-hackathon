@@ -13,6 +13,7 @@ export default defineConfig([
     "drizzle/meta/**",
     "next-env.d.ts",
     "playwright-report/**",
+    "public/prototypes/**",
     "sessions/**",
     "test-results/**",
   ]),

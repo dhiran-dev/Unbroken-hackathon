@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -20,12 +21,14 @@ import { PublishedProductImage } from "@/components/pulserank/product-image";
 import productImageStyles from "@/components/pulserank/product-image.module.css";
 
 export const NAV_ITEMS = [
+  { href: "/", label: "Home" },
   { href: "/explore", label: "Explore" },
   { href: "/leaderboards", label: "Leaderboards" },
   { href: "/compare", label: "Compare" },
   { href: "/my-pulse", label: "My Pulse" },
   { href: "/changes", label: "Changes" },
   { href: "/live-data", label: "Live Data" },
+  { href: "/game", label: "Arcade" },
 ] as const;
 
 export type PublicNavKey = (typeof NAV_ITEMS)[number]["href"] | "home";
@@ -33,8 +36,19 @@ export type PublicNavKey = (typeof NAV_ITEMS)[number]["href"] | "home";
 export function PulseMark({ compact = false }: { compact?: boolean }) {
   return (
     <span className="pr-brand" aria-label="PulseRank home">
-      <span className="pr-brand-mark" aria-hidden="true">
-        <Zap size={16} strokeWidth={2.7} />
+      <span
+        className="pr-brand-mark"
+        aria-hidden="true"
+        style={{ background: "transparent", borderRadius: 0, boxShadow: "none" }}
+      >
+        <Image
+          alt=""
+          height={44}
+          priority
+          src="/pulserank/logo.png"
+          style={{ height: 40, maxWidth: "none", objectFit: "contain", width: 40 }}
+          width={44}
+        />
       </span>
       {!compact ? <span className="pr-wordmark">PulseRank</span> : null}
     </span>

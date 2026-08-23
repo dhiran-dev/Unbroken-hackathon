@@ -1,0 +1,40 @@
+{
+  "blend_path": "/home/dhiran/Dhiran/brightdata_hackathon/tooling/blender/pulse-energy.blend",
+  "checks": {
+    "eevee": true,
+    "expected_stage_nodes": true,
+    "metric_units": true,
+    "no_external_paths": true,
+    "resolution": true,
+    "scene_name": true
+  },
+  "external_paths": [],
+  "object_count": 18,
+  "objects": [
+    "PulseBlueRim",
+    "PulseCan",
+    "PulseCanBottomRim",
+    "PulseCanCondensation",
+    "PulseCanLabel",
+    "PulseCanLightning",
+    "PulseCanPullTab",
+    "PulseCanTopRim",
+    "PulseCanTopSurface",
+    "PulseKeyLight",
+    "PulseMagentaFill",
+    "PulsePedestal",
+    "PulsePedestalRings",
+    "PulsePedestalTier",
+    "PulsePedestalTop",
+    "PulseStudioCamera",
+    "PulseStudioFloor",
+    "PulseVioletSpot"
+  ],
+  "render_engine": "BLENDER_EEVEE",
+  "resolution": [
+    1440,
+    900
+  ],
+  "result": "pass",
+  "scene": "PulseRank Studio Stage"
+}

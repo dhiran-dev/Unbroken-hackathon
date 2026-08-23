@@ -26,6 +26,7 @@ import {
   replaceCompareSlugs,
 } from "@/lib/local-state/compare";
 import type { PublicProductDto } from "@/server/products/dto";
+import { PulseLogo } from "@/components/pulserank/pulse-logo";
 import { PublishedProductImage } from "@/components/pulserank/product-image";
 
 import {
@@ -51,6 +52,7 @@ const NAV_ITEMS = [
   ["/compare", "Compare"],
   ["/my-pulse", "My Pulse"],
   ["/changes", "Changes"],
+  ["/game", "Arcade"],
 ] as const;
 
 const ROWS = [
@@ -114,7 +116,7 @@ function Header() {
     <header className={styles.header}>
       <div className={styles.headerInner}>
         <Link className={styles.brand} href="/" aria-label="PulseRank home">
-          <Zap aria-hidden="true" />
+          <PulseLogo size={32} />
           <span>Pulse<strong>Rank</strong></span>
         </Link>
         <nav aria-label="Primary navigation" className={styles.nav}>

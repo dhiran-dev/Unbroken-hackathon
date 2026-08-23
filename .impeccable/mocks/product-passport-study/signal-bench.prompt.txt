@@ -1,0 +1,10 @@
+Use case: ui-mockup
+Asset type: high-fidelity desktop web app design comp, 1440x900
+Primary request: Design a new Product Passport page for PulseRank in a SIGNAL BENCH system derived from a serious oscilloscope and calibration console. It remains a consumer evidence page, not a game, HUD, medical monitor, or cyberpunk dashboard. Use charcoal-black instrument casing, matte graphite panels, etched graticule lines, warm off-white labels, phosphor violet for primary signal/action, amber for uncertainty, and red only for conflicts. Use condensed instrument lettering and tabular numerals. Avoid glassmorphism, generic cards, gradients, excessive neon, and bento grids.
+Input images: Image 1 is the exact authorized product image to display unchanged. Image 2 is structure/content reference only; retain hero, actions, metric strip, evidence, and eligibility without copying styling or claims.
+Structure: compact header/search; one instrument face with product viewport left, product identity and a static measurement index center, sticky local actions right; five separated readout windows; observation/source channels; ranking eligibility; complete field-state key.
+Real product content: 10 Hour Energy Shot; Other / unclassified; Product type · Not classified; 422 mg total caffeine; 57 ml serving and normalized volume; 740.4 mg / 100 ml concentration; Calories and Sugar not published; Caffeine Informer; observed 22 Aug 2026, 00:39 UTC; eligible for total-caffeine and concentration ranking.
+Truth rules: exact values are plain; no waveform or motif that implies time response, physiology, safety, quality, or health; all state meanings have text and glyph, not color alone; no medical advice, recommended target, ingredients, product prose, fabricated claims, raw/provider IDs, or hotlink notation.
+Interaction: 44px+ controls with visible focus; Save, Compare, and My Day identify browser-local storage; Open source is separate and external.
+
+Correction applied: replace the waveform with three independent static calibration markers, restore the complete field-state key, and add browser-local action copy.

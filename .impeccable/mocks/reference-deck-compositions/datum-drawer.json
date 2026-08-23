@@ -1,0 +1,8 @@
+{
+  "approved": false,
+  "direction": "Reference Deck",
+  "composition": "Datum Drawer",
+  "promptFile": "datum-drawer.prompt.txt",
+  "referenceProduct": "10-hour-eternal-shot",
+  "theme": "dark-only"
+}

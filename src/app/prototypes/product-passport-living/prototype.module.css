@@ -1,0 +1,1531 @@
+.page {
+  --ink: #030507;
+  --ink-soft: #080b0e;
+  --bone: #f4f4ed;
+  --muted: #9da5a1;
+  --green: #91f0a8;
+  --violet: #a76bff;
+  --violet-hot: #d99cff;
+  min-height: 100vh;
+  overflow: clip;
+  background:
+    radial-gradient(circle at 78% 12%, rgb(118 56 189 / 16%), transparent 27rem),
+    linear-gradient(180deg, #040608, #020304 76%);
+  color: var(--bone);
+  font-family: var(--living-passport-body), Inter, sans-serif;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page :focus-visible {
+  outline: 2px solid #d9afff;
+  outline-offset: 4px;
+}
+
+.header {
+  position: relative;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: minmax(210px, 1fr) auto minmax(450px, 1fr);
+  align-items: center;
+  min-height: 78px;
+  padding: 12px clamp(20px, 3.2vw, 54px);
+  border-bottom: 1px solid rgb(255 255 255 / 9%);
+  background: rgb(3 5 7 / 84%);
+  box-shadow: 0 18px 70px rgb(0 0 0 / 24%);
+  backdrop-filter: blur(24px) saturate(130%);
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+.wordmark {
+  display: inline-grid;
+  grid-template-columns: 34px auto;
+  grid-template-rows: auto auto;
+  width: fit-content;
+  min-height: 44px;
+  align-content: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.wordmark > span {
+  display: grid;
+  grid-row: 1 / 3;
+  place-items: center;
+  width: 28px;
+  height: 36px;
+  margin-right: 6px;
+  border: 1px solid rgb(214 178 255 / 42%);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgb(211 154 255 / 22%), rgb(72 33 121 / 8%));
+  box-shadow: inset 0 1px rgb(255 255 255 / 30%), 0 0 24px rgb(167 107 255 / 20%);
+}
+
+.wordmark svg {
+  width: 14px;
+}
+
+.wordmark strong {
+  align-self: end;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -.045em;
+  line-height: 1;
+}
+
+.wordmark small {
+  margin-top: 5px;
+  color: #848e89;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: .17em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.headerRecord {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+}
+
+.headerRecord span,
+.eyebrow {
+  margin: 0;
+  color: #858e89;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+
+.headerRecord strong {
+  color: #e9e8e2;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.switcher {
+  display: flex;
+  justify-self: end;
+  padding: 4px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 3%);
+}
+
+.switcherButton {
+  display: flex !important;
+  min-width: 132px;
+  height: 44px !important;
+  flex-direction: column;
+  gap: 2px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #a0a6a2 !important;
+  font-family: var(--living-passport-body), Inter, sans-serif !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+}
+
+.switcherButton span {
+  color: #696f6c;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.switcherButton[data-active="true"] {
+  background: linear-gradient(135deg, rgb(208 166 255 / 20%), rgb(123 68 200 / 9%)) !important;
+  box-shadow: inset 0 1px rgb(255 255 255 / 17%), 0 0 28px rgb(128 65 220 / 13%);
+  color: #fff !important;
+}
+
+.switcherButton[data-active="true"] span {
+  color: #cf9fff;
+}
+
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 720px;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.grottoHero {
+  display: grid;
+  grid-template-columns: minmax(0, 56%) minmax(430px, 44%);
+}
+
+.grottoForest,
+.herbariumForest {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: #07110d;
+  isolation: isolate;
+}
+
+.forestScene,
+.conservatoryScene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(rgb(3 8 7 / 14%), rgb(4 5 10 / 34%)),
+    url("/prototypes/product-passport-living/forest.webp") center / cover no-repeat,
+    #07110d;
+  transition: opacity 500ms ease;
+}
+
+.forestScene iframe,
+.conservatoryScene iframe {
+  opacity: .48;
+  mix-blend-mode: screen;
+}
+
+.forestScene[data-state="loading"],
+.conservatoryScene[data-state="loading"] {
+  opacity: .58;
+}
+
+.grottoForest::before,
+.herbariumForest::before,
+.conservatoryHero::before {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(1 5 3 / 28%), transparent 38%, rgb(2 3 4 / 44%)),
+    linear-gradient(180deg, rgb(2 5 4 / 4%), rgb(2 5 4 / 52%));
+  content: "";
+  pointer-events: none;
+}
+
+.grottoForest::after {
+  position: absolute;
+  z-index: 3;
+  inset: 22px 0 22px 22px;
+  border: 1px solid rgb(220 255 222 / 16%);
+  border-right: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.violetRefraction {
+  position: absolute;
+  z-index: 3;
+  top: -18%;
+  right: -15%;
+  width: 52%;
+  height: 130%;
+  border-left: 1px solid rgb(229 198 255 / 26%);
+  background:
+    linear-gradient(105deg, transparent, rgb(165 86 242 / 9%) 28%, rgb(211 159 255 / 24%) 46%, rgb(107 54 178 / 6%) 72%, transparent),
+    radial-gradient(ellipse at 32% 45%, rgb(231 200 255 / 19%), transparent 52%);
+  box-shadow: -30px 0 80px rgb(78 25 132 / 11%);
+  opacity: .86;
+  pointer-events: none;
+  transform: skewX(-7deg);
+}
+
+.grottoCopy {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px clamp(32px, 5vw, 82px) 48px;
+  background:
+    radial-gradient(circle at 10% 50%, rgb(119 58 181 / 10%), transparent 19rem),
+    linear-gradient(145deg, #090c0d 0%, #040608 62%);
+}
+
+.grottoCopy::before {
+  position: absolute;
+  top: 8%;
+  left: 0;
+  width: 1px;
+  height: 84%;
+  background: linear-gradient(transparent, rgb(209 167 255 / 58%), transparent);
+  box-shadow: 0 0 34px rgb(181 102 255 / 50%);
+  content: "";
+}
+
+.grottoCopy h1,
+.conservatoryHeading h1,
+.herbariumLedger h1 {
+  margin: 16px 0 18px;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: clamp(48px, 5.25vw, 84px);
+  font-weight: 520;
+  letter-spacing: -.062em;
+  line-height: .92;
+}
+
+.grottoCopy h1 span {
+  display: block;
+  background: linear-gradient(96deg, #fff 0%, #cebeff 38%, #9661da 80%);
+  background-clip: text;
+  color: transparent;
+  font-weight: 420;
+}
+
+.lede {
+  max-width: 49ch;
+  margin: 0;
+  color: #a1aaa5;
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+.glassReadout,
+.conservatoryReadout {
+  margin-top: 30px;
+  border: 1px solid rgb(230 213 255 / 17%) !important;
+  border-radius: 26px !important;
+  background:
+    linear-gradient(135deg, rgb(229 204 255 / 12%), rgb(79 42 116 / 8%) 45%, rgb(9 13 15 / 80%) 74%) !important;
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 18%),
+    inset 16px 0 36px rgb(162 88 239 / 8%),
+    0 26px 80px rgb(0 0 0 / 35%),
+    0 0 50px rgb(132 65 200 / 9%) !important;
+  backdrop-filter: blur(24px) saturate(130%);
+}
+
+.caffeineReadout {
+  padding: 22px 24px 20px;
+}
+
+.readoutTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.readoutTopline > span,
+.orbitLabel {
+  color: #b7beb9;
+  font-size: 11px;
+  font-weight: 550;
+  letter-spacing: .02em;
+}
+
+.stateBadge {
+  border-color: rgb(173 255 188 / 23%) !important;
+  background: rgb(119 224 146 / 8%) !important;
+  color: #bdf5c8 !important;
+  font-size: 9px !important;
+}
+
+.stateBadge svg {
+  width: 11px;
+  height: 11px;
+}
+
+.caffeineValue {
+  display: flex;
+  align-items: baseline;
+  margin: 4px 0 0;
+}
+
+.caffeineValue strong {
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: clamp(76px, 7.4vw, 118px);
+  font-weight: 430;
+  letter-spacing: -.08em;
+  line-height: .95;
+}
+
+.caffeineValue em {
+  margin-left: 12px;
+  color: #cf9fff;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 27px;
+  font-style: normal;
+  font-weight: 520;
+}
+
+.caffeineReadout > p {
+  margin: 3px 0 18px;
+  color: #8f9893;
+  font-size: 11px;
+}
+
+.emissionRail {
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  align-items: end;
+  gap: 5px;
+  height: 26px;
+}
+
+.emissionRail i {
+  display: block;
+  height: 11px;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 8%);
+}
+
+.emissionRail i[data-active="true"] {
+  height: 24px;
+  background: linear-gradient(#e9caff, #8d3ee4);
+  box-shadow: 0 0 12px rgb(185 98 255 / 36%);
+}
+
+.quickFacts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  border-top: 1px solid rgb(255 255 255 / 9%);
+}
+
+.quickFacts div {
+  min-width: 0;
+  padding: 14px 16px 16px;
+  border-right: 1px solid rgb(255 255 255 / 8%);
+}
+
+.quickFacts div:last-child {
+  border-right: 0;
+}
+
+.quickFacts dt {
+  color: #6f7773;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.quickFacts dd {
+  overflow: hidden;
+  margin: 6px 0 0;
+  color: #eef0eb;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 12px;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.liquidAction {
+  position: relative;
+  width: 246px;
+  height: 62px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #07080a;
+  box-shadow: 0 10px 32px rgb(0 0 0 / 36%);
+}
+
+.liquidAction iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.liquidAction[data-state="ready"] iframe {
+  opacity: 1;
+}
+
+.liquidAction [data-liquid-label] {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .01em;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+.liquidAction > button {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: inherit;
+  background: #111316;
+  color: white;
+}
+
+.gradientAction {
+  --hover-border-position: 50% 0%;
+  position: relative;
+  display: inline-flex;
+  min-width: 182px;
+  min-height: 52px;
+  padding: 1px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  color: inherit;
+  isolation: isolate;
+}
+
+.gradientAction::before {
+  position: absolute;
+  z-index: -1;
+  inset: -65%;
+  background: radial-gradient(circle at var(--hover-border-position), #e5bbff 0, #8d45e2 13%, transparent 31%);
+  content: "";
+  transition: background-position var(--hover-border-duration) linear, filter 180ms ease;
+}
+
+.gradientAction[data-hovered="true"]::before,
+.gradientAction:focus-visible::before {
+  background: conic-gradient(from 180deg, #f1d9ff, #984ce6, #88ecae, #f1d9ff);
+  filter: saturate(1.2);
+}
+
+.gradientActionInner {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 15px;
+  border-radius: inherit;
+  background: linear-gradient(145deg, #101214, #060709);
+  color: #dedfda;
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.gradientActionInner svg {
+  width: 14px;
+  height: 14px;
+}
+
+.specimenPerspective {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  width: min(72%, 520px);
+  height: min(88%, 650px);
+  transform: translate(-50%, -50%);
+}
+
+.specimenTilt,
+.specimenBody {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.specimenAura,
+.specimenHalo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.specimenAura {
+  width: 108%;
+  height: 76%;
+  background: radial-gradient(ellipse, rgb(169 109 255 / 30%), rgb(101 50 174 / 9%) 43%, transparent 70%);
+  filter: blur(26px);
+}
+
+.specimenHalo {
+  width: min(44vw, 420px);
+  height: min(44vw, 420px);
+  border: 1px solid rgb(231 213 255 / 22%);
+  background:
+    linear-gradient(145deg, rgb(221 192 255 / 14%), rgb(67 32 105 / 2%) 57%),
+    radial-gradient(circle at 32% 22%, rgb(255 255 255 / 17%), transparent 18%);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 18%),
+    inset -26px -30px 70px rgb(79 27 135 / 16%),
+    0 32px 92px rgb(0 0 0 / 30%),
+    0 0 80px rgb(168 88 242 / 12%);
+  backdrop-filter: blur(12px) saturate(130%);
+}
+
+.specimenImage {
+  position: absolute;
+  z-index: 3;
+  inset: 2% 12% 12%;
+  filter: drop-shadow(0 38px 28px rgb(0 0 0 / 50%));
+}
+
+.specimenImage img {
+  object-fit: contain;
+}
+
+.specimenFallback {
+  display: grid;
+  width: 56%;
+  height: 74%;
+  margin: 15% auto 0;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 20px 20px 32px 32px;
+  background: linear-gradient(145deg, #16181b, #7553bf);
+  box-shadow: inset 0 2px rgb(255 255 255 / 20%);
+}
+
+.specimenFallback svg {
+  width: 72px;
+  height: 72px;
+}
+
+.specimenFallback strong {
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 42px;
+}
+
+.specimenLabel {
+  position: absolute;
+  z-index: 5;
+  right: 2%;
+  bottom: 7%;
+  left: 2%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px 16px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 15px;
+  background: rgb(5 8 8 / 68%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 10%);
+  backdrop-filter: blur(20px);
+}
+
+.specimenLabel span {
+  color: #bec5bf;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.specimenLabel strong {
+  overflow: hidden;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 11px;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forestCaption {
+  position: absolute;
+  z-index: 8;
+  bottom: 40px;
+  left: 42px;
+  display: grid;
+  grid-template-columns: 30px auto;
+  padding: 12px 14px;
+  border: 1px solid rgb(219 255 224 / 15%);
+  border-radius: 15px;
+  background: rgb(4 10 7 / 56%);
+  backdrop-filter: blur(18px);
+}
+
+.forestCaption svg {
+  grid-row: 1 / 3;
+  align-self: center;
+  width: 16px;
+  color: #93e7a5;
+}
+
+.forestCaption span {
+  font-size: 10px;
+  font-weight: 560;
+}
+
+.forestCaption small {
+  margin-top: 3px;
+  color: #7e8b83;
+  font-size: 8px;
+}
+
+/* Night Conservatory */
+.conservatoryHero {
+  min-height: 760px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.conservatoryScene {
+  z-index: -2;
+}
+
+.conservatoryHero::before {
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgb(2 5 4 / 82%), rgb(2 5 4 / 18%) 35%, rgb(3 5 5 / 42%) 64%, rgb(3 4 6 / 86%)),
+    linear-gradient(180deg, rgb(2 4 4 / 32%), rgb(3 4 6 / 60%));
+}
+
+.conservatoryGlass {
+  position: absolute;
+  z-index: 0;
+  inset: 24px;
+  border: 1px solid rgb(224 255 226 / 17%);
+  background:
+    linear-gradient(90deg, transparent 33.2%, rgb(255 255 255 / 12%) 33.3%, transparent 33.4%, transparent 66.5%, rgb(255 255 255 / 12%) 66.6%, transparent 66.7%),
+    linear-gradient(180deg, transparent 64%, rgb(210 174 255 / 11%) 64.1%, transparent 64.2%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 8%);
+  pointer-events: none;
+}
+
+.conservatoryHeading {
+  position: absolute;
+  z-index: 6;
+  top: 72px;
+  left: clamp(40px, 5vw, 80px);
+  width: min(48vw, 680px);
+}
+
+.conservatoryHeading h1 {
+  max-width: 10ch;
+  margin-top: 13px;
+  font-size: clamp(48px, 6.4vw, 94px);
+}
+
+.conservatoryTags {
+  display: flex;
+  gap: 8px;
+}
+
+.conservatorySpecimen {
+  position: absolute;
+  inset: 0 35% 0 24%;
+}
+
+.conservatorySpecimen .specimenPerspective {
+  width: min(78%, 500px);
+  height: min(82%, 640px);
+  transform: translate(-50%, -42%);
+}
+
+.conservatoryReadout {
+  position: absolute !important;
+  z-index: 8;
+  top: 50%;
+  right: clamp(40px, 5vw, 84px);
+  width: min(32vw, 450px);
+  margin: 0;
+  padding: 28px 30px 0;
+  transform: translateY(-42%);
+}
+
+.conservatoryReadout::before {
+  position: absolute;
+  top: 27px;
+  right: 28px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #d7b3ff;
+  border-radius: 50%;
+  box-shadow: 0 0 22px #a65be9;
+  content: "";
+}
+
+.conservatoryReadout > strong {
+  display: inline-block;
+  margin-top: 12px;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: clamp(82px, 8vw, 126px);
+  font-weight: 430;
+  letter-spacing: -.08em;
+  line-height: .92;
+}
+
+.conservatoryReadout > em {
+  margin-left: 10px;
+  color: #d5a7ff;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 25px;
+  font-style: normal;
+}
+
+.conservatoryReadout > p {
+  margin: 4px 0 23px;
+  color: #8f9893;
+  font-size: 10px;
+}
+
+.conservatoryReadout .quickFacts {
+  margin-right: -30px;
+  margin-left: -30px;
+}
+
+.conservatoryActions {
+  position: absolute;
+  z-index: 10;
+  right: clamp(40px, 5vw, 84px);
+  bottom: 58px;
+}
+
+/* Herbarium Ledger */
+.herbariumHero {
+  display: grid;
+  grid-template-columns: minmax(450px, 42%) minmax(0, 58%);
+}
+
+.herbariumLedger {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 52px clamp(38px, 5.2vw, 88px);
+  background:
+    linear-gradient(90deg, rgb(209 171 255 / 4%) 1px, transparent 1px),
+    linear-gradient(#050709, #080b0d);
+  background-size: 82px 100%;
+}
+
+.herbariumLedger::after {
+  position: absolute;
+  right: -1px;
+  width: 1px;
+  height: 86%;
+  background: linear-gradient(transparent, #bc80fa, transparent);
+  box-shadow: 0 0 26px rgb(181 102 255 / 54%);
+  content: "";
+}
+
+.ledgerIndex {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.ledgerIndex span {
+  color: #d1a7ff;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 12px;
+}
+
+.ledgerIndex i {
+  height: 1px;
+  background: linear-gradient(90deg, rgb(211 170 255 / 75%), rgb(211 170 255 / 7%));
+}
+
+.ledgerIndex small {
+  color: #737d77;
+  font-size: 8px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.herbariumLedger h1 {
+  max-width: 9ch;
+  font-size: clamp(50px, 6vw, 88px);
+}
+
+.herbariumLedger .caffeineReadout {
+  margin-top: 28px;
+  padding: 0;
+}
+
+.herbariumLedger .readoutTopline {
+  justify-content: flex-start;
+}
+
+.herbariumLedger .caffeineValue strong {
+  font-size: clamp(88px, 9vw, 134px);
+}
+
+.herbariumLedger .emissionRail {
+  max-width: 420px;
+}
+
+.herbariumForest .specimenPerspective {
+  width: min(68%, 520px);
+  height: min(86%, 650px);
+}
+
+.herbariumForest > .quickFacts {
+  position: absolute;
+  z-index: 10;
+  right: 36px;
+  bottom: 38px;
+  left: 36px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 17px;
+  background: rgb(4 8 6 / 65%);
+  backdrop-filter: blur(22px);
+}
+
+/* Evidence layout grid */
+.evidence {
+  position: relative;
+  padding: 82px clamp(22px, 4vw, 64px) 90px;
+  background:
+    radial-gradient(circle at 11% 14%, rgb(93 214 121 / 6%), transparent 24rem),
+    radial-gradient(circle at 82% 40%, rgb(152 78 230 / 9%), transparent 30rem),
+    #040607;
+}
+
+.evidence::before {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgb(255 255 255 / 2.5%) 1px, transparent 1px);
+  background-size: 100% 72px;
+  content: "";
+  pointer-events: none;
+}
+
+.evidenceHeading {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr);
+  align-items: end;
+  gap: 60px;
+  max-width: 1350px;
+  margin: 0 auto 38px;
+}
+
+.evidenceHeading h2 {
+  max-width: 14ch;
+  margin: 12px 0 0;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: clamp(38px, 4.8vw, 70px);
+  font-weight: 460;
+  letter-spacing: -.058em;
+  line-height: .98;
+}
+
+.evidenceHeading > p {
+  max-width: 52ch;
+  margin: 0 0 3px;
+  color: #88928c;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.layoutGrid {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 1350px;
+  min-height: 330px;
+  margin: 0 auto;
+  border: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 2%);
+  box-shadow: 0 32px 90px rgb(0 0 0 / 34%);
+}
+
+.layoutGridCard {
+  position: relative;
+  min-width: 0;
+  min-height: 330px;
+  overflow: hidden;
+  border-right: 1px solid rgb(255 255 255 / 9%);
+  background:
+    linear-gradient(150deg, rgb(255 255 255 / 3%), transparent 35%),
+    rgb(4 7 8 / 76%);
+  transition: background 220ms ease, box-shadow 220ms ease, grid-column 260ms cubic-bezier(.2,.8,.2,1);
+}
+
+.layoutGridCard:last-child {
+  border-right: 0;
+}
+
+.layoutGridCard::after {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgb(212 170 255 / 45%);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgb(167 92 235 / 38%);
+  content: "";
+  pointer-events: none;
+}
+
+.layoutGridCard > button {
+  display: flex;
+  width: 100%;
+  min-height: 146px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 26px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.layoutGridCard > button span {
+  color: #7d8781;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.layoutGridCard > button strong {
+  margin-top: 52px;
+  font-family: var(--living-passport-display), Manrope, sans-serif;
+  font-size: 19px;
+  font-weight: 530;
+  letter-spacing: -.035em;
+}
+
+.layoutGridCard > button small {
+  margin-top: 7px;
+  color: #747d78;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.layoutGridCard [data-layout-grid-content] {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: max-height 260ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease, transform 220ms ease;
+}
+
+.layoutGridCard[data-selected="true"] {
+  background:
+    radial-gradient(circle at 92% 10%, rgb(187 118 255 / 17%), transparent 14rem),
+    linear-gradient(145deg, rgb(209 166 255 / 10%), rgb(7 10 11 / 94%) 42%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 13%), 0 0 56px rgb(102 42 170 / 9%);
+}
+
+.layoutGridCard[data-selected="true"] > button {
+  min-height: 120px;
+}
+
+.layoutGridCard[data-selected="true"] > button strong {
+  margin-top: 26px;
+}
+
+.layoutGridCard[data-selected="true"] [data-layout-grid-content] {
+  max-height: 360px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.recordRows {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 0 26px 34px;
+}
+
+.recordRows div {
+  min-width: 0;
+  padding: 12px 16px 12px 0;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.recordRows dt {
+  color: #717a75;
+  font-size: 8px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.recordRows dd {
+  margin: 5px 0 0;
+  color: #d9ddd7;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.layoutGrid_grotto .layoutGridCard:nth-child(1)::before,
+.layoutGrid_conservatory .layoutGridCard:nth-child(2)::before,
+.layoutGrid_herbarium .layoutGridCard:nth-child(3)::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ce9cff, transparent);
+  box-shadow: 0 0 20px #8247bd;
+  content: "";
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 28px;
+  min-height: 78px;
+  padding: 18px clamp(22px, 4vw, 64px);
+  border-top: 1px solid rgb(255 255 255 / 8%);
+  background: #020304;
+  color: #747d78;
+  font-size: 9px;
+}
+
+.footer div,
+.footer a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer svg {
+  width: 13px;
+  height: 13px;
+  color: #a17bd0;
+}
+
+.footer a {
+  justify-self: end;
+  min-height: 44px;
+  color: #aeb5b1;
+  text-decoration: none;
+}
+
+.footer > span {
+  justify-self: end;
+}
+
+.smoothCursor {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 1px solid rgb(231 204 255 / 70%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, rgb(255 255 255 / 80%), transparent 14%),
+    linear-gradient(145deg, rgb(222 177 255 / 48%), rgb(102 41 166 / 20%));
+  box-shadow: inset 0 1px rgb(255 255 255 / 58%), 0 0 24px rgb(176 93 255 / 52%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+  will-change: transform;
+}
+
+.smoothCursor span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 8px white;
+  transform: translate(-50%, -50%);
+}
+
+.smoothCursor[data-visible="true"] {
+  opacity: 1;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .page,
+  .page a,
+  .page button {
+    cursor: none !important;
+  }
+}
+
+@media (max-width: 1120px) {
+  .header {
+    grid-template-columns: auto 1fr;
+  }
+
+  .headerRecord {
+    display: none;
+  }
+
+  .grottoHero,
+  .herbariumHero {
+    grid-template-columns: 52% 48%;
+  }
+
+  .grottoCopy,
+  .herbariumLedger {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gradientAction,
+  .liquidAction {
+    width: 100%;
+  }
+
+  .conservatoryHeading {
+    width: 45vw;
+  }
+
+  .conservatorySpecimen {
+    right: 32%;
+  }
+}
+
+@media (max-width: 820px) {
+  .header {
+    position: relative;
+    display: flex;
+    min-height: 126px;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
+  }
+
+  .wordmark {
+    flex: 1 1 auto;
+  }
+
+  .switcher {
+    order: 2;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    border-radius: 15px;
+  }
+
+  .switcherButton {
+    min-width: 138px;
+  }
+
+  .hero {
+    min-height: 0;
+  }
+
+  .grottoHero,
+  .herbariumHero {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .grottoForest,
+  .herbariumForest {
+    min-height: 590px;
+  }
+
+  .grottoForest::after {
+    inset: 14px;
+    border-right: 1px solid rgb(220 255 222 / 16%);
+  }
+
+  .grottoCopy,
+  .herbariumLedger {
+    padding: 48px 22px 54px;
+  }
+
+  .grottoCopy::before,
+  .herbariumLedger::after {
+    top: 0;
+    right: 8%;
+    left: 8%;
+    width: auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(209 167 255 / 58%), transparent);
+  }
+
+  .grottoCopy h1,
+  .herbariumLedger h1 {
+    font-size: clamp(48px, 14vw, 70px);
+  }
+
+  .specimenPerspective {
+    width: min(86%, 430px);
+    height: min(86%, 560px);
+  }
+
+  .specimenHalo {
+    width: min(80vw, 380px);
+    height: min(80vw, 380px);
+  }
+
+  .forestCaption {
+    right: 28px;
+    bottom: 24px;
+    left: 28px;
+  }
+
+  .glassReadout {
+    margin-top: 24px;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
+
+  .conservatoryHero {
+    min-height: 980px;
+  }
+
+  .conservatoryHeading {
+    top: 52px;
+    right: 24px;
+    left: 24px;
+    width: auto;
+  }
+
+  .conservatoryHeading h1 {
+    max-width: 10ch;
+    font-size: clamp(48px, 12vw, 72px);
+  }
+
+  .conservatorySpecimen {
+    inset: 120px 0 220px;
+  }
+
+  .conservatorySpecimen .specimenPerspective {
+    width: min(82%, 440px);
+  }
+
+  .conservatoryReadout {
+    top: auto;
+    right: 22px;
+    bottom: 112px;
+    left: 22px;
+    width: auto;
+    transform: none;
+  }
+
+  .conservatoryActions {
+    right: 22px;
+    bottom: 24px;
+    left: 22px;
+  }
+
+  .conservatoryActions .actions {
+    margin: 0;
+  }
+
+  .herbariumForest {
+    order: -1;
+  }
+
+  .evidence {
+    padding-top: 60px;
+  }
+
+  .evidenceHeading {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .layoutGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .layoutGridCard:nth-child(2) {
+    border-right: 0;
+  }
+
+  .layoutGridCard {
+    border-bottom: 1px solid rgb(255 255 255 / 9%);
+  }
+
+  .footer {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .header {
+    min-height: 134px;
+  }
+
+  .switcherButton {
+    min-width: 130px;
+  }
+
+  .grottoForest,
+  .herbariumForest {
+    min-height: 500px;
+  }
+
+  .specimenPerspective {
+    width: 88%;
+    height: 92%;
+  }
+
+  .specimenLabel {
+    right: 5%;
+    left: 5%;
+  }
+
+  .forestCaption {
+    display: none;
+  }
+
+  .grottoCopy,
+  .herbariumLedger {
+    padding-top: 42px;
+  }
+
+  .grottoCopy h1,
+  .herbariumLedger h1 {
+    margin-top: 12px;
+    font-size: 52px;
+  }
+
+  .lede {
+    font-size: 13px;
+  }
+
+  .caffeineReadout {
+    padding: 19px 18px 17px;
+  }
+
+  .caffeineValue strong,
+  .herbariumLedger .caffeineValue strong {
+    font-size: 82px;
+  }
+
+  .quickFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .quickFacts div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-right: 0;
+    border-bottom: 1px solid rgb(255 255 255 / 7%);
+  }
+
+  .quickFacts div:last-child {
+    border-bottom: 0;
+  }
+
+  .quickFacts dd {
+    max-width: 65%;
+    margin: 0;
+    text-align: right;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .conservatoryHero {
+    min-height: 1060px;
+  }
+
+  .conservatoryHeading {
+    top: 36px;
+  }
+
+  .conservatoryHeading h1 {
+    font-size: 48px;
+  }
+
+  .conservatorySpecimen {
+    inset: 120px 0 370px;
+  }
+
+  .conservatoryReadout {
+    bottom: 184px;
+  }
+
+  .conservatoryReadout > strong {
+    font-size: 86px;
+  }
+
+  .herbariumForest > .quickFacts {
+    right: 22px;
+    bottom: 22px;
+    left: 22px;
+  }
+
+  .evidenceHeading h2 {
+    font-size: 42px;
+  }
+
+  .layoutGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .layoutGridCard,
+  .layoutGridCard[data-selected="true"] {
+    min-height: 220px;
+    border-right: 0;
+  }
+
+  .layoutGridCard > button {
+    min-height: 210px;
+  }
+
+  .layoutGridCard[data-selected="true"] > button {
+    min-height: 130px;
+  }
+
+  .layoutGridCard > button strong {
+    margin-top: 42px;
+  }
+
+  .layoutGridCard[data-selected="true"] > button strong {
+    margin-top: 24px;
+  }
+
+  .recordRows {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    grid-template-columns: 1fr;
+  }
+
+  .footer a,
+  .footer > span {
+    justify-self: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

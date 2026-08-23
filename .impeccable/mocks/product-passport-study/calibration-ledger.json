@@ -1,0 +1,7 @@
+{
+  "approved": false,
+  "rejected": true,
+  "direction": "Calibration Ledger",
+  "promptFile": "calibration-ledger.prompt.txt",
+  "referenceProduct": "10-hour-eternal-shot"
+}

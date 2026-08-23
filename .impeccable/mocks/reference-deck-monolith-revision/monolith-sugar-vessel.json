@@ -1,0 +1,18 @@
+{
+  "approved": false,
+  "selectedComposition": "Monolith",
+  "direction": "Reference Deck",
+  "revision": "Typography and sugar vessel",
+  "promptFile": "monolith-sugar-vessel.prompt.txt",
+  "referenceProduct": "mega-monster-energy-drink",
+  "referenceFacts": {
+    "caffeineMg": 240,
+    "servingMl": 709,
+    "normalizedMl": 709,
+    "concentrationMgPer100Ml": 33.9,
+    "sugarG": 81,
+    "caloriesKcal": 320,
+    "state": "exact"
+  },
+  "theme": "dark-only"
+}

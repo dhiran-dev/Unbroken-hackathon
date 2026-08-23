@@ -596,9 +596,9 @@ for (const sx of [-1, 1]){
 /* ---------------- dopamine meter: refractive glass + neon liquid ---------------- */
 scene.add(camera);                       // so camera-anchored HUD objects render
 const meterGroup = new THREE.Group();
-meterGroup.position.set(-0.30, 0.40, -1.25);   // left side, below the score card
-meterGroup.rotation.y = 0.05;
-meterGroup.scale.setScalar(1.5);
+meterGroup.position.set(-0.335, 0.34, -1.08);   // extreme left corner, just below score
+meterGroup.rotation.y = 0.10;
+meterGroup.scale.setScalar(2.6);
 camera.add(meterGroup);
 
 {
@@ -615,28 +615,28 @@ camera.add(meterGroup);
     roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.1,
     envMapIntensity: 1.1,
   });
-  const vessel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.24, 32), glassMat);
+  const vessel = new THREE.Mesh(new THREE.CylinderGeometry(0.064, 0.064, 0.30, 32), glassMat);
   meterGroup.add(vessel);
-  const rimGeo = new THREE.TorusGeometry(0.05, 0.009, 12, 40);
-  for (const ry of [0.12, -0.12]){
+  const rimGeo = new THREE.TorusGeometry(0.064, 0.011, 12, 40);
+  for (const ry of [0.15, -0.15]){
     const rim = new THREE.Mesh(rimGeo, glassMat);
     rim.rotation.x = Math.PI / 2;
     rim.position.y = ry;
     meterGroup.add(rim);
   }
-  const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.047, 0.047, 0.014, 32), glassLid);
-  lid.position.y = 0.126;
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.060, 0.060, 0.016, 32), glassLid);
+  lid.position.y = 0.158;
   meterGroup.add(lid);
 
   // liquid column (origin at its base so scale.y = fill level)
-  const liqGeo = new THREE.CylinderGeometry(0.041, 0.041, 1, 24);
+  const liqGeo = new THREE.CylinderGeometry(0.053, 0.053, 1, 24);
   liqGeo.translate(0, 0.5, 0);
   const liqMat = new THREE.MeshStandardMaterial({
     color: 0x0a1a12, roughness: 0.25,
     emissive: 0x9fe870, emissiveIntensity: 3.4,
   });
   meterGroup.userData.liquid = new THREE.Mesh(liqGeo, liqMat);
-  meterGroup.userData.liquid.position.y = -0.112;
+  meterGroup.userData.liquid.position.y = -0.142;
   meterGroup.add(meterGroup.userData.liquid);
 
   // inner glow
@@ -652,8 +652,8 @@ camera.add(meterGroup);
   g.fillText('⚡ DOPAMINE', 128, 32);
   const label = new THREE.Sprite(new THREE.SpriteMaterial({
     map: tex(c), transparent: true, depthTest: false }));
-  label.scale.set(0.17, 0.042, 1);
-  label.position.y = -0.185;               // under the can
+  label.scale.set(0.155, 0.038, 1);
+  label.position.set(0.012, -0.20, 0);     // under the (taller) can, nudged right
   meterGroup.add(label);
 }
 
@@ -680,7 +680,7 @@ function updateMeter(dt){
   sloshV += (-sloshA * 42 - sloshV * 5.2) * dt;              // spring
   sloshA += sloshV * dt;
   const liq = meterGroup.userData.liquid;
-  liq.scale.y = Math.max(dopaShown, 0.02) * 0.21;
+  liq.scale.y = Math.max(dopaShown, 0.02) * 0.27;
   liq.rotation.z = sloshA * 0.28;
   liq.position.x = sloshA * 0.006;
   const col = dopaColor(dopaShown);
@@ -849,6 +849,9 @@ function spawnCan(spec){
 }
 
 function rackLayout(level){
+  // Arrangement logic v2: pin-formation footprints with collision-safe spacing.
+  // Columns are spaced >= 2*R + gap apart; rows are staggered in depth (dz) so
+  // nothing intersects and every can stays visible from the player's angle.
   const specs = [];
   const top = (s, x, dz, stack, kind = 'norm') => {
     for (let i = 0; i < stack; i++)
@@ -856,31 +859,36 @@ function rackLayout(level){
         y: SHELF_Y[s] + CAN_H / 2 + i * (CAN_H + 0.004), kind });
   };
   switch ((level - 1) % RACK_PATTERNS){
-    case 0: // reference wall: 3 up top, 2 mid, 4 base pyramid
+    case 0: // reference wall: 3 / 2 / base pyramid 3-2-1
       top(2, -0.24, 0, 1); top(2, 0, -0.02, 1); top(2, 0.24, 0, 1);
-      top(1, -0.13, 0.04, 1); top(1, 0.13, 0.04, 1);
-      top(0, -0.28, 0.08, 1); top(0, 0, 0, 2); top(0, 0.28, 0.08, 1);
+      top(1, -0.12, 0.04, 1); top(1, 0.12, 0.04, 1);
+      top(0, -0.24, 0.09, 1); top(0, 0, 0.09, 1); top(0, 0.24, 0.09, 1);
+      top(0, -0.12, 0.01, 1); top(0, 0.12, 0.01, 1);
+      top(0, 0, -0.07, 1);
       break;
-    case 1:
-      top(1, -0.3, 0.08, 2); top(1, 0.3, 0.08, 2);
-      top(1, 0, -0.05, 2);
-      top(2, -0.25, 0, 1); top(2, 0.25, 0, 1);
-      top(0, 0, 0, 1);
-      break;
-    case 2:
-      top(2, -0.55, 0, 1); top(2, -0.19, 0, 1); top(2, 0.19, 0, 1); top(2, 0.55, 0, 1);
-      top(1, -0.13, 0.06, 2); top(1, 0.13, 0.06, 2); top(1, 0, -0.03, 1);
-      break;
-    case 3:
-      top(1, -0.26, 0.09, 1); top(1, 0.26, 0.09, 1);
-      top(1, -0.13, 0.01, 2); top(1, 0.13, 0.01, 2);
-      top(1, 0, -0.08, 3);
-      top(2, -0.4, 0, 1); top(2, 0.4, 0, 1);
-      break;
-    case 4:
-      top(1, -0.5, 0.04, 1); top(1, -0.17, -0.02, 2); top(1, 0.17, -0.02, 2); top(1, 0.5, 0.04, 1);
-      top(2, -0.3, 0, 1); top(2, 0.3, 0, 1);
+    case 1: // twin towers + center stack + scouts up top + floor guard
+      top(1, -0.30, 0.06, 2); top(1, 0.30, 0.06, 2);
+      top(1, 0, -0.02, 2);
+      top(2, -0.28, 0, 1); top(2, 0.28, 0, 1);
       top(0, 0, 0.05, 1);
+      break;
+    case 2: // sniper wall up top, mini pin-triangle mid, guard low
+      top(2, -0.54, 0, 1); top(2, -0.18, -0.03, 1); top(2, 0.18, -0.03, 1); top(2, 0.54, 0, 1);
+      top(1, -0.12, 0.05, 1); top(1, 0.12, 0.05, 1);
+      top(1, 0, -0.03, 2);
+      top(0, 0, 0.04, 1);
+      break;
+    case 3: // big pyramid mid + flank pairs
+      top(1, -0.24, 0.09, 1); top(1, 0, 0.09, 1); top(1, 0.24, 0.09, 1);
+      top(1, -0.12, 0.01, 1); top(1, 0.12, 0.01, 1);
+      top(1, 0, -0.07, 2);
+      top(2, -0.42, 0, 1); top(2, 0.42, 0, 1);
+      top(0, -0.36, 0.04, 1); top(0, 0.36, 0.04, 1);
+      break;
+    case 4: // scatter wall: alternating depths, all shelves covered
+      top(1, -0.48, 0.03, 1); top(1, -0.16, -0.03, 1); top(1, 0.16, -0.03, 1); top(1, 0.48, 0.03, 1);
+      top(2, -0.32, 0, 1); top(2, 0.32, 0, 1);
+      top(0, -0.22, 0.05, 1); top(0, 0, 0.05, 2); top(0, 0.22, 0.05, 1);
       break;
   }
   const decafs = Math.min(1 + Math.floor((level - 1) / 2), 3);
@@ -1082,37 +1090,67 @@ const trajDots = [];
     trajDots.push(d);
   }
 }
-function hideTraj(){ for (const d of trajDots) d.visible = false; }
+function hideTraj(){ for (const d of trajDots) d.visible = false; lockRing.visible = false; }
 
-// soft aim-assist: nudge velocity toward the nearest can the arc passes near
-function assist(v){
-  let best = null, bestD = 0.45;
-  const tz = (BALL_START.z + 1.72) / -v.z;             // time to reach mid-shelf plane
-  if (!(tz > 0)) return v;
-  const hx = BALL_START.x + v.x * tz;
-  const hy = BALL_START.y + v.y * tz + 0.5 * GRAVITY * tz * tz;
+// aim-assist v2: ballistic lock-on. Find the can nearest to where the player's
+// arc crosses its shelf plane, then solve the exact projectile velocity that
+// passes through that can's center (same launch speed, corrected angle).
+const lockRing = new THREE.Mesh(
+  new THREE.TorusGeometry(0.09, 0.011, 10, 40),
+  new THREE.MeshBasicMaterial({ color: 0x35e05a, transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending, depthTest: false })
+);
+lockRing.visible = false;
+scene.add(lockRing);
+
+function ballisticTo(target, s){
+  const g = -GRAVITY;                       // positive magnitude
+  const dx = target.x - BALL_START.x;
+  const dy = target.y - BALL_START.y;
+  const dz = target.z - BALL_START.z;
+  const d = Math.hypot(dx, dz);
+  if (d < 0.01 || s < 1) return null;
+  const ux = dx / d, uz = dz / d;
+  let sp = s;
+  for (let i = 0; i < 3; i++){
+    const s2 = sp * sp;
+    const disc = s2 * s2 - g * (g * d * d + 2 * dy * s2);
+    if (disc >= 0){                          // reachable at this speed
+      const th = Math.atan((s2 - Math.sqrt(disc)) / (g * d));   // low arc
+      const vh = Math.cos(th) * sp;
+      return { x: vh * ux, y: Math.sin(th) * sp, z: vh * uz };
+    }
+    sp *= 1.18;                              // slightly stronger throw reaches higher
+  }
+  return null;
+}
+
+function solveLock(v){
+  lockRing.visible = false;
+  if (-v.z < 0.5) return v;
+  let best = null, bestKind = 'norm', bestD = 0.62;
   for (const c of cans){
     if (c.scored) continue;
     const p = c.rec.curP;
+    const t = (p.z - BALL_START.z) / v.z;    // when the raw arc crosses the can's plane
+    if (!(t > 0.03)) continue;
+    const hx = BALL_START.x + v.x * t;
+    const hy = BALL_START.y + v.y * t + 0.5 * GRAVITY * t * t;
     const d = Math.hypot(p.x - hx, p.y - hy);
-    if (d < bestD){ bestD = d; best = p; }
+    if (d < bestD){ bestD = d; best = p; bestKind = c.kind; }
   }
   if (!best) return v;
-  const s = Math.hypot(v.x, v.y, v.z);
-  const toCan = { x: best.x - hx, y: best.y - hy, z: 0 };
-  const l = Math.hypot(toCan.x, toCan.y) || 1;
-  const w = Math.min(bestD / 0.45, 1);                 // closer = stronger pull
-  const mix = {
-    x: v.x + (toCan.x / l) * s * 0.14 * (1 - w * 0.4),
-    y: v.y + (toCan.y / l) * s * 0.14 * (1 - w * 0.4),
-    z: v.z,
-  };
-  const ml = Math.hypot(mix.x, mix.y, mix.z);
-  return { x: mix.x / ml * s, y: mix.y / ml * s, z: mix.z };
+  const sol = ballisticTo(best, Math.hypot(v.x, v.y, v.z));
+  if (!sol) return v;
+  lockRing.position.copy(best);
+  lockRing.lookAt(camera.position);
+  lockRing.material.color.set(bestKind === 'decaf' ? 0xff5d5d : 0x35e05a);
+  lockRing.visible = true;
+  return sol;
 }
 
 function updateTraj(vIn){
-  const v = assist(vIn);
+  const v = solveLock(vIn);
   let n = 0;
   for (let i = 0; i < trajDots.length; i++){
     const t = (i + 1) * 0.055;
@@ -1286,6 +1324,22 @@ window.__game = {
 window.__snap = () => {                       // render + export framebuffer (debug/CI)
   renderer.render(scene, camera);
   return renderer.domElement.toDataURL('image/png');
+};
+// aim-assist accuracy probe: given a RAW (pre-assist) velocity, report whether
+// lock engaged and where the corrected arc crosses the locked can's plane
+window.__assistTest = (v) => {
+  const sol = solveLock({ x: v.x, y: v.y, z: v.z });
+  if (!lockRing.visible) return { locked: false, sol };
+  const rp = lockRing.position;
+  const t = (rp.z - BALL_START.z) / sol.z;
+  return {
+    locked: true,
+    ring: { x: +rp.x.toFixed(3), y: +rp.y.toFixed(3), z: +rp.z.toFixed(3) },
+    crossing: {
+      x: +(BALL_START.x + sol.x * t).toFixed(3),
+      y: +(BALL_START.y + sol.y * t + 0.5 * GRAVITY * t * t).toFixed(3),
+    },
+  };
 };
 window.__ballDebug = () => ball && ({
   p: { x: +ball.curP.x.toFixed(2), y: +ball.curP.y.toFixed(2), z: +ball.curP.z.toFixed(2) },

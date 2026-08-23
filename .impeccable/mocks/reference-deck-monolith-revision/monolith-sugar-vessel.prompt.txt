@@ -1,0 +1,30 @@
+Create a revised high-fidelity 1440×900 desktop web UI mockup for PulseRank Product Passport, evolving the supplied "Monolith" composition. This is a dark-only factual caffeine database, not a wellness app. Preserve its striking physical black instrument-panel / archival reference-deck character, dense factual information hierarchy, top navigation, giant central caffeine reading, lower evidence sections, and cyan/purple accent language—but make the design notably more original and purposeful.
+
+CRITICAL TYPOGRAPHY REVISION:
+- Replace the current soft champagne/engraved display typography with a contemporary squared neo-grotesk system.
+- Product name and giant metric: Manrope Medium/Semibold character, clean geometric shapes, tight but readable tracking.
+- Body, labels, provenance, timestamps, buttons: Inter Regular/Medium.
+- All measurements use tabular numerals.
+- Tiny uppercase labels use Inter Medium with intentional tracking.
+- Avoid serif, retro Art Deco, rounded friendly UI type, sci-fi novelty type, and faux metallic texture on letterforms.
+- Text must be crisp, properly aligned, and highly legible on black.
+- Make hierarchy unmistakable: huge 240, medium product name, clear supporting metrics, quiet metadata.
+- Ordinary body copy visually at least 16px equivalent. No microtext.
+
+LAYOUT:
+- Header: PulseRank logo; Explore, Leaderboards, Compare, My Pulse, Changes, Live Data; search field.
+- Left specimen bay: use the supplied transparent Mega Monster can image faithfully, large and clean. Metadata beside/below it: PRODUCT — Mega Monster Energy Drink; CATEGORY — Energy drink; PRODUCT TYPE — Source category list; SOURCE — Caffeine Informer; OBSERVED — 22 Aug 2026, 09:29 UTC.
+- Center: monumental metric slab reading "240 mg"; eyebrow "TOTAL CAFFEINE · EXACT"; supporting serving context "per 709 ml serving". Add a subtle precision sight-line or datum grid behind the number, like a museum measuring instrument, not decoration.
+- Directly below center, a clear metric strip: SERVING 709 ml; NORMALIZED 709 ml; CONCENTRATION 33.9 mg / 100 ml; CALORIES 320 kcal. Strong grid and restrained dividers.
+- Right side must be a dedicated SUGAR MEASURE module, visually important. Show a tall transparent laboratory-style glass bottle or measuring vessel containing clearly visible white granulated sugar, filled according to the actual quantity 81 g. Include etched horizontal gram ticks at 0, 20, 40, 60, 80 g, with the sugar surface aligned just above 80. Large exact label "81 g" and text "published sugar per 709 ml serving". This is a measurement visualization only: do not use green/red health zones, recommended target, daily value, warning, good/bad language, or medical claims. The bottle should look like clear glass with restrained highlights, not a beverage bottle full of liquid. Label the state "EXACT". Include a small explanatory note "Bottle scale represents published grams; not a recommended limit."
+- Preserve sticky local actions as a compact horizontal or vertical black control rail integrated near the right module: Save, Compare, Add to My Day, Open source. Do not let actions overpower the bottle.
+- Lower information area: three exact structured panels titled OBSERVED FACTS, SOURCE RECORD, RANKING ELIGIBILITY. State eligible for total-caffeine ranking and concentration ranking. Include category provenance "Product type · Source category list".
+- Bottom data-state legend must show: Exact value, Explicit zero, Range, Estimated, Conflicting, Unparseable, Not published. Treat states with icon + text; never depend on color alone.
+
+CREATIVE DIRECTION:
+- Make the right sugar vessel a signature object, as if mounted inside a precision lab display case with an etched ruler and subtle refraction.
+- Create asymmetry and depth with one intentional cyan datum line traversing center to bottle, one purple edge glow around the saved control only, and restrained tactile black panels.
+- Avoid generic dashboard cards, excessive rounded rectangles, gradient fog, glassmorphism everywhere, neon cyberpunk clutter, health gauges, or decorative charts.
+- Product understanding must never depend on image, color, or motion.
+- Use only the exact facts above. Spell all text correctly.
+- No browser chrome, no annotations, no device frame. Output only the full web page mockup.

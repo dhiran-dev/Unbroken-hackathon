@@ -1,0 +1,6 @@
+Edit target: supplied Reference Deck PulseRank Product Passport UI mockup.
+Preserve the entire dark anodized composition, product image, typography, actions, values, source facts, eligibility layout, state legend, colors, and spacing. Make only these copy corrections:
+1. Under Total caffeine 422 mg, replace 'Per container' with 'Observed total'.
+2. Under Serving size 57 ml, replace 'Per serving' with 'Serving context'.
+3. In Ranking eligibility, replace the sentence 'Eligibility is evaluated per-item and can change as new verified data is observed.' with: 'Concentration ranking requires exact caffeine and a positive serving normalized to milliliters.'
+Do not alter anything else or add new claims.

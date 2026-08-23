@@ -9,6 +9,7 @@ import {
   Download,
   Filter,
   GitCompareArrows,
+  Gamepad2,
   History,
   Home,
   Layers3,
@@ -27,6 +28,7 @@ import {
 } from "lucide-react";
 
 import type { LiveDataStats } from "@/server/products/queries";
+import { PulseLogo } from "@/components/pulserank/pulse-logo";
 
 import {
   chartPath,
@@ -59,6 +61,7 @@ const primaryNav: readonly NavItem[] = [
   { href: "/live-data", label: "Live Data", icon: Activity },
   { href: "/my-pulse", label: "My Pulse", icon: UserRound },
   { href: "/leaderboards", label: "Leaderboards", icon: Trophy },
+  { href: "/game", label: "Arcade", icon: Gamepad2 },
 ];
 
 const summaryIcons = {
@@ -101,7 +104,7 @@ function Sidebar() {
     <aside className={styles.sidebar} aria-label="Primary navigation">
       <Link href="/" className={styles.brand} aria-label="PulseRank home">
         <span className={styles.brandGlyph} aria-hidden="true">
-          <Activity size={24} strokeWidth={2.4} />
+          <PulseLogo size={31} />
         </span>
         <span>PulseRank</span>
       </Link>

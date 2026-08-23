@@ -14,6 +14,7 @@ import {
   Database,
   Download,
   Folder,
+  Gamepad2,
   Gauge,
   GitCompareArrows,
   Home,
@@ -69,6 +70,7 @@ import { inspectLocalStorage, type BrowserStorageStatus } from "@/lib/local-stat
 import { inspectIndexedDb, type IndexedDbStatus } from "@/lib/local-state/db";
 import { PULSERANK_LOCAL_STATE_VERSION } from "@/lib/local-state/keys";
 import { categoryLabel, formatNumber } from "@/components/pulserank/public-ui";
+import { PulseLogo } from "@/components/pulserank/pulse-logo";
 
 import {
   buildDayTimeline,
@@ -116,6 +118,7 @@ const NAV_ITEMS = [
   { href: "/changes", label: "Changes", icon: Activity },
   { href: "/my-pulse", label: "My Pulse", icon: Gauge },
   { href: "/live-data", label: "Live Data", icon: Activity },
+  { href: "/game", label: "Arcade", icon: Gamepad2 },
 ] as const;
 
 function dateKey(date: Date): string {
@@ -591,7 +594,7 @@ export function MyPulsePage() {
         <div className={styles.sidebarInner}>
           <div className={styles.brandRow}>
             <Link href="/" className={styles.brand} aria-label="PulseRank home">
-              <span className={styles.brandMark}><Activity size={19} strokeWidth={2.5} aria-hidden="true" /></span>
+              <span className={styles.brandMark}><PulseLogo size={27} /></span>
               <span>PulseRank</span>
             </Link>
             <button

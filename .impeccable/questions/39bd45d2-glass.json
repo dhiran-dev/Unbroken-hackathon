@@ -1,0 +1,24 @@
+{
+  "title": "Approve the complete Product Passport layout",
+  "question": "The full Next.js page now follows the approved Product Page mockups: navigation shell, left product bay, right identity and measurement instrument, tab rail, and four-column evidence ledger. Approve it or leave a precise steer.",
+  "options": [
+    {
+      "id": "glass-specimen",
+      "label": "Approved Layout Build",
+      "kicker": "OWNER-PINNED",
+      "lineage": "Approved mockup geometry · optical product instrument",
+      "thesis": "The approved Product Page layout is rebuilt end to end, with the refractive bottle as its singular measurement instrument.",
+      "palette": ["#030306", "#f6f4f7", "#a95cff", "#91f0a8"],
+      "materials": ["Canvas UI optical glass", "controlled Living Green", "Aceternity bento", "clean product lighting"],
+      "viewport": "Full navigation shell over a large left product stage and right identity field, followed by the integrated glass measurement deck.",
+      "case": "Living Green acts only as a transition seam and source surface; the Aceternity bento becomes one continuous four-column evidence ledger.",
+      "risk": "The glass must remain readable and semantic on small screens without becoming an opaque decorative card.",
+      "comp": ".impeccable/review/product-passport-approved-hero-1280x720.png"
+    }
+  ],
+  "buildPath": {
+    "value": "code",
+    "toggle": false
+  },
+  "steer": true
+}

@@ -1,0 +1,49 @@
+{
+  "title": "Choose the living Product Passport composition",
+  "question": "The forest, landing-page typography, purple glass, and requested component stack are now fixed. Choose the composition to carry into the production Product Passport, or steer a combination.",
+  "options": [
+    {
+      "id": "violet-grotto",
+      "label": "Violet Grotto",
+      "kicker": "THE ROLL",
+      "lineage": "A specimen chamber cut into a bioluminescent forest",
+      "thesis": "The product owns a complete living left bay while the trusted measurement sits in one calm glass instrument on the right.",
+      "palette": ["#030507", "#f4f4ed", "#91f0a8", "#a76bff", "#d99cff"],
+      "materials": ["living forest", "smoked amethyst glass", "optical refraction"],
+      "viewport": "A strict forest/specimen split: full can stage left, landing-page headline and 240 mg instrument right, evidence grid below.",
+      "risk": "The two-bay split is the most legible option, but also the most composed and least immersive.",
+      "comp": ".impeccable/mocks/decision/product-passport-r3-violet-grotto.png"
+    },
+    {
+      "id": "night-conservatory",
+      "label": "Night Conservatory",
+      "lineage": "A glasshouse section drawn through a living nocturnal canopy",
+      "thesis": "One uninterrupted forest room holds title, specimen, and measurement as three depths of the same scene.",
+      "palette": ["#020304", "#f4f4ed", "#7ee39a", "#8c49d3", "#d7b3ff"],
+      "materials": ["conservatory glass", "living canopy", "violet caustic light"],
+      "viewport": "The title lives in the canopy, the can crosses the structural glass rails, and the caffeine readout floats as one deep instrument.",
+      "risk": "This is the most cinematic option; title and specimen overlap deliberately and need disciplined responsive choreography.",
+      "comp": ".impeccable/mocks/decision/product-passport-r3-night-conservatory.png"
+    },
+    {
+      "id": "herbarium-ledger",
+      "label": "Herbarium Ledger",
+      "lineage": "A botanical evidence sheet paired with a living specimen window",
+      "thesis": "The institutional record becomes an editorial ledger while the forest remains a vivid, full-height specimen field.",
+      "palette": ["#040607", "#f4f4ed", "#83dda0", "#9b5be3", "#d2a7ff"],
+      "materials": ["archival ruled ink", "living forest", "purple optical glass"],
+      "viewport": "A precise record column leads on the left; the complete product rises in a saturated forest aperture on the right.",
+      "risk": "The editorial hierarchy feels most institutional, but it gives less opening emphasis to the caffeine instrument than Violet Grotto.",
+      "comp": ".impeccable/mocks/decision/product-passport-r3-herbarium-ledger.png"
+    }
+  ],
+  "reroll": {
+    "registers": ["safer", "bolder"]
+  },
+  "buildPath": {
+    "value": "comp",
+    "toggle": true
+  },
+  "canon": false,
+  "steer": true
+}

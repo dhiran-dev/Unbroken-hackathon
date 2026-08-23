@@ -1,0 +1,62 @@
+{
+  "bounds_max": [
+    18.0,
+    18.0,
+    5.711999893188477
+  ],
+  "bounds_min": [
+    -18.0,
+    -18.0,
+    -0.07999999821186066
+  ],
+  "checks": {
+    "camera_present": true,
+    "expected_named_nodes": true,
+    "mesh_objects_present": true,
+    "no_external_images": true,
+    "no_external_paths": true,
+    "no_lights_exported": true,
+    "positive_stage_height": true
+  },
+  "external_paths": [
+    "/home/dhiran/Dhiran/Animation/.studio_tools/blender/blender-5.2.0-linux-x64/5.2/datafiles/assets/brushes/essentials_brushes-gp_draw.blend",
+    "/home/dhiran/Dhiran/Animation/.studio_tools/blender/blender-5.2.0-linux-x64/5.2/datafiles/assets/brushes/essentials_brushes-gp_draw.blend"
+  ],
+  "external_uris": [],
+  "glb_path": "/home/dhiran/Dhiran/brightdata_hackathon/public/pulse-preview/pulse-energy.glb",
+  "image_count": 0,
+  "material_count": 8,
+  "mesh_objects": [
+    "PulseCan",
+    "PulseCanBottomRim",
+    "PulseCanCondensation",
+    "PulseCanLabel",
+    "PulseCanLightning",
+    "PulseCanPullTab",
+    "PulseCanTopRim",
+    "PulseCanTopSurface",
+    "PulsePedestal",
+    "PulsePedestalRings",
+    "PulsePedestalTier",
+    "PulsePedestalTop",
+    "PulseStudioFloor"
+  ],
+  "object_count": 14,
+  "objects": [
+    "PulseCan",
+    "PulseCanBottomRim",
+    "PulseCanCondensation",
+    "PulseCanLabel",
+    "PulseCanLightning",
+    "PulseCanPullTab",
+    "PulseCanTopRim",
+    "PulseCanTopSurface",
+    "PulsePedestal",
+    "PulsePedestalRings",
+    "PulsePedestalTier",
+    "PulsePedestalTop",
+    "PulseStudioCamera",
+    "PulseStudioFloor"
+  ],
+  "result": "pass"
+}

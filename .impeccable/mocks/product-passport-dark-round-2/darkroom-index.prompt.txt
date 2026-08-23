@@ -1,0 +1,5 @@
+Edit target: supplied Darkroom Index PulseRank Product Passport UI mockup.
+Preserve the full dark composition, product image, typography, metadata, actions, metric strip, observation table, ranking eligibility, state legend, colors, and spacing. Change only decorative film-edge text:
+1. Remove all fabricated film stock, frame, or record identifiers, including 'KODAK', '400TX', 'PR.NEG', '10HR.001', numbers, triangles, and similar edge codes.
+2. Where an edge label is useful, use only neutral text 'PULSERANK' and 'PRODUCT IMAGE'. Empty edge space is acceptable.
+Do not alter any product facts or add any new identifiers.
