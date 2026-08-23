@@ -33,6 +33,8 @@ import {
 } from "react";
 
 import { LocalProductActionsClient } from "@/components/pulserank/local-actions";
+import { RainbowButton } from "@/components/ui/rainbow-button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import {
   caffeineText,
   categoryLabel,
@@ -330,7 +332,15 @@ function FilterRail({
           <span><b>Exact caffeine only</b><small>Hide ranges and uncertain points</small></span>
           <input defaultChecked={filters.exactOnly === true} name="exactOnly" type="checkbox" value="true" />
         </label>
-        <button className={styles.applyButton} type="submit">Apply filters</button>
+        <ShimmerButton
+          background="#100c1c"
+          borderRadius="10px"
+          className={styles.applyButton}
+          shimmerColor="#d99cff"
+          type="submit"
+        >
+          Apply filters
+        </ShimmerButton>
       </form>
     </aside>
   );
@@ -369,7 +379,15 @@ function SearchCommand({ filters }: { filters: ExploreFilters }) {
       />
       {addFilterInputs(filters, "search")}
       <kbd><span>⌘</span>K</kbd>
-      <button type="submit">Search</button>
+      <ShimmerButton
+        background="#100c1c"
+        borderRadius="10px"
+        className={styles.searchButton}
+        shimmerColor="#d99cff"
+        type="submit"
+      >
+        Search
+      </ShimmerButton>
     </form>
   );
 }
@@ -788,8 +806,16 @@ export function ExploreWorkspace({
               <p>Map exact caffeine against normalized serving volume, then inspect every qualifier.</p>
             </div>
             <div aria-label="Plot metric" className={styles.metricToggle} role="group">
-              <button aria-pressed={metric === "total"} className={metric === "total" ? styles.metricSelected : ""} onClick={() => setMetric("total")} type="button">Total caffeine</button>
-              <button aria-pressed={metric === "concentration"} className={metric === "concentration" ? styles.metricSelected : ""} onClick={() => setMetric("concentration")} type="button">Concentration</button>
+              {metric === "total" ? (
+                <RainbowButton aria-pressed={true} className={styles.metricSelected} onClick={() => setMetric("total")}>Total caffeine</RainbowButton>
+              ) : (
+                <button aria-pressed={false} onClick={() => setMetric("total")} type="button">Total caffeine</button>
+              )}
+              {metric === "concentration" ? (
+                <RainbowButton aria-pressed={true} className={styles.metricSelected} onClick={() => setMetric("concentration")}>Concentration</RainbowButton>
+              ) : (
+                <button aria-pressed={false} onClick={() => setMetric("concentration")} type="button">Concentration</button>
+              )}
             </div>
           </header>
           <SearchCommand filters={initialFilters} />
@@ -824,10 +850,17 @@ export function ExploreWorkspace({
             )}
             {loadError ? <p className={styles.loadError} role="alert">{loadError}</p> : null}
             {nextCursor ? (
-              <button className={styles.loadMore} disabled={loading} onClick={() => void loadMore()} type="button">
+              <ShimmerButton
+                background="#100c1c"
+                borderRadius="10px"
+                className={styles.loadMore}
+                disabled={loading}
+                onClick={() => void loadMore()}
+                shimmerColor="#d99cff"
+              >
                 {loading ? <LoaderCircle className={styles.spinner} size={17} aria-hidden="true" /> : null}
                 {loading ? "Loading next 24…" : "Load 24 more products"}
-              </button>
+              </ShimmerButton>
             ) : products.length > 0 ? <p className={styles.catalogEnd}>You reached all {products.length.toLocaleString()} matching products.</p> : null}
           </section>
         </section>

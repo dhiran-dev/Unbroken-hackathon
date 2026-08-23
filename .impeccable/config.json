@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, .45)",
+        "createdAt": "2026-08-23T16:48:21.490Z",
+        "reason": "DESIGN.md Atmosphere & Depth explicitly specifies this soft shadow; the detector sidecar is stale."
+      }
+    ]
+  }
+}
