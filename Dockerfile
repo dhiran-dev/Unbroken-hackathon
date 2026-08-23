@@ -7,6 +7,10 @@ RUN bun install --frozen-lockfile
 
 FROM dependencies AS builder
 WORKDIR /app
+# Next's build process must run under real Node. The `node` binary bundled by
+# oven/bun is Bun's compatibility shim and can segfault after a successful
+# Next/Turbopack build on the Coolify host.
+RUN apk add --no-cache nodejs
 COPY . .
 # Route discovery needs schema-valid placeholders. They are unreachable build
 # values; Coolify supplies the real server-only values at runtime.
@@ -18,7 +22,7 @@ RUN DATABASE_URL=postgres://build:build@127.0.0.1:5432/pulserank_build?sslmode=r
   FIREWORKS_MODEL=accounts/fireworks/models/deepseek-v4-flash-0731 \
   FIREWORKS_REASONING_EFFORT=high \
   NEXT_PUBLIC_APP_URL=https://example.invalid \
-  bun run build
+  /usr/bin/node node_modules/next/dist/bin/next build --webpack
 RUN bun build src/worker/index.ts --target=bun --outfile=dist/worker.js
 
 # Private one-off target for forward-only migrations.
