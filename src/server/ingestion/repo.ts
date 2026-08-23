@@ -320,10 +320,10 @@ export interface PulseRepo {
     sourceId: string,
     pageFingerprint: string,
   ): Promise<ObservationRow | null>;
-  listObservationFingerprints(
+  listObservationsByFingerprints(
     sourceId: string,
     fingerprints: readonly string[],
-  ): Promise<string[]>;
+  ): Promise<ObservationRow[]>;
   /** Returns null when a unique constraint made the insert a no-op. */
   insertObservation(input: InsertObservationInput): Promise<ObservationRow | null>;
   getObservation(id: string): Promise<ObservationRow | null>;
@@ -660,10 +660,10 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
       return row ? mapObservation(row) : null;
     },
 
-    async listObservationFingerprints(sourceId, fingerprints) {
+    async listObservationsByFingerprints(sourceId, fingerprints) {
       if (fingerprints.length === 0) return [];
       const rows = await db
-        .select({ pageFingerprint: pulseProductObservations.pageFingerprint })
+        .select()
         .from(pulseProductObservations)
         .where(
           and(
@@ -671,7 +671,7 @@ export function createDbPulseRepo(db: PulseDbHandle): PulseRepo {
             inArray(pulseProductObservations.pageFingerprint, [...fingerprints]),
           ),
         );
-      return rows.map((row) => row.pageFingerprint);
+      return rows.map(mapObservation);
     },
 
     async insertObservation(input) {
@@ -1201,14 +1201,14 @@ export function createInMemoryPulseRepo(): InMemoryPulseRepo {
       }
       return null;
     },
-    async listObservationFingerprints(sourceId, fingerprints) {
+    async listObservationsByFingerprints(sourceId, fingerprints) {
       const requested = new Set(fingerprints);
       return [...observations.values()]
         .filter(
           (row) =>
             row.sourceId === sourceId && requested.has(row.pageFingerprint),
         )
-        .map((row) => row.pageFingerprint);
+        .map((row) => ({ ...row }));
     },
     async insertObservation(input) {
       for (const row of observations.values()) {

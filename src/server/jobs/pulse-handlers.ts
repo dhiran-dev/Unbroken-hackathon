@@ -609,6 +609,7 @@ export function createIngestRunHandler(
 
       let source: SourceRow | null = null;
       let insertedObservations = 0;
+      let revivedObservations = 0;
       let duplicateObservations = 0;
 
       const candidates = [...parsed.candidatesByFingerprint.values()];
@@ -624,19 +625,43 @@ export function createIngestRunHandler(
           );
         }
       }
-      const existingFingerprints = new Set(
+      const existingObservations =
         source === null
           ? []
-          : await repo.listObservationFingerprints(
+          : await repo.listObservationsByFingerprints(
               source.id,
               candidates.map((candidate) => candidate.pageFingerprint),
-            ),
+            );
+      const existingByFingerprint = new Map(
+        existingObservations.map((observation) => [
+          observation.pageFingerprint,
+          observation,
+        ]),
       );
 
       for (const candidate of candidates) {
-        // Idempotency: (source, fingerprint) first, then the insert-level
-        // unique constraints ((source, slug, observed_at) included).
-        if (existingFingerprints.has(candidate.pageFingerprint)) {
+        // A source may legitimately return to content seen before. When that
+        // exact evidence is superseded, revive it as a candidate so the normal
+        // validation and promotion gates can evaluate the reversion. All other
+        // known statuses remain idempotent skips; quarantined/rejected evidence
+        // can never be revived by collection alone.
+        const existing = existingByFingerprint.get(candidate.pageFingerprint);
+        if (existing?.status === "superseded") {
+          await repo.updateObservation(existing.id, {
+            status: "candidate",
+            normalized: candidate as JsonObject,
+          });
+          await persistCandidateEntities(
+            repo,
+            existing.productId,
+            existing.id,
+            new Date(candidate.observedAt),
+            candidate,
+          );
+          revivedObservations += 1;
+          continue;
+        }
+        if (existing !== undefined) {
           duplicateObservations += 1;
           continue;
         }
@@ -679,13 +704,17 @@ export function createIngestRunHandler(
           parsed.collectorErrorRecordIds.length,
         parsedRowCount: parsed.validatableRows.length,
         insertedObservations,
+        revivedObservations,
         duplicateObservations,
         unparsableRecords: parsed.unparsableRecordIds.length,
         collectorErrorRecords: parsed.collectorErrorRecordIds.length,
         completedAtIso: runtime.now().toISOString(),
       };
       const priorIngestion = reportSection(run.report, "ingestion");
-      const replayOnly = insertedObservations === 0 && priorIngestion !== null;
+      const replayOnly =
+        insertedObservations === 0 &&
+        revivedObservations === 0 &&
+        priorIngestion !== null;
       await repo.updateCollectionRun(runId, {
         report: {
           ...(run.report ?? {}),
@@ -694,20 +723,25 @@ export function createIngestRunHandler(
         },
       });
 
-      return okResult(job, `ingested ${insertedObservations} candidate observation(s)`, {
-        runId,
-        rawRecordCount:
-          parsed.validatableRows.length +
-          parsed.unparsableRecordIds.length +
-          parsed.collectorErrorRecordIds.length,
-        parsedRowCount: parsed.validatableRows.length,
-        insertedObservations,
-        duplicateObservations,
-        unparsableRecords: parsed.unparsableRecordIds.length,
-        unparsableRecordIds: parsed.unparsableRecordIds,
-        collectorErrorRecords: parsed.collectorErrorRecordIds.length,
-        collectorErrorRecordIds: parsed.collectorErrorRecordIds,
-      });
+      return okResult(
+        job,
+        `ingested ${insertedObservations} new and revived ${revivedObservations} candidate observation(s)`,
+        {
+          runId,
+          rawRecordCount:
+            parsed.validatableRows.length +
+            parsed.unparsableRecordIds.length +
+            parsed.collectorErrorRecordIds.length,
+          parsedRowCount: parsed.validatableRows.length,
+          insertedObservations,
+          revivedObservations,
+          duplicateObservations,
+          unparsableRecords: parsed.unparsableRecordIds.length,
+          unparsableRecordIds: parsed.unparsableRecordIds,
+          collectorErrorRecords: parsed.collectorErrorRecordIds.length,
+          collectorErrorRecordIds: parsed.collectorErrorRecordIds,
+        },
+      );
     });
   };
 }

@@ -109,6 +109,8 @@ type RowOverrides = CaffeineSpec & {
   url?: string;
   observedAt?: string;
   caffeine?: CaffeineSpec;
+  calories?: CaffeineSpec;
+  sugar?: CaffeineSpec;
   servingMl?: number | null;
   media?: ProductScrapeRowV1["media"];
 };
@@ -133,8 +135,8 @@ function makeScrapeRow(overrides: RowOverrides = {}): ProductScrapeRowV1 {
       caffeineMg: numberObservation(overrides.caffeine, 95),
       sourceLevel: "moderate",
       serving: servingObservation(overrides.servingMl ?? 250),
-      caloriesKcal: numberObservation(undefined, null),
-      sugarG: numberObservation(undefined, null),
+      caloriesKcal: numberObservation(overrides.calories, null),
+      sugarG: numberObservation(overrides.sugar, null),
     },
     variants: [],
     flavours: [],
@@ -563,6 +565,113 @@ describe("pulse.promote.snapshot handler", () => {
     expect(event?.eventType).toBe("caffeine_changed");
     expect((event?.before as { value: number }).value).toBe(100);
     expect((event?.after as { value: number }).value).toBe(140);
+  });
+
+  it("revives superseded evidence when a source returns to previously seen content", async () => {
+    const repo = createInMemoryPulseRepo();
+    const richRow = makeScrapeRow({
+      slug: "returning-product",
+      fingerprint: "fp-rich",
+      observedAt: "2026-08-19T09:00:00.000Z",
+      calories: { value: 125 },
+      sugar: { value: 30 },
+    });
+    const { run: richRun, collector } = await seedRunWithRows(repo, [richRow]);
+    const handlers = makeHandlers(repo);
+    await ingestAndPromote(repo, richRun.id, handlers);
+
+    async function addRun(row: ProductScrapeRowV1) {
+      const run = await repo.insertCollectionRun({
+        collectorId: collector.id,
+        trigger: "unit-test",
+        status: "succeeded",
+        startedAt: FIXED_NOW,
+        finishedAt: FIXED_NOW,
+        rowCount: 1,
+        pageFingerprint: null,
+        report: null,
+      });
+      await repo.insertRawRecord({
+        collectionRunId: run.id,
+        collectorId: collector.id,
+        payload: row,
+        mediaType: "application/json",
+        pageFingerprint: row.source.pageFingerprint,
+        capturedAt: FIXED_NOW,
+      });
+      return run;
+    }
+
+    const sparseRun = await addRun(
+      makeScrapeRow({
+        slug: "returning-product",
+        fingerprint: "fp-sparse",
+        observedAt: "2026-08-20T09:00:00.000Z",
+      }),
+    );
+    await ingestAndPromote(repo, sparseRun.id, handlers);
+
+    const richObservation = [...repo.__debug.observations.values()].find(
+      (observation) => observation.pageFingerprint === "fp-rich",
+    );
+    expect(richObservation?.status).toBe("superseded");
+
+    const returningRun = await addRun(
+      makeScrapeRow({
+        slug: "returning-product",
+        fingerprint: "fp-rich",
+        observedAt: "2026-08-22T09:00:00.000Z",
+        calories: { value: 125 },
+        sugar: { value: 30 },
+      }),
+    );
+    const ingested = await handlers["pulse.ingest.run"]({
+      job: "pulse.ingest.run",
+      payload: { runId: returningRun.id },
+    });
+    expect(ingested).toMatchObject({
+      status: "ok",
+      details: {
+        insertedObservations: 0,
+        revivedObservations: 1,
+        duplicateObservations: 0,
+      },
+    });
+    expect(
+      richObservation
+        ? repo.__debug.observations.get(richObservation.id)?.status
+        : undefined,
+    ).toBe("candidate");
+
+    const validated = await handlers["pulse.validate.run"]({
+      job: "pulse.validate.run",
+      payload: { runId: returningRun.id },
+    });
+    expect(validated).toMatchObject({
+      status: "ok",
+      details: { validationOk: true },
+    });
+    const promoted = await handlers["pulse.promote.snapshot"]({
+      job: "pulse.promote.snapshot",
+      payload: { runId: returningRun.id },
+    });
+    expect(promoted).toMatchObject({ status: "ok", details: { promoted: 1 } });
+
+    const product = [...repo.__debug.products.values()].find(
+      (item) => item.slug === "returning-product",
+    );
+    const trusted = product?.currentTrustedObservationId
+      ? repo.__debug.observations.get(product.currentTrustedObservationId)
+      : undefined;
+    expect(trusted?.pageFingerprint).toBe("fp-rich");
+    expect(trusted?.normalized.caloriesKcal).toMatchObject({
+      state: "present",
+      value: 125,
+    });
+    expect(trusted?.normalized.sugarG).toMatchObject({
+      state: "present",
+      value: 30,
+    });
   });
 
   it("quarantines unparseable candidates: observation stays, prior pointer untouched, incident opens", async () => {
